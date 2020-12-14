@@ -1,0 +1,11 @@
+include -c emp-fwk:boards/testbench
+include vertex_finder_sim.dep
+
+# Testbench example project declaration
+src -c emp-fwk:projects/examples/testbench emp_project_decl.vhd
+# testbench constants
+src -c emp-fwk:projects/examples/testbench tb_decl.vhd
+
+include -c emp-fwk:projects/examples/testbench tb_top.dep
+include -c emp-fwk:boards/testbench packages.dep
+

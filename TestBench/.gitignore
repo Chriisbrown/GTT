@@ -1,0 +1,7 @@
+*.txt
+output_files/**
+input_files/**
+Debug/**
+Reports/**
+Phitests/**
+performance_plots/**

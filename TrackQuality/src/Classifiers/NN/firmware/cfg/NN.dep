@@ -1,0 +1,29 @@
+src --vhdl2008 myproject.vhd
+src --vhdl2008 RunningNull.vhd
+
+src --vhdl2008 dense_latency_0_0_0_s.vhd
+src --vhdl2008 dense_latency_0_0_0_2.vhd
+src --vhdl2008 dense_latency_0_0_0_1.vhd
+src --vhdl2008 dense_latency_0_0.vhd
+
+src --vhdl2008 product_2.vhd
+src --vhdl2008 product_1.vhd
+src --vhdl2008 product.vhd
+
+src --vhdl2008 relu_2.vhd
+src --vhdl2008 relu_1.vhd
+src --vhdl2008 relu.vhd
+src --vhdl2008 sigmoid.vhd
+src --vhdl2008 sigmoid_sigmoid_teOg.vhd
+
+src --vhdl2008 myproject_mul_mulbkb.vhd
+src --vhdl2008 myproject_mul_mulcud.vhd
+src --vhdl2008 myproject_mul_muldEe.vhd
+
+src --vhdl2008 SimulationOutput.vhd
+src --vhdl2008 ValidOutput.vhd
+src --vhdl2008 Types.vhd
+src --vhdl2008 Constants.vhd
+
+
+

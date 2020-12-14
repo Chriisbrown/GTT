@@ -1,0 +1,12 @@
+GBDTOutput/**
+NNOutput/**
+TrackClassifier_vcu118/**
+*.tar.gz
+
+newGBDT/**
+noScaleGBDT/**
+newNN/**
+noScaleNN/**
+oldKNN/**
+GBDTbitOutput/**
+bitNN/**

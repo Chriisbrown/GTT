@@ -1,0 +1,28 @@
+src --vhdl2008 top/payload.vhd
+
+src --vhdl2008 -l VertexFinder top/VertexFinderProcessor.vhd
+src --vhdl2008 -l VertexFinder modules/VertexToLink.vhd
+src --vhdl2008 -l VertexFinder modules/MaximaFinder.vhd
+src --vhdl2008 -l VertexFinder modules/Histogram.vhd
+src --vhdl2008 -l VertexFinder modules/Fanout.vhd
+src --vhdl2008 -l VertexFinder modules/VertexDistribution.vhd
+src --vhdl2008 -l VertexFinder modules/TTTracksToVertices.vhd
+
+src --vhdl2008 -c LinkDecode: -l LinkDecode modules/PtCalculate.vhd
+src --vhdl2008 -c LinkDecode: -l LinkDecode modules/InvRdivider.vhd
+src --vhdl2008 -c LinkDecode: -l LinkDecode modules/LinksToTTTracks.vhd
+
+src --vhdl2008 -c LinkDecode: -l TTTrack track/Debugger.vhd
+src --vhdl2008 -c LinkDecode: -l TTTrack track/DataPipe.vhd
+src --vhdl2008 -c LinkDecode: -l TTTrack track/PkgArrayTypes.vhd
+src --vhdl2008 -c LinkDecode: -l TTTrack types/PkgTTTrack.vhd
+
+src --vhdl2008 -c RuflCore: -l Vertex ReuseableElements/DistributionServer.vhd
+src --vhdl2008 -c RuflCore: -l Vertex ReuseableElements/Debugger.vhd
+src --vhdl2008 -c RuflCore: -l Vertex ReuseableElements/DataRam.vhd
+src --vhdl2008 -c RuflCore: -l Vertex ReuseableElements/DataPipe.vhd
+src --vhdl2008 -c RuflCore: -l Vertex ReuseableElements/PkgArrayTypes.vhd
+src --vhdl2008 -l Vertex types/PkgVertex.vhd
+
+src --vhdl2008 -c RuflCore: -l Utilities ReuseableElements/PkgUtilities.vhd
+src --vhdl2008 -c RuflCore: -l Utilities ReuseableElements/PkgDebug.vhd

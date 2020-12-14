@@ -1,0 +1,13 @@
+include -c emp-fwk:boards/vcu118/ device.dep
+include -c emp-fwk:boards/testbench
+
+src payload.vhd
+src TreeWrapper.vhd
+src RunningOutput.vhd
+
+include -c Classifiers:Transform FeatureTransform.dep
+include -c Classifiers:GBDT GBDT.dep
+
+
+include -c emp-fwk:projects/examples/testbench tb_top.dep
+include -c emp-fwk:boards/testbench packages.dep

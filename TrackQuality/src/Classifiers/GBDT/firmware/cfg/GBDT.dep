@@ -1,0 +1,12 @@
+src --vhdl2008 SimulationOutput.vhd
+src --vhdl2008 ValidOutput.vhd
+src --vhdl2008 BDTTop.vhd
+src --vhdl2008 BDT.vhd 
+src --vhdl2008 RunningNull.vhd
+src --vhdl2008 Arrays0.vhd
+src --vhdl2008 AddReduce.vhd 
+src --vhdl2008 Tree.vhd
+src --vhdl2008 Types.vhd
+src --vhdl2008 Constants.vhd
+
+

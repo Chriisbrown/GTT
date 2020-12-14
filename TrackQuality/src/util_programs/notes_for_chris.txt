@@ -1,0 +1,95 @@
+Preliminary stuff:
+Sign up for emp project:
+https://e-groups.cern.ch/e-groups/EgroupsSearchForm.do
+Search 'emp', subscribe to emp-fwk-users
+(Will give you access to https://gitlab.cern.ch/p2-xware/, takes ~30 minutes)
+
+Some reading:
+https://serenity.web.cern.ch/serenity/
+https://gitlab.cern.ch/p2-xware/firmware/emp-fwk/wikis
+https://www.xilinx.com/products/boards-and-kits/vcu118.html#hardware
+
+
+VCU118 Card, located in 40-2-B (DAQ lab).
+Always boot the card _before_ the PC.
+So if the PC is on and the card is off, switch off the PC first.
+e.g. from the command line 'sudo shutdown'
+Then switch on the card, then switch on the PC again.
+Switch off the card when not in use for a while (e.g. before you go home for the day).
+The flash memory on the card is programmed with a bitfile which has a PCIe and DMA core. When the card is powered on this bitfile is loaded onto the FPGA. This is necessary for the PC to communicate with the card. If the flash is reprogrammed with a bitfile without these components, the PCIe communication might not work anymore, even after reprogramming the device over JTAG (until an appropriate bitfile is written to the flash and everything rebooted).
+
+
+To interact with the VCU118 card:
+ssh -XY cmd-phase2-trg-ctrlhub.cern.ch
+
+# Inspect the PCIe devices
+lspci
+# should see '01:00.0 Serial controller: Xilinx Corporation Device 9031'
+ls /dev
+# should see many 'xdma0_XYZ'
+# /dev/xdma0_c2h_0 and /dev/xdma0_h2c_0 are the 'card to host' and 'host to card' channels
+
+# Setup the emp toolbox
+# The first time, create a python environment
+source /afs/cern.ch/work/s/ssummers/public/forchris/emp-tb.sh
+# Clone the emp-toolbox (could be to your home dir, work dir, wherever)
+git clone https://gitlab.cern.ch/p2-xware/software/emp-toolbox
+# Then every time:
+cd emp-tooblox
+source env.sh
+export UHAL_ENABLE_IPBUS_PCIE=1
+
+# Inspect the firmware on the card
+# This uses 'ipbus' over the PCIe connection to read a register on the FPGA.
+empbutler -c /afs/cern.ch/work/s/ssummers/public/forchris/VertexFinder_vcu118/package/src/addrtab/connections.xml do vcu118 inspect 'info*'
+
+# Expected output, note the hex string after 'algo' and the info
+#Created device vcu118
+#2019-06-11 12:21:35.071 mp7 INFO     | Firmware revision - design: 0x03 #infra: 0x000205 algo: 0x12345678
+#2019-06-11 12:21:35.071 mp7 INFO     | Channels - [0-111]
+#+------+------------+
+#| info | 0xdeadbeef |
+#+------+------------+
+
+# Now we need our algorithm firmware
+# To program the device (using a GUI, can also be done by command line):
+source /home/xilinx/Vivado_Lab/2018.3/settings64.sh
+vivado_lab &
+# In the GUI:
+Click 'Open Hardware Manager'
+Click 'Open target' -> Auto Connect
+Should see a list on the left under 'hardware' (see screenshot)
+Right-click 'xcu9p_0' (that's the FPGA device code)
+Select 'Program Device'
+Select a bitfile (There is one at /afs/cern.ch/work/s/ssummers/public/forchris/VertexFinder_vcu118/package/src/top.bit)
+(Ignore debug probes file & any warnings about that)
+Click Program, wait...
+
+vivado_lab -mode batch -source program-bit.tcl
+
+
+After reprogramming the device we always need to refresh the PC's PCIe tree.
+# From the shell:
+sudo /afs/cern.ch/work/s/ssummers/public/forchris/pcie_reconnect_xilinx.sh
+# Make the devices read/writeable:
+sudo chmod 777 /dev/xdma0_c2h_0 /dev/xdma0_h2c_0
+
+Now try the previous empbutler command again.
+# From the shell:
+empbutler -c /afs/cern.ch/work/s/ssummers/public/c.xml do vcu118 inspect 'info*'
+# With this bitfile should see:
+# Created device vcu118
+# 2019-06-11 12:52:29.101 mp7 INFO     | Firmware revision - design: 0x03 # # infra: 0x000205 algo: 0x51091001
+# 2019-06-11 12:52:29.102 mp7 INFO     | Channels - [0-111]
+# +------+------------+
+# | info | 0xdeadbeef |
+# +------+------------+
+# Note the info is the same, but the algo ID '0x5109101'
+
+# Now let's try running the algorithm on some data
+# There's a script at /afs/cern.ch/work/s/ssummers/public/forchris/pattern_file_test.sh
+# Read the comments to see what each line does
+cd /afs/cern.ch/work/s/ssummers/public/forchris/
+./pattern_file_test.sh
+# A directory data is created with 'rx_summary.txt' and 'tx_summary.txt'
+# Look for fields starting '1v' (is valid) in the 'tx_summary.txt', this is the algorithm output.
