@@ -2,5 +2,7 @@
 *.pkl
 predictions/**
 input_files/**
-
+latency_comp/**
+*.txt
+*.csv
 __pycache__/**

@@ -130,11 +130,7 @@ BEGIN
         temp_z07     <= temp_z06;
 -- ----------------------------------------------------------------------------------------------
         Output( i )         <= temp_z07;
-        Output( i ) .eta    <= TO_UNSIGNED(TanLLUT(TO_INTEGER(temp_z07.tanlfrac))(abs(TO_INTEGER(temp_z07.tanlint))));
-        report "InvR"& Integer'image(TO_INTEGER(temp_z07.InvR));
-        report "IntOut"& Integer'image(TO_INTEGER(IntOut));
-        report "FracOut"& Integer'image(TO_INTEGER(FracOut));
-        report "Pt"& Integer'image(TO_INTEGER(TO_UNSIGNED(TO_INTEGER(IntOut)*2,16)));
+        Output( i ) .eta    <= TO_UNSIGNED(TanLLUT(TO_INTEGER(temp_z07.tanlfrac))(abs(TO_INTEGER(temp_z07.tanlint))),16);
         Output( i ) .Pt     <= TO_UNSIGNED(TO_INTEGER(IntOut)+TO_INTEGER(FracOut)/2**18,16);
 
 
