@@ -66,11 +66,11 @@ def swTrackMET(event):
 
 
 
-def simulation(num_events):
+def simulation(num_events,file_name):
     num_events = num_events
-    events = util.loadDataSingleFile("/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object_300k.root",[0,num_events])
-    cmssw_v = util.loadVertexInformation("/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object_300k.root",num_events=num_events)
-    cmssw_met = util.loadMETInformation("/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object_300k.root",num_events=num_events)
+    events = util.loadDataSingleFile(file_name,[0,num_events])
+    cmssw_v = util.loadVertexInformation(file_name,num_events=num_events)
+    cmssw_met = util.loadMETInformation(file_name,num_events=num_events)
 
     vertex=np.zeros(len(cmssw_met))
     weight=np.zeros(len(cmssw_met))

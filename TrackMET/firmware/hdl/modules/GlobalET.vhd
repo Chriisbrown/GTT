@@ -14,6 +14,7 @@ USE Utilities.Utilities.ALL;
 
 LIBRARY TrackMET;
 USE TrackMET.ROMConstants.all;
+USE TrackMET.UnclockedSquareRoot;
 
 -- -------------------------------------------------------------------------
 ENTITY GlobalET IS
@@ -56,30 +57,6 @@ END GlobalET;
   RETURN temp_py;
   END FUNCTION SumPy;
 
-
-  FUNCTION SquareRoot ( x : UNSIGNED) return UNSIGNED IS
-  VARIABLE X_in : UNSIGNED(31 DOWNTO 0) := x;
-  VARIABLE Y_out : UNSIGNED(15 DOWNTO 0) := (OTHERS => '0');
-  VARIABLE left,right,remain : UNSIGNED(17 DOWNTO 0) := (OTHERS => '0');
-  BEGIN
-    FOR i IN Y_out'Range LOOP
-      right( 0 ) :=  '1' ;
-      right( 1 ) := remain( 17 );
-      right(17 DOWNTO 2) := Y_out;
-      left(1 DOWNTO 0) := X_in(31 DOWNTO 30);
-      left(17 DOWNTO 2) := remain(15 DOWNTO 0);
-      X_in(31 DOWNTO 2) := X_in(29 DOWNTO 0);  --shifting by 2 bit.
-      IF ( remain(17) = '1') THEN
-        remain := left + right;
-      ELSE
-        remain := left - right;
-      END IF;
-      Y_out(15 DOWNTO 1) := Y_out(14 DOWNTO 0);
-      Y_out(0) := NOT remain(17);
-    END LOOP;
-  RETURN Y_out;
-  END FUNCTION SquareRoot;
-
   FUNCTION AnyFrameValid (EtVector : Vector) return BOOLEAN IS
   VARIABLE valid_count : INTEGER := 0;
   BEGIN
@@ -114,76 +91,118 @@ END GlobalET;
   SIGNAL tempfvld3 : BOOLEAN := FALSE;
   SIGNAL tempfvld4 : BOOLEAN := FALSE;
   SIGNAL tempfvld5 : BOOLEAN := FALSE;
+  SIGNAL tempfvld6 : BOOLEAN := FALSE;
 
-  
+  SIGNAL tempdvld1 : BOOLEAN := FALSE;
+
+  SIGNAL tempPx1 : INTEGER := 0;
+  SIGNAL tempPy1 : INTEGER := 0;
+
+  SIGNAL tempPx2 : INTEGER := 0;
+  SIGNAL tempPy2 : INTEGER := 0;
+
+  SIGNAL tempPx3 : INTEGER := 0;
+  SIGNAL tempPy3 : INTEGER := 0;
+
+  SIGNAL tempPx4 : INTEGER := 0;
+  SIGNAL tempPy4 : INTEGER := 0;
+
+  SIGNAL tempPx5 : INTEGER := 0;
+  SIGNAL tempPy5 : INTEGER := 0;
+
+  SIGNAL tempPxSquared : INTEGER := 0;
+  SIGNAL tempPySquared : INTEGER := 0;
+
+  SIGNAL SquareSum : UNSIGNED(31 DOWNTO 0) := (OTHERS => '0');
+  SIGNAL RootSum   : UNSIGNED(15 DOWNTO 0) := (OTHERS => '0');
+  SIGNAL RootSum2   : UNSIGNED(15 DOWNTO 0) := (OTHERS => '0');
+
   BEGIN
+    Sqrt : UnclockedSquareRoot
+    PORT MAP(
+      ValueIn => SquareSum,
+      Result  => RootSum
+    );
+
+
     InputEt <= SectorEtPipeIn( 0 );
     PROCESS( clk )
-      VARIABLE Px : INTEGER := 0;
-      VARIABLE Py : INTEGER := 0;
 
-      VARIABLE tempPx : INTEGER := 0;
-      VARIABLE tempPy : INTEGER := 0;
-      VARIABLE tempPx2 : INTEGER := 0;
-      VARIABLE tempPy2 : INTEGER := 0;
-      VARIABLE tempPx3 : INTEGER := 0;
-      VARIABLE tempPy3 : INTEGER := 0;
+      VARIABLE tempPxSum : INTEGER := 0;
+      VARIABLE tempPySum : INTEGER := 0;
       
-      VARIABLE SquareSum : INTEGER := 0;
-      VARIABLE RootSum   : INTEGER := 0;
-
     BEGIN
       
       IF RISING_EDGE( clk ) THEN
+-- ----------------------------------------------------------------------------------------------
+-- Clock 1
         tempfvld1 <= AnyFrameValid(InputEt);
+        tempdvld1 <= AnyDataValid(InputEt);
+        tempPx1 <= SumPx( InputEt );
+        tempPy1 <= SumPy( InputEt );
+-- ----------------------------------------------------------------------------------------------
+
+-- ----------------------------------------------------------------------------------------------
+-- Clock 2
+        IF tempdvld1 THEN
+          tempPxSum := tempPxSum + tempPx1;
+          tempPySum := tempPySum + tempPy1;
+        ELSE
+          tempPxSum := tempPxSum;
+          tempPySum := tempPySum;
+        END IF;
+      
+        tempPx2 <= tempPxSum;
+        tempPy2 <= tempPySum;
+
         tempfvld2 <= tempfvld1;
+-- ----------------------------------------------------------------------------------------------
+
+-- ----------------------------------------------------------------------------------------------
+-- Clock 3
+        tempPxSquared <= (tempPx2*tempPx2);
+        tempPySquared <= (tempPy2*tempPy2);
+
+        tempPx3 <= tempPx2;
+        tempPy3 <= tempPy2;
         tempfvld3 <= tempfvld2;
+-- ----------------------------------------------------------------------------------------------
+
+-- ----------------------------------------------------------------------------------------------
+-- Clock 4
+        SquareSum <= TO_UNSIGNED((tempPxSquared/4 + tempPySquared/4),32);
+
+        tempPx4 <= tempPx3;
+        tempPy4 <= tempPy3;
         tempfvld4 <= tempfvld3;
+-- ----------------------------------------------------------------------------------------------
+
+-- ----------------------------------------------------------------------------------------------
+-- Clock 5
+        RootSum2 <= RootSum;
+        tempPx5 <= tempPx4;
+        tempPy5 <= tempPy4;
         tempfvld5 <= tempfvld4;
+-- ----------------------------------------------------------------------------------------------
 
-        IF tempfvld5 AND NOT tempfvld4 THEN
-          tempPx := 0;
-          tempPy := 0;
-          tempPx2 := 0;
-          tempPy2 := 0;
-          tempPx3 := 0;
-          tempPy3 := 0;
-          Px := 0;
-          Py := 0;
-          SquareSum := 0;
-          RootSum := 0;
+-- ----------------------------------------------------------------------------------------------
+-- Clock 6
+        tempfvld6 <= tempfvld5;
+
+        IF tempfvld6 AND NOT tempfvld5 THEN
+          tempPxSum := 0;
+          tempPySum := 0;
           Output( 0 ) <= ET.DataType.cNull;
-
-
-        ELSIF AnyDataValid(InputEt) THEN 
-            tempPx := SumPx( InputEt );
-            tempPy := SumPy( InputEt );
-
-            tempPx2 := tempPx2 + tempPx;
-            tempPy2 := tempPy2 + tempPy;
-
-            tempPx3 := tempPx2;
-            tempPy3 := tempPy2;
-            
-            SquareSum := (tempPx2*tempPx2)/4 + (tempPy2*tempPy2)/4;
-
-            Px := tempPx3;
-            Py := tempPy3;
-
-            RootSum := TO_INTEGER(SquareRoot(TO_UNSIGNED(SquareSum,32))*2);
-
-            Output( 0 ) .Px <= TO_SIGNED(Px,16);
-            Output( 0 ) .Py <= TO_SIGNED(Py,16);
-            Output( 0 ) .Et <= TO_UNSIGNED(RootSum,16);
-
+        ELSE
+            Output( 0 ) .Px <= TO_SIGNED(tempPx5,16);
+            Output( 0 ) .Py <= TO_SIGNED(tempPy5,16);
+            Output( 0 ) .Et <= TO_UNSIGNED((TO_INTEGER(RootSum2)*2),16);
         END IF;
         
-        
-        Output( 0 ) .DataValid  <= tempfvld4 AND NOT tempfvld3;
-        Output( 0 ) .FrameValid <= tempfvld4;
+        Output( 0 ) .DataValid  <= tempfvld5 AND NOT tempfvld4;
+        Output( 0 ) .FrameValid <= tempfvld5;
   
       END IF;
-    
   END PROCESS;
 
 -- -------------------------------------------------------------------------

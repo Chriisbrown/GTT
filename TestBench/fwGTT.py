@@ -165,8 +165,8 @@ def fwTrackMET(event,fwpt=True):
             sumpx_sectors[sector] += int(pt*int(TrigLUT[1][:-1])/lut_precision)
             sumpy_sectors[sector] -= int(pt*int(TrigLUT[0][1:])/lut_precision)
 
-  #print(sumpx_sectors)
-  #print(sumpy_sectors)
+  print(sumpx_sectors)
+  print(sumpy_sectors)
 
   sumpx = np.sum(sumpx_sectors)
   sumpy = np.sum(sumpy_sectors)
@@ -185,16 +185,16 @@ def fwTrackMET(event,fwpt=True):
   return MET,MET_phi
   
 
-def emulation(num_events):
+def emulation(num_events,file_name,specific_event=False,specific_id=0):
     num_events = num_events
     print("==== Events ====")
-    events = util.loadDataSingleFile("/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object_300k.root",[0,num_events])
+    events = util.loadDataSingleFile(file_name,[0,num_events])
     print(".... loaded  ....")
     print("==== Vertex ====")
-    cmssw_v = util.loadVertexInformation("/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object_300k.root",num_events=num_events)
+    cmssw_v = util.loadVertexInformation(file_name,num_events=num_events)
     print(".... loaded  ....")
     print("===== MET ======")
-    cmssw_met = util.loadMETInformation("/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object_300k.root",num_events=num_events)
+    cmssw_met = util.loadMETInformation(file_name,num_events=num_events)
     print(".... loaded  ....")
     vertex=np.zeros(len(cmssw_met))
     weight=np.zeros(len(cmssw_met))
@@ -202,44 +202,57 @@ def emulation(num_events):
     MET_phi=np.zeros(len(cmssw_met))
 
 
+    if not specific_event:
+      for i,event in enumerate(events):
+        if i % 100 == 0:
+          print(i,"out of ",num_events)
+        fwInvRLUT(event)
+        printTracks(event,"Debug/emulation/hwuLinksToTTTrack.txt",fwpt=True)
+        printTracks(event,"Debug/emulation/natLinksToTTTrack.txt",hwu=False)
+        vertex[i],weight[i] = fwFastHisto(event,fwpt=True)
 
-    for i,event in enumerate(events):
-      if i % 100 == 0:
-        print(i,"out of ",num_events)
-      fwInvRLUT(event)
-      printTracks(event,"Debug/emulation/hwuLinksToTTTrack.txt",fwpt=True)
-      printTracks(event,"Debug/emulation/natLinksToTTTrack.txt",hwu=False)
-      vertex[i],weight[i] = fwFastHisto(event,fwpt=True)
+        vertex[i] = HWUto("HWUz0",vertex[i])
+        weight[i] = HWUto("Pt",weight[i])
+        fw_associate_tracks = fwTrackToVertex(event,cmssw_v["Pv_z0"].iloc[i])
+        printTracks(fw_associate_tracks,"Debug/emulation/hwuTrackToVertex.txt")
+        fw_selected_tracks = fwTrackSelection(fw_associate_tracks,fwpt=True)
+        printTracks(fw_selected_tracks,"Debug/emulation/hwuTrackSelection.txt")
+        MET[i],MET_phi[i] = fwTrackMET(fw_selected_tracks,fwpt=True)
 
-      vertex[i] = HWUto("HWUz0",vertex[i])
-      weight[i] = HWUto("Pt",weight[i])
-      fw_associate_tracks = fwTrackToVertex(event,vertex[i])
-      printTracks(fw_associate_tracks,"Debug/emulation/hwuTrackToVertex.txt")
-      fw_selected_tracks = fwTrackSelection(fw_associate_tracks,fwpt=True)
-      printTracks(fw_selected_tracks,"Debug/emulation/hwuTrackSelection.txt")
-      MET[i],MET_phi[i] = fwTrackMET(fw_selected_tracks,fwpt=True)
-      
+      cmssw_met = cmssw_met.join(cmssw_v)
+      cmssw_met.insert(0,"EM_Vertex",vertex,True)
+      cmssw_met.insert(1,"EM_Vtx_Weight",weight,True)
+      cmssw_met.insert(2,"EM_MET",MET,True)
+      cmssw_met.insert(3,"EM_MET_phi",MET_phi,True)
+      return cmssw_met
+    
+    else:
+        event = events[specific_id]
+        fwInvRLUT(event)
+        printTracks(event,"Debug/emulation/hwuLinksToTTTrack.txt",fwpt=True)
+        printTracks(event,"Debug/emulation/natLinksToTTTrack.txt",hwu=False)
+        vertex,weight = fwFastHisto(event,fwpt=True)
 
-      '''
-      print("Vertex: ",vertex, "[cm] Vertex Weight: ",weight,"[GeV] MET: ",MET,"[GeV] MET Phi: ",MET_phi,"[rad]")
-      print("PV: ",cmssw_v.iloc[i][0][0]," [cm] FH Vertex: ",cmssw_v.iloc[i][3][0]," [cm] TDR Vertex: ",cmssw_v.iloc[i][2][0]," [cm]")
-      print("MET: ",cmssw_met["TrkMet"].iloc[i], 
-            " [GeV] MET Phi: ",cmssw_met["TrkMetPhi"].iloc[i],
-            " [rad] Cut MET: ",cmssw_met["CutTrkMet"].iloc[i],
-            " [GeV] Cut MET Phi: ",cmssw_met["CutTrkMetPhi"].iloc[i])
-      print("=====================================================")
-      '''
+        vertex = HWUto("HWUz0",vertex)
+        weight = HWUto("Pt",weight)
+        fw_associate_tracks = fwTrackToVertex(event,cmssw_v["Pv_z0"].iloc[specific_id])
+        printTracks(fw_associate_tracks,"Debug/emulation/hwuTrackToVertex.txt")
+        fw_selected_tracks = fwTrackSelection(fw_associate_tracks,fwpt=True)
+        printTracks(fw_selected_tracks,"Debug/emulation/hwuTrackSelection.txt")
+        MET,MET_phi = fwTrackMET(fw_selected_tracks,fwpt=True)
 
-
-    cmssw_met = cmssw_met.join(cmssw_v)
-    cmssw_met.insert(0,"EM_Vertex",vertex,True)
-    cmssw_met.insert(1,"EM_Vtx_Weight",weight,True)
-    cmssw_met.insert(2,"EM_MET",MET,True)
-    cmssw_met.insert(3,"EM_MET_phi",MET_phi,True)
-    return cmssw_met
+        print("Vertex: ",vertex, "[cm] Vertex Weight: ",weight,"[GeV]")
+        print("SW FH: ",cmssw_v["Pv_z0"].iloc[specific_id]," [cm] SW FH Weight: ",cmssw_v["Pv_weight"].iloc[specific_id]," [cm] MC Vertex: ",cmssw_v["MCVertex"].iloc[specific_id]," [cm]")
+        print("MET: ",MET, 
+              " [GeV] MET Phi: ",MET_phi,
+              " [rad] SW MET: ",cmssw_met["TrkMET"].iloc[specific_id],
+              " [GeV] SW MET MC: ",cmssw_met["MCMET"].iloc[specific_id], "[GeV]")
+        print("=====================================================")
 
 if __name__=="__main__":
 
-  cmssw_met = emulation(2)
-  print(cmssw_met[["EM_MET","EM_MET_phi","TrkMET","MCMET"]].head())
-  print(cmssw_met[["EM_Vertex","EM_Vtx_Weight","Pv_z0","Pv_weight","MCVertex"]].head())
+  #cmssw_met = emulation(2,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object.root")
+  #print(cmssw_met[["EM_MET","EM_MET_phi","TrkMET","MCMET"]].head())
+  #print(cmssw_met[["EM_Vertex","EM_Vtx_Weight","Pv_z0","Pv_weight","MCVertex"]].head())
+
+  emulation(970,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object_300k.root",True,967)

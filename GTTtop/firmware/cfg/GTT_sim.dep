@@ -6,6 +6,7 @@ src --vhdl2008 -l GTT modules/ObjectsToLinks.vhd
 src --vhdl2008 -c TrackMET: -l TrackMET modules/GlobalET.vhd
 src --vhdl2008 -c TrackMET: -l TrackMET modules/SectorET.vhd
 src --vhdl2008 -c TrackMET: -l TrackMET modules/ROMConstants.vhd
+src --vhdl2008 -c TrackMET: -l TrackMET modules/UnclockedSquareRoot.vhd
 
 src --vhdl2008 -c RuflCore: -l ET ReuseableElements/Debugger.vhd
 src --vhdl2008 -c RuflCore: -l ET ReuseableElements/DataPipe.vhd

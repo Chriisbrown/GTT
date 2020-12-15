@@ -43,93 +43,117 @@ BEGIN
     SIGNAL tempfvld4 : BOOLEAN := FALSE;
     SIGNAL tempfvld5 : BOOLEAN := FALSE;
 
+    SIGNAL tempdvld1 : BOOLEAN := FALSE;
+    SIGNAL tempdvld2 : BOOLEAN := FALSE;
+    SIGNAL tempdvld3 : BOOLEAN := FALSE;
+    SIGNAL tempdvld4 : BOOLEAN := FALSE;
+
+    SIGNAL GlobalPhi1 : INTEGER := 0;
+    SIGNAL GlobalPhi2 : INTEGER := 0;
+
+    SIGNAL tempPt1 : INTEGER := 0;
+    SIGNAL tempPt2 : INTEGER := 0;
+    SIGNAL tempPt3 : INTEGER := 0;
+
+    SIGNAL tempPhix : INTEGER := 0;
+    SIGNAL tempPhiy : INTEGER := 0;
+
+    SIGNAL tempPx : INTEGER := 0;
+    SIGNAL tempPy : INTEGER := 0;
+
   BEGIN
     l1TTTrack <= TTTrackPipeIn( 0 )( i );
 
     PROCESS( clk )
-    
-    VARIABLE GlobalPhi2 : INTEGER := 0;
-    VARIABLE GlobalPhi : INTEGER := 0;
-
-    VARIABLE tempPt : INTEGER := 0;
-    VARIABLE tempPt2 : INTEGER := 0;
-    VARIABLE tempPx : INTEGER := 0;
-    VARIABLE tempPy : INTEGER := 0;
-    VARIABLE tempPhix : INTEGER := 0;
-    VARIABLE tempPhiy : INTEGER := 0;
-
-    VARIABLE SumPx : INTEGER := 0;
-    VARIABLE SumPy : INTEGER := 0;
-
+      VARIABLE sumPx : INTEGER := 0;
+      VARIABLE sumPy : INTEGER := 0;
     BEGIN
       
       IF RISING_EDGE( clk ) THEN
+
+-- ----------------------------------------------------------------------------------------------
+-- Clock 1
         tempfvld1 <= l1TTTrack.FrameValid;
+        tempdvld1 <= l1TTTrack.DataValid;
+        GlobalPhi1 <= TO_INTEGER(l1TTTrack.phi) + Phi_shift(i) - 1024; 
+        tempPt1 <= TO_INTEGER(l1TTTrack.PT);
+-- ----------------------------------------------------------------------------------------------
+
+-- ----------------------------------------------------------------------------------------------
+-- Clock 2
+        IF GlobalPhi1 < 0 THEN
+          GlobalPhi2 <= GlobalPhi1 + 6268;
+        ELSIF GlobalPhi1 > 6268 THEN
+          GlobalPhi2 <= GlobalPhi1 - 6268; 
+        ELSE
+          GlobalPhi2 <= GlobalPhi1;
+        END IF;
+
         tempfvld2 <= tempfvld1;
+        tempdvld2 <= tempdvld1;
+        tempPt2 <= tempPt1;
+
+-- ----------------------------------------------------------------------------------------------
+
+-- ----------------------------------------------------------------------------------------------
+-- Clock 3
+        IF GlobalPhi2 >= 0 AND GlobalPhi2 < 1567 THEN
+            tempPhix <= TrigArray(GlobalPhi2)(0);  
+            tempPhiy <= TrigArray(GlobalPhi2)(1); 
+              
+        ELSIF GlobalPhi2 >= 1567 AND GlobalPhi2 < 3134 THEN
+            tempPhix <= -TrigArray(GlobalPhi2-1567)(1); 
+            tempPhiy <= TrigArray(GlobalPhi2-1567)(0); 
+
+        ELSIF GlobalPhi2 >= 3134 AND GlobalPhi2 < 4701 THEN
+            tempPhix <= -TrigArray(GlobalPhi2-3134)(0);  
+            tempPhiy <= -TrigArray(GlobalPhi2-3134)(1); 
+
+        ELSIF GlobalPhi2 >= 4701 AND GlobalPhi2 < 6268 THEN
+            tempPhix <= TrigArray(GlobalPhi2-4701)(1); 
+            tempPhiy <= -TrigArray(GlobalPhi2-4701)(0); 
+        END IF;
+
         tempfvld3 <= tempfvld2;
+        tempdvld3 <= tempdvld2;
+        tempPt3 <= tempPt2;
+-- ----------------------------------------------------------------------------------------------
+
+-- ----------------------------------------------------------------------------------------------
+-- Clock 4
+        tempPx <= (tempPhix * tempPt3)/2**11;
+        tempPy <= (tempPhiy * tempPt3)/2**11;
         tempfvld4 <= tempfvld3;
+        tempdvld4 <= tempdvld3;
+
+-- ----------------------------------------------------------------------------------------------
+
+-- ----------------------------------------------------------------------------------------------
+-- Clock 5
         tempfvld5 <= tempfvld4;
 
+        IF tempdvld4 THEN
+          SumPx := SumPx + tempPx;
+          SumPy := SumPy + tempPy;
+        ELSE
+          SumPx := SumPx;
+          SumPy := SumPy;
+        END IF;
+
+
         IF tempfvld5 AND NOT tempfvld4 THEN
-          GlobalPhi := 0;
-          GlobalPhi2 := 0;
-          tempPhix := 0;
-          tempPhiy := 0;
-          tempPt := 0;
-          tempPt2 := 0;
-          tempPx := 0;
-          tempPy := 0;
           SumPx := 0;
           SumPy := 0;
           Output( i ) <= ET.DataType.cNull;
-
-        
-        ELSIF l1TTTrack.DataValid THEN
-          GlobalPhi := TO_INTEGER(l1TTTrack.phi) + Phi_shift(i) - 1024; 
-          tempPt := TO_INTEGER(l1TTTrack.PT);
-          
-            
-          IF GlobalPhi < 0 THEN
-            GlobalPhi2 := GlobalPhi + 6268;
-          ELSIF GlobalPhi > 6268 THEN
-            GlobalPhi2 := GlobalPhi - 6268; 
-          ELSE
-            GlobalPhi2 := GlobalPhi;
-          END IF;
-
-          tempPt2 := tempPt;
-
-          IF GlobalPhi2 >= 0 AND GlobalPhi2 < 1567 THEN
-              tempPhix := TrigArray(GlobalPhi2)(0);  
-              tempPhiy := TrigArray(GlobalPhi2)(1); 
-            
-          ELSIF GlobalPhi2 >= 1567 AND GlobalPhi2 < 3134 THEN
-              tempPhix := -TrigArray(GlobalPhi2-1567)(1); 
-              tempPhiy := TrigArray(GlobalPhi2-1567)(0); 
-
-          ELSIF GlobalPhi2 >= 3134 AND GlobalPhi2 < 4701 THEN
-              tempPhix := -TrigArray(GlobalPhi2-3134)(0);  
-              tempPhiy := -TrigArray(GlobalPhi2-3134)(1); 
-
-          ELSIF GlobalPhi2 >= 4701 AND GlobalPhi2 < 6268 THEN
-              tempPhix := TrigArray(GlobalPhi2-4701)(1); 
-              tempPhiy := -TrigArray(GlobalPhi2-4701)(0); 
-          END IF;
-
-          tempPx := (tempPhix * tempPt2)/2**11;
-          tempPy := (tempPhiy * tempPt2)/2**11;
-          
-          SumPx := SumPx + tempPx;
-          SumPy := SumPy + tempPy;
-
+        ELSE
           Output( i ) .Px <= TO_SIGNED(SumPx,16);
           Output( i ) .Py <=  TO_SIGNED(SumPy,16);
           Output( i ) .Sector <=  TO_UNSIGNED(i/2,4);
-
         END IF;
 
-      Output( i ) .FrameValid <= tempfvld4;
-      Output( i ) .DataValid  <= tempfvld4 AND NOT tempfvld3;
+        Output( i ) .DataValid  <= tempfvld4 AND NOT tempfvld3;
+        Output( i ) .FrameValid <= tempfvld4;
+  
       END IF;
     END PROCESS;
   END GENERATE;
