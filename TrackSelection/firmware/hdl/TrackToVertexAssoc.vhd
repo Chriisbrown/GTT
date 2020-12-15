@@ -33,9 +33,14 @@ ARCHITECTURE rtl OF TrackToVertexAssoc IS
 BEGIN
   g1              : FOR i IN 0 TO 17 GENERATE
     SIGNAL l1TTTrack      : TTTrack.DataType.tData := TTTrack.DataType.cNull;
+
     SIGNAL tmp_trk : TTTrack.DataType.tData := TTTrack.DataType.cNull;
     SIGNAL tmp_trk2 : TTTrack.DataType.tData := TTTrack.DataType.cNull;
+    SIGNAL tmp_trk3 : TTTrack.DataType.tData := TTTrack.DataType.cNull;
+
     SIGNAL tmp_z : INTEGER := 0;
+    SIGNAL tmp_z2 : INTEGER := 0;
+
     SIGNAL tmp_eta : INTEGER := 0;
     SIGNAL temp_vld : BOOLEAN := FALSE;
     SIGNAL delta_z : INTEGER := 0;
@@ -64,35 +69,40 @@ BEGIN
 -- ----------------------------------------------------------------------------------------------
 -- Clock 2
           
-        IF tmp_trk.DataValid THEN
-          IF tmp_eta >= 32768 AND tmp_eta < 41443 THEN
-            delta_z <= 3;
-          ELSIF tmp_eta >= 41443 AND tmp_eta < 45161 THEN
-            delta_z <= 5;
-          ELSIF tmp_eta >= 45161 AND tmp_eta < 47639 THEN
-            delta_z <= 6;
-          ELSIF tmp_eta >= 47639 AND tmp_eta < 52596 THEN
-            delta_z <= 8;
-          ELSIF tmp_eta >= 52596 AND tmp_eta < 57554 THEN
-            delta_z <= 14;
-          ELSIF tmp_eta >= 57554 AND tmp_eta <= 62511 THEN
-            delta_z <= 19;
-          ELSE
-            delta_z <= 0;
-          END IF;
+        IF tmp_eta >= 32768 AND tmp_eta < 41443 THEN
+          delta_z <= 3;
+        ELSIF tmp_eta >= 41443 AND tmp_eta < 45161 THEN
+          delta_z <= 5;
+        ELSIF tmp_eta >= 45161 AND tmp_eta < 47639 THEN
+          delta_z <= 6;
+        ELSIF tmp_eta >= 47639 AND tmp_eta < 52596 THEN
+          delta_z <= 8;
+        ELSIF tmp_eta >= 52596 AND tmp_eta < 57554 THEN
+          delta_z <= 14;
+        ELSIF tmp_eta >= 57554 AND tmp_eta <= 62511 THEN
+          delta_z <= 19;
+        ELSE
+          delta_z <= 0;
+        END IF;
         tmp_trk2 <= tmp_trk;
         tmp_z2 <= tmp_z;
 -- ----------------------------------------------------------------------------------------------
           
 -- ----------------------------------------------------------------------------------------------
 -- Clock 3
-        IF abs(tmp_z2 - TO_INTEGER(tmp_trk2.PV)) < delta_z THEN
-            temp_vld <= TRUE; 
-          ELSE
-            temp_vld <= FALSE;
-        END IF;  
+        IF tmp_trk2.DataValid THEN
+          IF abs(tmp_z2 - TO_INTEGER(tmp_trk2.PV)) < delta_z THEN
+              temp_vld <= TRUE; 
+            ELSE
+              temp_vld <= FALSE;
+          END IF;  
+        ELSE
+          temp_vld <= FALSE;
+        END IF;
 
-      Output( i ) <= tmp_trk2;
+        tmp_trk3 <= tmp_trk2;
+
+      Output( i ) <= tmp_trk3;
       Output( i ).DataValid <= temp_vld;
       Output( i ).PrimaryTrack <= temp_vld;
 -- ----------------------------------------------------------------------------------------------

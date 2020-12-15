@@ -21,7 +21,7 @@ USE IEEE.STD_LOGIC_TEXTIO.ALL;
 
 -- -------------------------------------------------------------------------
 PACKAGE debugging IS
-  CONSTANT Path                 : STRING            := "../../../../DebugFiles/";
+  CONSTANT Path                 : STRING            := "./Debug/";
   SIGNAL SimulationClockCounter : INTEGER           := -1;
   SIGNAL TimeStamp              : STRING( 1 TO 28 ) := ( OTHERS => '-' );
 END PACKAGE debugging;

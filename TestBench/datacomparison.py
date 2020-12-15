@@ -6,11 +6,11 @@ import matplotlib.pyplot as plt
 import mplhep as hep
 plt.style.use(hep.cms.style.ROOT)
 
-emulation_df = emulation(1000,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object_300k.root")
+emulation_df = emulation(98,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object_300k.root")
 print(".........Emulated...........")
-simulation_df = simulation(1000,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object_300k.root")
+simulation_df = simulation(98,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object_300k.root")
 print("........Simulated...........")
-fw_sim_df = fw_sim_reader(1000)
+fw_sim_df = fw_sim_reader(98)
 print(".....FPGA file read.........")
 
 MET_df_old = emulation_df[["EM_MET","EM_MET_phi"]].join(simulation_df[["SW_MET","SW_MET_phi","TrkMET","MCMET"]])

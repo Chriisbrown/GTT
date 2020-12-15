@@ -165,8 +165,8 @@ def fwTrackMET(event,fwpt=True):
             sumpx_sectors[sector] += int(pt*int(TrigLUT[1][:-1])/lut_precision)
             sumpy_sectors[sector] -= int(pt*int(TrigLUT[0][1:])/lut_precision)
 
-  print(sumpx_sectors)
-  print(sumpy_sectors)
+  #print(sumpx_sectors)
+  #print(sumpy_sectors)
 
   sumpx = np.sum(sumpx_sectors)
   sumpy = np.sum(sumpy_sectors)
@@ -255,4 +255,4 @@ if __name__=="__main__":
   #print(cmssw_met[["EM_MET","EM_MET_phi","TrkMET","MCMET"]].head())
   #print(cmssw_met[["EM_Vertex","EM_Vtx_Weight","Pv_z0","Pv_weight","MCVertex"]].head())
 
-  emulation(970,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object_300k.root",True,967)
+  emulation(62,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object.root",True,61)

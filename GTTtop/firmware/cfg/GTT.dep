@@ -38,6 +38,7 @@ src --vhdl2008 -c TrackMET: -l ET track/PkgArrayTypes.vhd
 src --vhdl2008 -c TrackMET: -l ET track/DataPipe.vhd
 src --vhdl2008 -c TrackMET: -l ET track/Debugger.vhd
 
+src --vhdl2008 -c TrackMET: -l TrackMET modules/UnclockedSquareRoot.vhd
 src --vhdl2008 -c TrackMET: -l TrackMET modules/ROMConstants.vhd
 src --vhdl2008 -c TrackMET: -l TrackMET modules/SectorET.vhd
 src --vhdl2008 -c TrackMET: -l TrackMET modules/GlobalET.vhd

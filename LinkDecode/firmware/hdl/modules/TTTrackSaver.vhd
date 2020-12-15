@@ -27,31 +27,25 @@ END TTTrackSaver;
 ARCHITECTURE rtl OF TTTrackSaver IS
   
   SIGNAL Output       : TTTrack.ArrayTypes.Vector( 0 TO 17 ) := TTTrack.ArrayTypes.NullVector( 18 );
-  SIGNAL Input        : TTTrack.ArrayTypes.Vector( 0 TO 17 ) := TTTrack.ArrayTypes.NullVector( 18 );
+  SIGNAL Input, NextTrackIn : TTTrack.ArrayTypes.Vector( 0 TO 17 ) := TTTrack.ArrayTypes.NullVector( 18 );
 
   SUBTYPE tAddress        IS INTEGER RANGE 0 TO 511;
   TYPE tAddressArray      IS ARRAY( 0 TO 17 ) OF tAddress;
-  TYPE TrackTotal IS ARRAY(0 TO 2) OF INTEGER;
 
   SIGNAL WriteAddr    : tAddressArray      := ( OTHERS => 0 );
   SIGNAL ReadAddr     : tAddressArray      := ( OTHERS => 0 );
 
-  
-
 
 BEGIN
 
-Input <= TTTrackPipeIn(0);
-
+Input <= TTTrackPipeIn(1);
+NextTrackIn <= TTTrackPipeIn(0);
 
 g1 : FOR i IN 0 TO 17 GENERATE
   SIGNAL OutTrack : TTTrack.DataType.tData := TTTrack.DataType.cNull;
   SIGNAL PrimaryVertex : UNSIGNED( 7 DOWNTO 0 ) := "00000000" ;
   SIGNAL Temp_vld : BOOLEAN := FALSE;
   
-  
-
-
 BEGIN 
   RAM : ENTITY TTTrack.DataRam
   PORT MAP(
@@ -65,8 +59,9 @@ BEGIN
 
   PROCESS( clk )
   VARIABLE ReadTracks : INTEGER := 0;
-  VARIABLE TrackTotals : TrackTotal := (OTHERS => 0); 
   VARIABLE Reading : BOOLEAN := FALSE;
+  VARIABLE ReadTotal : INTEGER := 0;
+  VARIABLE WriteTotal : INTEGER := 0;
 
 
 
@@ -75,16 +70,15 @@ BEGIN
       IF( Input( i ).FrameValid) THEN
         IF( Input( i ) .DataValid ) THEN
           WriteAddr( i ) <= (WriteAddr( i ) + 1 ) MOD 512;
-          TrackTotals(0) := TrackTotals(0) + 1;
-          TrackTotals(1) := TrackTotals(0);
+          WriteTotal <= WriteTotal + 1;
         END IF;
-
-      ELSE
-        TrackTotals(2) := TrackTotals(1);
-        TrackTotals(0) := 0;
       END IF;
 
-
+      IF (  Input( i ).FrameValid AND NOT NextTrackIn( i ) .FrameValid) THEN
+        ReadTotal <= WriteTotal;
+        WriteTotal <= 0;
+      END IF;
+        
       IF (PrimaryVertexPipeIn( 0 )( 0 ).DataValid) THEN
         PrimaryVertex <= PrimaryVertexPipeIn( 0 )( 0 ).Z0;
         ReadTracks := 0;
@@ -92,19 +86,18 @@ BEGIN
       END IF;
 
       
-      IF ReadTracks < TrackTotals( 2 ) THEN
+      IF ReadTracks < ReadTotal THEN
         IF Reading THEN
           ReadAddr( i ) <= (ReadAddr( i ) + 1)  MOD 512;
-          ReadTracks := ReadTracks + 1;
-          Temp_vld <= True;
-          
-          
+          ReadTracks <= ReadTracks + 1;
+          Temp_vld <= True;  
         END IF;
+
       ELSE
         Reading := FALSE;
         Temp_vld <= FALSE;
+        ReadTotal <= 0;
 
- 
       END IF;
 
       Output( i ) <= OutTrack;

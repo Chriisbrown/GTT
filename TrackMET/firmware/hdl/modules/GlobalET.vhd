@@ -117,6 +117,13 @@ END GlobalET;
   SIGNAL RootSum   : UNSIGNED(15 DOWNTO 0) := (OTHERS => '0');
   SIGNAL RootSum2   : UNSIGNED(15 DOWNTO 0) := (OTHERS => '0');
 
+  COMPONENT UnclockedSquareRoot IS
+  PORT(
+    ValueIn   : IN UNSIGNED ( 31 DOWNTO 0 ) := ( OTHERS => '0' );
+    Result : OUT UNSIGNED ( 15 DOWNTO 0 ) := ( OTHERS => '0' )
+  );
+END COMPONENT UnclockedSquareRoot;
+
   BEGIN
     Sqrt : UnclockedSquareRoot
     PORT MAP(
