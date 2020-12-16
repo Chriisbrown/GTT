@@ -51,7 +51,7 @@ BEGIN
     VARIABLE s : LINE;
   BEGIN
     IF RISING_EDGE( clk ) THEN
-      IF SimulationClockCounter < 0 THEN
+      --IF SimulationClockCounter < 0 THEN
         WRITE( s , FileName );
         WRITE( s , STRING' ( "     |     " ) );
         WRITE( s , TimeStamp );
@@ -61,7 +61,7 @@ BEGIN
         WRITE( s , STRING' ( "Index" ) , RIGHT , 15 );
         WRITE( s , WriteHeader );
         WRITELINE( f , s );
-      ELSE
+      --ELSE
         FOR i IN DataIn'RANGE LOOP
           IF DataIn( i ) .DataValid THEN
             WRITE( s , SimulationClockCounter , RIGHT , 15 );
@@ -70,7 +70,7 @@ BEGIN
             WRITELINE( f , s );
           END IF;
         END LOOP;
-      END IF;
+      --END IF;
     END IF;
   END PROCESS;
 -- pragma synthesis_on    

@@ -14,7 +14,7 @@ USE Utilities.Utilities.ALL;
 
 LIBRARY TrackMET;
 USE TrackMET.ROMConstants.all;
-USE TrackMET.UnclockedSquareRoot;
+USE TrackMET.CordicSqrt;
 
 -- -------------------------------------------------------------------------
 ENTITY GlobalET IS
@@ -92,43 +92,55 @@ END GlobalET;
   SIGNAL tempfvld4 : BOOLEAN := FALSE;
   SIGNAL tempfvld5 : BOOLEAN := FALSE;
   SIGNAL tempfvld6 : BOOLEAN := FALSE;
+  SIGNAL tempfvld7 : BOOLEAN := FALSE;
+  SIGNAL tempfvld8 : BOOLEAN := FALSE;
+  SIGNAL tempfvld9 : BOOLEAN := FALSE;
+  SIGNAL tempfvld10 : BOOLEAN := FALSE;
 
   SIGNAL tempdvld1 : BOOLEAN := FALSE;
 
   SIGNAL tempPx1 : INTEGER := 0;
   SIGNAL tempPy1 : INTEGER := 0;
-
   SIGNAL tempPx2 : INTEGER := 0;
   SIGNAL tempPy2 : INTEGER := 0;
-
   SIGNAL tempPx3 : INTEGER := 0;
   SIGNAL tempPy3 : INTEGER := 0;
-
   SIGNAL tempPx4 : INTEGER := 0;
   SIGNAL tempPy4 : INTEGER := 0;
-
   SIGNAL tempPx5 : INTEGER := 0;
   SIGNAL tempPy5 : INTEGER := 0;
+  SIGNAL tempPx6 : INTEGER := 0;
+  SIGNAL tempPy6 : INTEGER := 0;
+  SIGNAL tempPx7 : INTEGER := 0;
+  SIGNAL tempPy7 : INTEGER := 0;
+  SIGNAL tempPx8 : INTEGER := 0;
+  SIGNAL tempPy8 : INTEGER := 0;
+  SIGNAL tempPx9 : INTEGER := 0;
+  SIGNAL tempPy9 : INTEGER := 0;
 
-  SIGNAL tempPxSquared : INTEGER := 0;
-  SIGNAL tempPySquared : INTEGER := 0;
+  SIGNAL RootSum   : SIGNED(15 DOWNTO 0) := (OTHERS => '0');
 
-  SIGNAL SquareSum : UNSIGNED(31 DOWNTO 0) := (OTHERS => '0');
-  SIGNAL RootSum   : UNSIGNED(15 DOWNTO 0) := (OTHERS => '0');
-  SIGNAL RootSum2   : UNSIGNED(15 DOWNTO 0) := (OTHERS => '0');
+  SIGNAL tempPxSum : INTEGER := 0;
+  SIGNAL tempPySum : INTEGER := 0;
 
-  COMPONENT UnclockedSquareRoot IS
+  COMPONENT CordicSqrt IS
+  GENERIC(n_steps : NATURAL RANGE 1 TO 8 := 4);
   PORT(
-    ValueIn   : IN UNSIGNED ( 31 DOWNTO 0 ) := ( OTHERS => '0' );
-    Result : OUT UNSIGNED ( 15 DOWNTO 0 ) := ( OTHERS => '0' )
+    clk  : IN STD_LOGIC; -- clock
+    Xin  : IN SIGNED ( 15 DOWNTO 0 )  := ( OTHERS => '0' );
+    Yin  : IN SIGNED ( 15 DOWNTO 0 )  := ( OTHERS => '0' );
+    Root : OUT SIGNED ( 15 DOWNTO 0 ) := ( OTHERS => '0' )
   );
-END COMPONENT UnclockedSquareRoot;
+END COMPONENT CordicSqrt;
 
   BEGIN
-    Sqrt : UnclockedSquareRoot
+    Sqrt : CordicSqrt
+    GENERIC MAP (n_steps => 4)
     PORT MAP(
-      ValueIn => SquareSum,
-      Result  => RootSum
+      clk => clk,
+      Xin => TO_SIGNED(tempPx2,16),
+      Yin => TO_SIGNED(tempPy2,16),
+      Root  => RootSum
     );
 
 
@@ -159,55 +171,72 @@ END COMPONENT UnclockedSquareRoot;
           tempPySum := tempPySum;
         END IF;
       
+  
         tempPx2 <= tempPxSum;
         tempPy2 <= tempPySum;
-
         tempfvld2 <= tempfvld1;
 -- ----------------------------------------------------------------------------------------------
-
+-- CORDIC BEGINS for 5 Clocks
 -- ----------------------------------------------------------------------------------------------
 -- Clock 3
-        tempPxSquared <= (tempPx2*tempPx2);
-        tempPySquared <= (tempPy2*tempPy2);
-
         tempPx3 <= tempPx2;
         tempPy3 <= tempPy2;
         tempfvld3 <= tempfvld2;
 -- ----------------------------------------------------------------------------------------------
-
 -- ----------------------------------------------------------------------------------------------
 -- Clock 4
-        SquareSum <= TO_UNSIGNED((tempPxSquared/4 + tempPySquared/4),32);
-
         tempPx4 <= tempPx3;
         tempPy4 <= tempPy3;
         tempfvld4 <= tempfvld3;
 -- ----------------------------------------------------------------------------------------------
-
 -- ----------------------------------------------------------------------------------------------
 -- Clock 5
-        RootSum2 <= RootSum;
         tempPx5 <= tempPx4;
         tempPy5 <= tempPy4;
         tempfvld5 <= tempfvld4;
 -- ----------------------------------------------------------------------------------------------
-
 -- ----------------------------------------------------------------------------------------------
 -- Clock 6
+        tempPx6 <= tempPx5;
+        tempPy6 <= tempPy5;
         tempfvld6 <= tempfvld5;
+-- ----------------------------------------------------------------------------------------------
+-- ----------------------------------------------------------------------------------------------
+-- Clock 7
+        tempPx7 <= tempPx6;
+        tempPy7 <= tempPy6;
+        tempfvld7 <= tempfvld6;
+-- ----------------------------------------------------------------------------------------------
+-- ----------------------------------------------------------------------------------------------
+-- Clock 8
+        tempPx8 <= tempPx7;
+        tempPy8 <= tempPy7;
+        tempfvld8 <= tempfvld7;
+-- ----------------------------------------------------------------------------------------------
+-- ----------------------------------------------------------------------------------------------
+-- Clock 9
+        tempPx9 <= tempPx8;
+        tempPy9 <= tempPy8;
+        tempfvld9 <= tempfvld8;
+-- ----------------------------------------------------------------------------------------------
 
-        IF tempfvld6 AND NOT tempfvld5 THEN
+-- ----------------------------------------------------------------------------------------------
+-- Clock 10
+        tempfvld10 <= tempfvld9;
+
+        IF tempfvld10 AND NOT tempfvld9 THEN
           tempPxSum := 0;
           tempPySum := 0;
           Output( 0 ) <= ET.DataType.cNull;
         ELSE
-            Output( 0 ) .Px <= TO_SIGNED(tempPx5,16);
-            Output( 0 ) .Py <= TO_SIGNED(tempPy5,16);
-            Output( 0 ) .Et <= TO_UNSIGNED((TO_INTEGER(RootSum2)*2),16);
+            Output( 0 ) .Px <= TO_SIGNED(tempPx9,16);
+            Output( 0 ) .Py <= TO_SIGNED(tempPy9,16);
+            Output( 0 ) .Et <= UNSIGNED(RootSum);
+            
         END IF;
         
-        Output( 0 ) .DataValid  <= tempfvld5 AND NOT tempfvld4;
-        Output( 0 ) .FrameValid <= tempfvld5;
+        Output( 0 ) .DataValid  <= tempfvld9 AND NOT tempfvld8;
+        Output( 0 ) .FrameValid <= tempfvld9;
   
       END IF;
   END PROCESS;

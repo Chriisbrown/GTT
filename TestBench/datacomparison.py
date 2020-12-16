@@ -19,7 +19,7 @@ MET_df_old.insert(0,"fw_MET",fw_sim_df["fw_MET"],True)
 vtx_df = fw_sim_df[["fw_z0","fw_z0_weight"]].join(emulation_df[["EM_Vertex","EM_Vtx_Weight"]].join(simulation_df[["SW_Vertex","SW_Vtx_Weight","Pv_z0","Pv_weight","MCVertex"]]))
 
 
-
+print(vtx_df.head())
 #for i in range(len(MET_df_old)):
 #  print(MET_df_old[["EM_MET","fw_MET"]].iloc[i])
   #print(vtx_df.iloc[i])

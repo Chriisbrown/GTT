@@ -33,21 +33,24 @@ def fwInvRLUT(event):
 def fwFastHisto(event, ret_all=False, weight='pt',fwpt=True):
   ''' Return the index and weight of the maximum bin '''
   bins = range(TrackWord_config['HWUz0']['nbins'])
-  z0 = [toHWU('HWUz0',z) for z in event['z0']]
+  z0 = []
+
+  for i in range(len(event["z0"])):
+    z = toHWU('Z0',event["z0"][i])
+    if np.signbit(z[1]):
+      z0.append(-z[0]*8 - int(z[0]/2) + int(z[1]/8) + int(z[1]/64) + 128 )  #fw estimate
+    else:
+      z0.append( z[0]*8 + int(z[0]/2) + int(z[1]/8) + int(z[1]/64) + 128 )    #fw estimate
+
   if fwpt:
     weight = event["fwPt"]
   else:
     weight = [toHWU( "Pt",p) for p in event[ "pt"]]
   h, b = np.histogram(z0, bins=bins, weights=weight)
-  mid_bin = TrackWord_config['HWUz0']['nbins']/2
-  if b[h.argmax()] > mid_bin:
-    sign = 1
-  else: 
-    sign = -1
 
   if ret_all:
     return b, h
-  return (b[h.argmax()])-sign, h.max()
+  return (b[h.argmax()]), h.max()
 
 def fwTrackToVertex(event,vertex):
     in_window = []
@@ -68,9 +71,9 @@ def fwTrackToVertex(event,vertex):
 
         z0 = toHWU('Z0',event["z0"][i])
         if np.signbit(z0[1]):
-          HWUz = int( -z0[0]*8 - z0[0]/2 + z0[1]/8 + z0[1]/64 + 128 )  #fw estimate
+          HWUz =  -z0[0]*8 - int(z0[0]/2) + int(z0[1]/8) + int(z0[1]/64) + 128   #fw estimate
         else:
-          HWUz = int( z0[0]*8 + z0[0]/2 + z0[1]/8 + z0[1]/64 + 128 )   #fw estimate
+          HWUz = z0[0]*8 + int(z0[0]/2) + int(z0[1]/8) + int(z0[1]/64) + 128    #fw estimate
 
         #HWUz = round(sign*(abs(z0[0]*255/(30)) + z0[1]*255/(63*30)) + 255/2)  #true fw
         bin_width = 30/(2**8-1)
@@ -213,7 +216,7 @@ def emulation(num_events,file_name,specific_event=False,specific_id=0):
 
         vertex[i] = HWUto("HWUz0",vertex[i])
         weight[i] = HWUto("Pt",weight[i])
-        fw_associate_tracks = fwTrackToVertex(event,cmssw_v["Pv_z0"].iloc[i])
+        fw_associate_tracks = fwTrackToVertex(event,vertex[i])
         printTracks(fw_associate_tracks,"Debug/emulation/hwuTrackToVertex.txt")
         fw_selected_tracks = fwTrackSelection(fw_associate_tracks,fwpt=True)
         printTracks(fw_selected_tracks,"Debug/emulation/hwuTrackSelection.txt")
@@ -235,7 +238,7 @@ def emulation(num_events,file_name,specific_event=False,specific_id=0):
 
         vertex = HWUto("HWUz0",vertex)
         weight = HWUto("Pt",weight)
-        fw_associate_tracks = fwTrackToVertex(event,cmssw_v["Pv_z0"].iloc[specific_id])
+        fw_associate_tracks = fwTrackToVertex(event,vertex)
         printTracks(fw_associate_tracks,"Debug/emulation/hwuTrackToVertex.txt")
         fw_selected_tracks = fwTrackSelection(fw_associate_tracks,fwpt=True)
         printTracks(fw_selected_tracks,"Debug/emulation/hwuTrackSelection.txt")
@@ -255,4 +258,4 @@ if __name__=="__main__":
   #print(cmssw_met[["EM_MET","EM_MET_phi","TrkMET","MCMET"]].head())
   #print(cmssw_met[["EM_Vertex","EM_Vtx_Weight","Pv_z0","Pv_weight","MCVertex"]].head())
 
-  emulation(62,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object.root",True,61)
+  emulation(1,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object.root",True,0)
