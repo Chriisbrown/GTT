@@ -6,11 +6,11 @@ import matplotlib.pyplot as plt
 import mplhep as hep
 plt.style.use(hep.cms.style.ROOT)
 
-emulation_df = emulation(98,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object_300k.root")
+emulation_df = emulation(1000,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object_300k.root")
 print(".........Emulated...........")
-simulation_df = simulation(98,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object_300k.root")
+simulation_df = simulation(1000,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object_300k.root")
 print("........Simulated...........")
-fw_sim_df = fw_sim_reader(98)
+fw_sim_df = fw_sim_reader(1000)
 print(".....FPGA file read.........")
 
 MET_df_old = emulation_df[["EM_MET","EM_MET_phi"]].join(simulation_df[["SW_MET","SW_MET_phi","TrkMET","MCMET"]])
@@ -26,13 +26,14 @@ print(vtx_df.head())
 MET_df_old2 = MET_df_old[MET_df_old["TrkMET"] < 1000]#375]
 MET_df = MET_df_old2[MET_df_old2["fw_MET"] < 1000]#600]
 
-MET_df["MET_EM_error"] = MET_df["fw_MET"] - MET_df["EM_MET"]
-MET_df["VTX_EM_error"] = vtx_df["fw_z0"] - vtx_df["EM_Vertex"]
+MET_df["MET_EM_error"] = abs(MET_df["fw_MET"] - MET_df["EM_MET"])
+MET_df["VTX_EM_error"] = abs(vtx_df["fw_z0"] - vtx_df["EM_Vertex"])
 
-MET_df["MET_SW_error"] = MET_df["fw_MET"] - MET_df["SW_MET"]
-MET_df["VTX_SW_error"] = vtx_df["fw_z0"] - vtx_df["SW_Vertex"]
+MET_df["MET_SW_error"] = abs(MET_df["fw_MET"] - MET_df["SW_MET"])
+MET_df["VTX_SW_error"] = abs(vtx_df["fw_z0"] - vtx_df["SW_Vertex"])
 
 print(MET_df.nlargest(10,'MET_EM_error'))
+print(MET_df.nlargest(10,'VTX_EM_error'))
 
 name = "performance_plots/indepth/"
 
@@ -198,7 +199,7 @@ plt.savefig(name+"metsimvsemul.png")
 #=================================================================================================#
 
 #==========================================Error Correlation =====================================#
-
+'''
 fig,ax = plt.subplots(1,2,figsize=(18,9))
 
 ax[0].tick_params(axis='x', labelsize=16)
@@ -225,3 +226,4 @@ ax[1].scatter(MET_df["MET_EM_error"]/MET_df["fw_MET"],MET_df["VTX_EM_error"]/vtx
 ax[1].grid()
 plt.tight_layout()
 plt.savefig(name+"errorcorrelations.png")
+'''

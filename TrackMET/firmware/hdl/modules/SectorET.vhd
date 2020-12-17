@@ -51,15 +51,20 @@ BEGIN
     SIGNAL GlobalPhi1 : INTEGER := 0;
     SIGNAL GlobalPhi2 : INTEGER := 0;
 
-    SIGNAL tempPt1 : INTEGER := 0;
-    SIGNAL tempPt2 : INTEGER := 0;
-    SIGNAL tempPt3 : INTEGER := 0;
+    SIGNAL tempPt1 : UNSIGNED( 15 DOWNTO 0 ) := ( OTHERS => '0' );
+    SIGNAL tempPt2 : UNSIGNED( 15 DOWNTO 0 ) := ( OTHERS => '0' );
+    SIGNAL tempPt3 : UNSIGNED( 15 DOWNTO 0 ) := ( OTHERS => '0' );
 
-    SIGNAL tempPhix : INTEGER := 0;
-    SIGNAL tempPhiy : INTEGER := 0;
+    SIGNAL tempPhix : UNSIGNED( 11 DOWNTO 0 ) := ( OTHERS => '0' );
+    SIGNAL tempPhiy : UNSIGNED( 11 DOWNTO 0 ) := ( OTHERS => '0' );
 
-    SIGNAL tempPx : INTEGER := 0;
-    SIGNAL tempPy : INTEGER := 0;
+    SIGNAL PhixSign : BOOLEAN := FALSE;
+    SIGNAL PhiySign : BOOLEAN := FALSE;
+    SIGNAL PhixSign2 : BOOLEAN := FALSE;
+    SIGNAL PhiySign2 : BOOLEAN := FALSE;
+
+    SIGNAL tempPx : UNSIGNED( 27 DOWNTO 0) := ( OTHERS => '0' );
+    SIGNAL tempPy : UNSIGNED( 27 DOWNTO 0) := ( OTHERS => '0' );
 
   BEGIN
     l1TTTrack <= TTTrackPipeIn( 0 )( i );
@@ -67,6 +72,9 @@ BEGIN
     PROCESS( clk )
       VARIABLE sumPx : INTEGER := 0;
       VARIABLE sumPy : INTEGER := 0;
+
+      VARIABLE DSPfullPx : UNSIGNED(27 DOWNTO 0) := ( OTHERS => '0' );
+      VARIABLE DSPfullPy : UNSIGNED(27 DOWNTO 0) := ( OTHERS => '0' );
     BEGIN
       
       IF RISING_EDGE( clk ) THEN
@@ -76,7 +84,7 @@ BEGIN
         tempfvld1 <= l1TTTrack.FrameValid;
         tempdvld1 <= l1TTTrack.DataValid;
         GlobalPhi1 <= TO_INTEGER(l1TTTrack.phi) + Phi_shift(i) - 1024; 
-        tempPt1 <= TO_INTEGER(l1TTTrack.PT);
+        tempPt1 <= l1TTTrack.PT;
 -- ----------------------------------------------------------------------------------------------
 
 -- ----------------------------------------------------------------------------------------------
@@ -98,20 +106,28 @@ BEGIN
 -- ----------------------------------------------------------------------------------------------
 -- Clock 3
         IF GlobalPhi2 >= 0 AND GlobalPhi2 < 1567 THEN
-            tempPhix <= TrigArray(GlobalPhi2)(0);  
-            tempPhiy <= TrigArray(GlobalPhi2)(1); 
+            tempPhix <= TO_UNSIGNED(TrigArray(GlobalPhi2)(0),12);  
+            tempPhiy <= TO_UNSIGNED(TrigArray(GlobalPhi2)(1),12); 
+            PhixSign <= FALSE;
+            PhiySign <= FALSE;
               
         ELSIF GlobalPhi2 >= 1567 AND GlobalPhi2 < 3134 THEN
-            tempPhix <= -TrigArray(GlobalPhi2-1567)(1); 
-            tempPhiy <= TrigArray(GlobalPhi2-1567)(0); 
+            tempPhix <= TO_UNSIGNED(TrigArray(GlobalPhi2-1567)(1),12); 
+            tempPhiy <= TO_UNSIGNED(TrigArray(GlobalPhi2-1567)(0),12); 
+            PhixSign <= TRUE;
+            PhiySign <= FALSE;
 
         ELSIF GlobalPhi2 >= 3134 AND GlobalPhi2 < 4701 THEN
-            tempPhix <= -TrigArray(GlobalPhi2-3134)(0);  
-            tempPhiy <= -TrigArray(GlobalPhi2-3134)(1); 
+            tempPhix <= TO_UNSIGNED(-TrigArray(GlobalPhi2-3134)(0),12);  
+            tempPhiy <= TO_UNSIGNED(-TrigArray(GlobalPhi2-3134)(1),12); 
+            PhixSign <= TRUE;
+            PhiySign <= TRUE;
 
         ELSIF GlobalPhi2 >= 4701 AND GlobalPhi2 < 6268 THEN
-            tempPhix <= TrigArray(GlobalPhi2-4701)(1); 
-            tempPhiy <= -TrigArray(GlobalPhi2-4701)(0); 
+            tempPhix <= TO_UNSIGNED(TrigArray(GlobalPhi2-4701)(1),12); 
+            tempPhiy <= TO_UNSIGNED(-TrigArray(GlobalPhi2-4701)(0),12); 
+            PhixSign <= FALSE;
+            PhiySign <= TRUE;
         END IF;
 
         tempfvld3 <= tempfvld2;
@@ -121,8 +137,12 @@ BEGIN
 
 -- ----------------------------------------------------------------------------------------------
 -- Clock 4
-        tempPx <= (tempPhix * tempPt3)/2**11;
-        tempPy <= (tempPhiy * tempPt3)/2**11;
+        DSPfullPx := (tempPhix * tempPt3);
+        DSPfullPy := (tempPhiy * tempPt3);
+        tempPx <= DSPfullPx;
+        tempPy <= DSPfullPy;
+        PhixSign2 <= PhixSign; 
+        PhiySign2 <= PhiySign;
         tempfvld4 <= tempfvld3;
         tempdvld4 <= tempdvld3;
 
@@ -133,8 +153,17 @@ BEGIN
         tempfvld5 <= tempfvld4;
 
         IF tempdvld4 THEN
-          SumPx := SumPx + tempPx;
-          SumPy := SumPy + tempPy;
+          IF PhixSign2 THEN
+            SumPx := SumPx - TO_INTEGER(tempPx)/2**11;
+          ELSE
+            SumPx := SumPx +  TO_INTEGER(tempPx)/2**11;
+          END IF;
+
+          IF PhiySign2 THEN
+            SumPy := SumPy - TO_INTEGER( tempPy)/2**11;
+          ELSE
+            SumPy := SumPy +  TO_INTEGER(tempPy)/2**11;
+          END IF;
         ELSE
           SumPx := SumPx;
           SumPy := SumPy;
@@ -146,8 +175,8 @@ BEGIN
           SumPy := 0;
           Output( i ) <= ET.DataType.cNull;
         ELSE
-          Output( i ) .Px <= TO_SIGNED(SumPx,16);
-          Output( i ) .Py <=  TO_SIGNED(SumPy,16);
+          Output( i ) .Px <= TO_SIGNED(SumPx/2,16);
+          Output( i ) .Py <=  TO_SIGNED(SumPy/2,16);
           Output( i ) .Sector <=  TO_UNSIGNED(i/2,4);
         END IF;
 

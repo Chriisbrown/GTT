@@ -74,6 +74,7 @@ BEGIN
     SIGNAL InvR : UNSIGNED( 17 DOWNTO 0 ) := ( OTHERS => '0' );
     SIGNAL IntOut : UNSIGNED( 19 DOWNTO 0 ) := ( OTHERS => '0' );
     SIGNAL FracOut : UNSIGNED( 17 DOWNTO 0 ) := ( OTHERS => '0' );
+    SIGNAL temp_eta : INTEGER := 0;
 
     SIGNAL temp_z01     : TTTrack.DataType.tData := TTTrack.DataType.cNull;
     SIGNAL temp_z02     : TTTrack.DataType.tData := TTTrack.DataType.cNull;
@@ -128,9 +129,10 @@ BEGIN
 -- ----------------------------------------------------------------------------------------------
 -- Clock 7
         temp_z07     <= temp_z06;
+        temp_eta     <= TanLLUT(TO_INTEGER(temp_z06.tanlfrac))(abs(TO_INTEGER(temp_z06.tanlint)));
 -- ----------------------------------------------------------------------------------------------
         Output( i )         <= temp_z07;
-        Output( i ) .eta    <= TO_UNSIGNED(TanLLUT(TO_INTEGER(temp_z07.tanlfrac))(abs(TO_INTEGER(temp_z07.tanlint))),16);
+        Output( i ) .eta    <= TO_UNSIGNED(temp_eta,16);
         Output( i ) .Pt     <= TO_UNSIGNED(TO_INTEGER(IntOut)+TO_INTEGER(FracOut)/2**18,16);
 
 

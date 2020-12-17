@@ -37,6 +37,7 @@ BEGIN
     SIGNAL tmp_trk : TTTrack.DataType.tData := TTTrack.DataType.cNull;
     SIGNAL tmp_trk2 : TTTrack.DataType.tData := TTTrack.DataType.cNull;
     SIGNAL tmp_trk3 : TTTrack.DataType.tData := TTTrack.DataType.cNull;
+    SIGNAL tmp_trk4 : TTTrack.DataType.tData := TTTrack.DataType.cNull;
 
     SIGNAL tmp_z : INTEGER := 0;
     SIGNAL tmp_z2 : INTEGER := 0;
@@ -44,13 +45,13 @@ BEGIN
     SIGNAL tmp_eta : INTEGER := 0;
     SIGNAL temp_vld : BOOLEAN := FALSE;
     SIGNAL delta_z : INTEGER := 0;
+    SIGNAL delta_z2 : INTEGER := 0;
+    SIGNAL z_diff : INTEGER := 0;
 
 
   BEGIN
     l1TTTrack <= TTTrackPipeIn( 0 )( i );
     PROCESS( clk )
-    
-    
     
     BEGIN
       IF RISING_EDGE( clk ) THEN
@@ -65,7 +66,6 @@ BEGIN
         tmp_eta <= TO_INTEGER(l1TTTrack.eta);
         tmp_trk <= l1TTTrack;
 -- ----------------------------------------------------------------------------------------------
-
 -- ----------------------------------------------------------------------------------------------
 -- Clock 2
           
@@ -87,28 +87,33 @@ BEGIN
         tmp_trk2 <= tmp_trk;
         tmp_z2 <= tmp_z;
 -- ----------------------------------------------------------------------------------------------
-          
--- ----------------------------------------------------------------------------------------------
+
+-- ----------------------------------------------------------------------------------------------  
 -- Clock 3
-        IF tmp_trk2.DataValid THEN
-          IF abs(tmp_z2 - TO_INTEGER(tmp_trk2.PV)) < delta_z THEN
-              temp_vld <= TRUE; 
-            ELSE
-              temp_vld <= FALSE;
-          END IF;  
-        ELSE
-          temp_vld <= FALSE;
-        END IF;
-
+        z_diff <= abs(tmp_z2 - TO_INTEGER(tmp_trk2.PV));
+        delta_z2 <= delta_z;
         tmp_trk3 <= tmp_trk2;
-
-      Output( i ) <= tmp_trk3;
-      Output( i ).DataValid <= temp_vld;
-      Output( i ).PrimaryTrack <= temp_vld;
 -- ----------------------------------------------------------------------------------------------
-      END IF;
-    END PROCESS;
-  END GENERATE;
+
+-- ----------------------------------------------------------------------------------------------
+-- Clock 4
+        IF tmp_trk3.DataValid AND z_diff < delta_z2 THEN
+            temp_vld <= TRUE;
+        ELSE
+            temp_vld <= FALSE;
+        END IF;
+        tmp_trk4 <= tmp_trk3;
+-- ----------------------------------------------------------------------------------------------
+
+-- ----------------------------------------------------------------------------------------------
+-- Clock 5      
+        Output( i ) <= tmp_trk4;
+        Output( i ).DataValid <= temp_vld;
+        Output( i ).PrimaryTrack <= temp_vld;
+-- ----------------------------------------------------------------------------------------------
+    END IF;
+  END PROCESS;
+END GENERATE;
 
 -- -------------------------------------------------------------------------
 -- Store the result in a pipeline

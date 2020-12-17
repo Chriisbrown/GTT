@@ -16,7 +16,7 @@ def fwInvR(event):
 def fwInvRLUT(event):
   pt_array = []
   
-  with open('Debug/parser/InvRarrays.npy', 'rb') as f:
+  with open('ComponentTest/InvRtest/InvRarrays.npy', 'rb') as f:
     new_InvR = np.load(f)
 
     new_IntOut = np.load(f)
@@ -124,7 +124,66 @@ def fwTrackSelection(event,fwpt=True):
     
     return new_event
 
-def fwTrackMET(event,fwpt=True):
+def fwCordicSqrt(x,y,n_steps=4):
+  mag_bits = 16
+  hypoteneuse_scale = 1<<mag_bits
+
+  
+  phi_bits = 12 
+  phi_scale = 2304
+
+  def rotation( i ):
+    return round( phi_scale * np.arctan( 2**-i ) / (2*np.pi) )
+
+  def mag_renormalization(n_steps=4):
+    val = 1.0
+    for i in range(n_steps):
+      val = val / ((1+(4**-i))**0.5)
+    return round( hypoteneuse_scale * val )
+
+  if( x >= 0 and y >= 0 ) :
+    phi = 0
+    sign = True
+    x = x
+    y = y
+  elif( x < 0 and y >= 0 ) :
+    phi = ( 0.5 * phi_scale )
+    sign = False
+    x = -x
+    y = y
+  elif( x < 0 and y < 0 ) :
+    phi = ( 0.5 * phi_scale )
+    sign = True
+    x = -x
+    y = -y    
+  else:
+    phi = ( phi_scale )
+    sign = False
+    x = x
+    y = -y    
+
+  for i in range(n_steps):
+    
+    if y<0:
+      new_x = x - (y >> i)
+      new_y = y + (x >> i)
+    else:    
+      new_x = x + (y >> i)
+      new_y = y - (x >> i)
+
+    if (y < 0) == sign :
+      new_phi = phi - rotation( i )
+    else:    
+      new_phi = phi + rotation( i )
+
+
+    x = new_x
+    y = new_y
+    phi = new_phi
+
+  return(int(phi),int(x * mag_renormalization(n_steps=n_steps)) >> mag_bits)
+
+def fwTrackMET(event,fwpt=True,Cordic=True):
   shiftLUTf = open("ShiftLUT.txt")
   shiftLUTlines = shiftLUTf.readlines()
 
@@ -168,26 +227,25 @@ def fwTrackMET(event,fwpt=True):
             sumpx_sectors[sector] += int(pt*int(TrigLUT[1][:-1])/lut_precision)
             sumpy_sectors[sector] -= int(pt*int(TrigLUT[0][1:])/lut_precision)
 
-  #print(sumpx_sectors)
-  #print(sumpy_sectors)
-
   sumpx = np.sum(sumpx_sectors)
   sumpy = np.sum(sumpy_sectors)
 
-  #print(sumpx)
-  #print(sumpy)
+  if Cordic:
+    MET_phi,MET = fwCordicSqrt(int(sumpx),int(sumpy),4)
+    MET_phi = MET_phi*2*np.pi/2304
+    MET = MET/2**6
 
-  MET = int(np.sqrt(sumpx*sumpx+sumpy*sumpy))/2**6
-  MET_phi = np.arctan2(sumpy,sumpx)
+  else:
+    MET = int(np.sqrt(sumpx*sumpx+sumpy*sumpy))/2**6
+    MET_phi = np.arctan2(sumpy,sumpx)
 
-  if MET_phi > 0:
-    MET_phi -= np.pi
-  elif MET_phi <= 0:
-    MET_phi += np.pi
+    if MET_phi > 0:
+      MET_phi -= np.pi
+    elif MET_phi <= 0:
+      MET_phi += np.pi
 
   return MET,MET_phi
   
-
 def emulation(num_events,file_name,specific_event=False,specific_id=0):
     num_events = num_events
     print("==== Events ====")
@@ -258,4 +316,4 @@ if __name__=="__main__":
   #print(cmssw_met[["EM_MET","EM_MET_phi","TrkMET","MCMET"]].head())
   #print(cmssw_met[["EM_Vertex","EM_Vtx_Weight","Pv_z0","Pv_weight","MCVertex"]].head())
 
-  emulation(1,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object.root",True,0)
+  emulation(135,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object.root",True,134)

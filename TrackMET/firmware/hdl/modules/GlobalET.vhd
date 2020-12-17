@@ -96,6 +96,7 @@ END GlobalET;
   SIGNAL tempfvld8 : BOOLEAN := FALSE;
   SIGNAL tempfvld9 : BOOLEAN := FALSE;
   SIGNAL tempfvld10 : BOOLEAN := FALSE;
+  SIGNAL tempfvld11 : BOOLEAN := FALSE;
 
   SIGNAL tempdvld1 : BOOLEAN := FALSE;
 
@@ -117,8 +118,11 @@ END GlobalET;
   SIGNAL tempPy8 : INTEGER := 0;
   SIGNAL tempPx9 : INTEGER := 0;
   SIGNAL tempPy9 : INTEGER := 0;
+  SIGNAL tempPx10 : INTEGER := 0;
+  SIGNAL tempPy10 : INTEGER := 0;
 
   SIGNAL RootSum   : SIGNED(15 DOWNTO 0) := (OTHERS => '0');
+  SIGNAL tempEt    : UNSIGNED(15 DOWNTO 0) := (OTHERS => '0');
 
   SIGNAL tempPxSum : INTEGER := 0;
   SIGNAL tempPySum : INTEGER := 0;
@@ -176,7 +180,7 @@ END COMPONENT CordicSqrt;
         tempPy2 <= tempPySum;
         tempfvld2 <= tempfvld1;
 -- ----------------------------------------------------------------------------------------------
--- CORDIC BEGINS for 5 Clocks
+-- CORDIC BEGINS for 8 Clocks
 -- ----------------------------------------------------------------------------------------------
 -- Clock 3
         tempPx3 <= tempPx2;
@@ -219,24 +223,31 @@ END COMPONENT CordicSqrt;
         tempPy9 <= tempPy8;
         tempfvld9 <= tempfvld8;
 -- ----------------------------------------------------------------------------------------------
-
 -- ----------------------------------------------------------------------------------------------
 -- Clock 10
+        tempPx10 <= tempPx9;
+        tempPy10 <= tempPy9;
         tempfvld10 <= tempfvld9;
+        tempEt <= TO_UNSIGNED((TO_INTEGER(RootSum)*39901)/2**15,16);
+-- ----------------------------------------------------------------------------------------------
 
-        IF tempfvld10 AND NOT tempfvld9 THEN
+-- ----------------------------------------------------------------------------------------------
+-- Clock 11
+        tempfvld11 <= tempfvld10;
+
+        IF tempfvld11 AND NOT tempfvld10 THEN
           tempPxSum := 0;
           tempPySum := 0;
           Output( 0 ) <= ET.DataType.cNull;
         ELSE
-            Output( 0 ) .Px <= TO_SIGNED(tempPx9,16);
-            Output( 0 ) .Py <= TO_SIGNED(tempPy9,16);
-            Output( 0 ) .Et <= UNSIGNED(RootSum);
+            Output( 0 ) .Px <= TO_SIGNED(tempPx10,16);
+            Output( 0 ) .Py <= TO_SIGNED(tempPy10,16);
+            Output( 0 ) .Et <= tempEt;
             
         END IF;
         
-        Output( 0 ) .DataValid  <= tempfvld9 AND NOT tempfvld8;
-        Output( 0 ) .FrameValid <= tempfvld9;
+        Output( 0 ) .DataValid  <= tempfvld10 AND NOT tempfvld9;
+        Output( 0 ) .FrameValid <= tempfvld10;
   
       END IF;
   END PROCESS;
