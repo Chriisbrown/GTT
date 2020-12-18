@@ -112,8 +112,7 @@ ATTRIBUTE SIZE of tData : TYPE IS 96; -- Actual is 104, roundup to 108 for 3*36 
                                                               17 , 20 ,   --Chirz
                                                               21 , 23 ,   --BendChi
                                                               24 , 30 ,   --HitPattern
-                                                              31 ,        --TrackValid
-
+                                                              31         --TrackValid
                                                               );
   -- split across 2 different links!
   CONSTANT cNull                       : tData           := ( ( OTHERS => '0' ) ,  --InvR

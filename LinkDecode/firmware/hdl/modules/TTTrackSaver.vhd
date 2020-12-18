@@ -45,7 +45,8 @@ g1 : FOR i IN 0 TO 17 GENERATE
   SIGNAL OutTrack : TTTrack.DataType.tData := TTTrack.DataType.cNull;
   SIGNAL PrimaryVertex : UNSIGNED( 7 DOWNTO 0 ) := "00000000" ;
   SIGNAL Temp_vld : BOOLEAN := FALSE;
-  
+
+
 BEGIN 
   RAM : ENTITY TTTrack.DataRam
   PORT MAP(
@@ -58,25 +59,25 @@ BEGIN
   );
 
   PROCESS( clk )
-  VARIABLE ReadTracks : INTEGER := 0;
+
   VARIABLE Reading : BOOLEAN := FALSE;
-  VARIABLE ReadTotal : INTEGER := 0;
+  VARIABLE ReadTracks : INTEGER := 0;
   VARIABLE WriteTotal : INTEGER := 0;
-
-
+  VARIABLE ReadTotal : INTEGER := 0;
 
   BEGIN
     IF( RISING_EDGE( clk ) ) THEN
       IF( Input( i ).FrameValid) THEN
         IF( Input( i ) .DataValid ) THEN
           WriteAddr( i ) <= (WriteAddr( i ) + 1 ) MOD 512;
-          WriteTotal <= WriteTotal + 1;
+          WriteTotal := WriteTotal + 1;
         END IF;
+        WriteTotal := WriteTotal;
       END IF;
 
       IF (  Input( i ).FrameValid AND NOT NextTrackIn( i ) .FrameValid) THEN
-        ReadTotal <= WriteTotal;
-        WriteTotal <= 0;
+        ReadTotal := WriteTotal;
+        WriteTotal := 0;
       END IF;
         
       IF (PrimaryVertexPipeIn( 0 )( 0 ).DataValid) THEN
@@ -89,14 +90,18 @@ BEGIN
       IF ReadTracks < ReadTotal THEN
         IF Reading THEN
           ReadAddr( i ) <= (ReadAddr( i ) + 1)  MOD 512;
-          ReadTracks <= ReadTracks + 1;
+          ReadTracks := ReadTracks + 1;
           Temp_vld <= True;  
+        ELSE
+          ReadTracks := ReadTracks;
+          Temp_vld <= False;  
         END IF;
 
       ELSE
         Reading := FALSE;
         Temp_vld <= FALSE;
-        ReadTotal <= 0;
+        ReadTotal := 0;
+        ReadTracks := 0;
 
       END IF;
 
@@ -128,5 +133,3 @@ PORT MAP( clk , Output ) ;
 -- -------------------------------------------------------------------------
 
 END rtl;
-      
-  

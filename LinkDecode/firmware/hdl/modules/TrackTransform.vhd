@@ -40,7 +40,7 @@ USE LinkDecode.TanLROM.all;
 
 
 -- -------------------------------------------------------------------------
-ENTITY PtCalculate IS
+ENTITY TrackTransform IS
   GENERIC(
     PipeOffset : INTEGER := 0
   );
@@ -49,11 +49,11 @@ ENTITY PtCalculate IS
     TTTrackPipeIn    : IN InTTTrack.ArrayTypes.VectorPipe;
     TTTrackPipeOut   : OUT TTTrack.ArrayTypes.VectorPipe
   );
-END PtCalculate;
+END TrackTransform;
 -- -------------------------------------------------------------------------
 
 -- -------------------------------------------------------------------------
-ARCHITECTURE rtl OF PtCalculate IS
+ARCHITECTURE rtl OF TrackTransform IS
   SIGNAL Output : TTTrack.ArrayTypes.Vector( 0 TO 17 ) := TTTrack.ArrayTypes.NullVector( 18 );
   COMPONENT InvRdivider IS
 
@@ -76,18 +76,19 @@ BEGIN
     SIGNAL InvR : UNSIGNED( 17 DOWNTO 0 ) := ( OTHERS => '0' );
     SIGNAL IntOut : UNSIGNED( 19 DOWNTO 0 ) := ( OTHERS => '0' );
     SIGNAL FracOut : UNSIGNED( 17 DOWNTO 0 ) := ( OTHERS => '0' );
-    SIGNAL temp_eta : UNSIGNED( 15 DOWNTO 0 ) := ( OTHERS => '0' );
+    SIGNAL temp_eta : INTEGER := 0;
 
-    SIGNAL temp_trk1     : TTTrack.DataType.tData := TTTrack.DataType.cNull;
-    SIGNAL temp_trk2     : TTTrack.DataType.tData := TTTrack.DataType.cNull;
-    SIGNAL temp_trk3     : TTTrack.DataType.tData := TTTrack.DataType.cNull;
-    SIGNAL temp_trk4     : TTTrack.DataType.tData := TTTrack.DataType.cNull;
-    SIGNAL temp_trk5     : TTTrack.DataType.tData := TTTrack.DataType.cNull;
-    SIGNAL temp_trk6     : TTTrack.DataType.tData := TTTrack.DataType.cNull;
-    SIGNAL temp_trk7     : TTTrack.DataType.tData := TTTrack.DataType.cNull;
+    SIGNAL temp_trk1     : InTTTrack.DataType.tData := InTTTrack.DataType.cNull;
+    SIGNAL temp_trk2     : InTTTrack.DataType.tData := InTTTrack.DataType.cNull;
+    SIGNAL temp_trk3     : InTTTrack.DataType.tData := InTTTrack.DataType.cNull;
+    SIGNAL temp_trk4     : InTTTrack.DataType.tData := InTTTrack.DataType.cNull;
+    SIGNAL temp_trk5     : InTTTrack.DataType.tData := InTTTrack.DataType.cNull;
+    SIGNAL temp_trk6     : InTTTrack.DataType.tData := InTTTrack.DataType.cNull;
+    SIGNAL temp_trk7     : InTTTrack.DataType.tData := InTTTrack.DataType.cNull;
 
     SIGNAL GlobalPhi1 : INTEGER := 0;
     SIGNAL GlobalPhi2 : INTEGER := 0;
+    SIGNAL GlobalPhi3 : INTEGER := 0;
 
     SIGNAL tmp_z1 : INTEGER := 0;
     SIGNAL tmp_z2 : INTEGER := 0;
@@ -172,7 +173,7 @@ BEGIN
 -- ----------------------------------------------------------------------------------------------
 -- Clock 8
         Output( i ).Pt  <= TO_UNSIGNED(TO_INTEGER(IntOut)+TO_INTEGER(FracOut)/2**18,16);
-        Output( i ).Phi <= TO_UNSIGNED(GlobalPhi3,14);
+        Output( i ).Phi <= TO_UNSIGNED(GlobalPhi3,13);
         Output( i ).Eta <= TO_UNSIGNED(temp_eta,16);
         Output( i ).Z0  <= TO_UNSIGNED(tmp_z4,8);
         Output( i ).Chi2rphi   <= temp_trk7.Chi2rphi;

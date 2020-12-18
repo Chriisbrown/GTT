@@ -40,20 +40,24 @@ BEGIN
     SIGNAL tempfvld1 : BOOLEAN := FALSE;
     SIGNAL tempfvld2 : BOOLEAN := FALSE;
     SIGNAL tempfvld3 : BOOLEAN := FALSE;
+    SIGNAL tempfvld4 : BOOLEAN := FALSE;
 
     SIGNAL tempdvld1 : BOOLEAN := FALSE;
     SIGNAL tempdvld2 : BOOLEAN := FALSE;
+    SIGNAL tempdvld3 : BOOLEAN := FALSE;
 
     SIGNAL tempPt1 : UNSIGNED( 15 DOWNTO 0 ) := ( OTHERS => '0' );
+    SIGNAL tempPt2 : UNSIGNED( 15 DOWNTO 0 ) := ( OTHERS => '0' );
 
     SIGNAL tempPhix : UNSIGNED( 11 DOWNTO 0 ) := ( OTHERS => '0' );
     SIGNAL tempPhiy : UNSIGNED( 11 DOWNTO 0 ) := ( OTHERS => '0' );
 
     SIGNAL PhixSign : BOOLEAN := FALSE;
     SIGNAL PhiySign : BOOLEAN := FALSE;
-    SIGNAL PhixSign2 : BOOLEAN := FALSE;    SIGNAL tempfvld4 : BOOLEAN := FALSE;
-    SIGNAL tempfvld5 : BOOLEAN := FALSE;
+    SIGNAL PhixSign2 : BOOLEAN := FALSE;    
     SIGNAL PhiySign2 : BOOLEAN := FALSE;
+
+    SIGNAL GlobalPhi : INTEGER := 0;
 
     SIGNAL tempPx : UNSIGNED( 27 DOWNTO 0) := ( OTHERS => '0' );
     SIGNAL tempPy : UNSIGNED( 27 DOWNTO 0) := ( OTHERS => '0' );
@@ -68,14 +72,21 @@ BEGIN
       VARIABLE DSPfullPx : UNSIGNED(27 DOWNTO 0) := ( OTHERS => '0' );
       VARIABLE DSPfullPy : UNSIGNED(27 DOWNTO 0) := ( OTHERS => '0' );
 
-      VARIABLE GlobalPhi : INTEGER := 0;
+      
     BEGIN
       
       IF RISING_EDGE( clk ) THEN
 
 -- ----------------------------------------------------------------------------------------------
 -- Clock 1
-        GlobalPhi := l1TTTrack.phi;
+        GlobalPhi <= TO_INTEGER(l1TTTrack.phi);
+        tempfvld1 <= l1TTTrack.FrameValid;
+        tempdvld1 <= l1TTTrack.DataValid;
+        tempPt1   <= l1TTTrack.Pt;
+-- ----------------------------------------------------------------------------------------------
+
+-- ----------------------------------------------------------------------------------------------
+-- Clock 1
         IF GlobalPhi >= 0 AND GlobalPhi < 1567 THEN
             tempPhix <= TO_UNSIGNED(TrigArray(GlobalPhi)(0),12);  
             tempPhiy <= TO_UNSIGNED(TrigArray(GlobalPhi)(1),12); 
@@ -101,29 +112,29 @@ BEGIN
             PhiySign <= TRUE;
         END IF;
 
-        tempfvld1 <= l1TTTrack.FrameValid;
-        tempdvld1 <= l1TTTrack.DataValid;
-        tempPt1   <= l1TTTrack.Pt;
+        tempfvld2 <= tempfvld1;
+        tempdvld2 <= tempdvld1;
+        tempPt2   <= tempPt1;
 -- ----------------------------------------------------------------------------------------------
 
 -- ----------------------------------------------------------------------------------------------
 -- Clock 2
-        DSPfullPx := (tempPhix * tempPt1);
-        DSPfullPy := (tempPhiy * tempPt1);
+        DSPfullPx := (tempPhix * tempPt2);
+        DSPfullPy := (tempPhiy * tempPt2);
         tempPx <= DSPfullPx;
         tempPy <= DSPfullPy;
         PhixSign2 <= PhixSign; 
         PhiySign2 <= PhiySign;
-        tempfvld2 <= tempfvld1;
-        tempdvld2 <= tempdvld1;
+        tempfvld3 <= tempfvld2;
+        tempdvld3 <= tempdvld2;
 
 -- ----------------------------------------------------------------------------------------------
 
 -- ----------------------------------------------------------------------------------------------
 -- Clock 3
-        tempfvld3 <= tempfvld2;
+        tempfvld4 <= tempfvld3;
 
-        IF tempdvld2 THEN
+        IF tempdvld3 THEN
           IF PhixSign2 THEN
             SumPx := SumPx - TO_INTEGER(tempPx)/2**12;
           ELSE
@@ -141,7 +152,7 @@ BEGIN
         END IF;
 
 
-        IF tempfvld3 AND NOT tempfvld2 THEN
+        IF tempfvld4 AND NOT tempfvld3 THEN
           SumPx := 0;
           SumPy := 0;
           Output( i ) <= ET.DataType.cNull;
@@ -151,8 +162,8 @@ BEGIN
           Output( i ) .Sector <=  TO_UNSIGNED(i/2,4);
         END IF;
 
-        Output( i ) .DataValid  <= tempfvld2 AND NOT tempfvld1;
-        Output( i ) .FrameValid <= tempfvld2;
+        Output( i ) .DataValid  <= tempfvld3 AND NOT tempfvld2;
+        Output( i ) .FrameValid <= tempfvld3;
   
       END IF;
     END PROCESS;

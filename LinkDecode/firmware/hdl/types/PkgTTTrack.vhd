@@ -88,7 +88,7 @@ ATTRIBUTE SIZE of tData : TYPE IS 79;
                                                               57 , 60 ,   --Chirz
                                                               61 , 63 ,   --BendChi
                                                               64 , 70 ,   --HitPattern
-                                                              71 , 78 ,   --PV
+                                                              71 , 78     --PV
  
                                                               );
   -- split across 2 different links!

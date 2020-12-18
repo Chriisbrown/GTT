@@ -34,7 +34,7 @@ BEGIN
   g1              : FOR i IN 0 TO 17 GENERATE
     SIGNAL l1TTTrack      : TTTrack.DataType.tData := TTTrack.DataType.cNull;
 
-    SIGNAL tmp_trk : TTTrack.DataType.tData := TTTrack.DataType.cNull;
+    SIGNAL tmp_trk1 : TTTrack.DataType.tData := TTTrack.DataType.cNull;
     SIGNAL tmp_trk2 : TTTrack.DataType.tData := TTTrack.DataType.cNull;
     SIGNAL tmp_trk3 : TTTrack.DataType.tData := TTTrack.DataType.cNull;
 

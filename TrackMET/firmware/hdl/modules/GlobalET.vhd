@@ -102,8 +102,8 @@ END GlobalET;
 
   SIGNAL tempPx1 : INTEGER := 0;
   SIGNAL tempPy1 : INTEGER := 0;
-  --SIGNAL tempPx2 : INTEGER := 0;
-  --SIGNAL tempPy2 : INTEGER := 0;
+  SIGNAL tempPx2 : INTEGER := 0;
+  SIGNAL tempPy2 : INTEGER := 0;
   --SIGNAL tempPx3 : INTEGER := 0;
   --SIGNAL tempPy3 : INTEGER := 0;
   --SIGNAL tempPx4 : INTEGER := 0;
@@ -176,8 +176,8 @@ END COMPONENT CordicSqrt;
         END IF;
       
   
-        --tempPx2 <= tempPxSum;
-        --tempPy2 <= tempPySum;
+        tempPx2 <= tempPxSum;
+        tempPy2 <= tempPySum;
         tempfvld2 <= tempfvld1;
 -- ----------------------------------------------------------------------------------------------
 -- CORDIC BEGINS for 8 Clocks

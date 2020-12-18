@@ -17,7 +17,6 @@ src --vhdl2008 -c TrackSelection: -l TrackSelection TrackToVertexAssoc.vhd
 src --vhdl2008 -c TrackSelection: -l TrackSelection TrackSelection.vhd
 
 src --vhdl2008 -c VertexFinder: -l VertexFinder top/VertexFinderModule.vhd
-src --vhdl2008 -c VertexFinder: -l VertexFinder top/VertexFinderProcessor.vhd
 src --vhdl2008 -c VertexFinder: -l VertexFinder modules/VertexToLink.vhd
 src --vhdl2008 -c VertexFinder: -l VertexFinder modules/MaximaFinder.vhd
 src --vhdl2008 -c VertexFinder: -l VertexFinder modules/Histogram.vhd
@@ -25,9 +24,9 @@ src --vhdl2008 -c VertexFinder: -l VertexFinder modules/Fanout.vhd
 src --vhdl2008 -c VertexFinder: -l VertexFinder modules/VertexDistribution.vhd
 src --vhdl2008 -c VertexFinder: -l VertexFinder modules/TTTracksToVertices.vhd
 
-src --vhdl2008 -c LinkDecode: -l LinkDecode modules/PtCalculate.vhd
-src --vhdl2008 -c LinkDecode: -l LinkDecode modules/TanLROM.vhd
 src --vhdl2008 -c LinkDecode: -l LinkDecode modules/TrackTransform.vhd
+src --vhdl2008 -c LinkDecode: -l LinkDecode modules/TanLROM.vhd
+src --vhdl2008 -c LinkDecode: -l LinkDecode modules/InvRdivider.vhd
 src --vhdl2008 -c LinkDecode: -l LinkDecode modules/TTTrackSaver.vhd
 src --vhdl2008 -c LinkDecode: -l LinkDecode modules/LinksToTTTracks.vhd
 
