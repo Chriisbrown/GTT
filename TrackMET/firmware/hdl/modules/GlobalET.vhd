@@ -122,7 +122,7 @@ END GlobalET;
   SIGNAL tempPy10 : INTEGER := 0;
 
   SIGNAL RootSum   : SIGNED(15 DOWNTO 0) := (OTHERS => '0');
-  SIGNAL tempEt    : UNSIGNED(15 DOWNTO 0) := (OTHERS => '0');
+  SIGNAL tempEt    : INTEGER := 0;
 
   SIGNAL tempPxSum : INTEGER := 0;
   SIGNAL tempPySum : INTEGER := 0;
@@ -228,7 +228,7 @@ END COMPONENT CordicSqrt;
         tempPx10 <= tempPx9;
         tempPy10 <= tempPy9;
         tempfvld10 <= tempfvld9;
-        tempEt <= TO_UNSIGNED((TO_INTEGER(RootSum)*39901)/2**15,16);
+        tempEt <= (TO_INTEGER(RootSum)*39901)/2**15;
 -- ----------------------------------------------------------------------------------------------
 
 -- ----------------------------------------------------------------------------------------------
@@ -242,7 +242,7 @@ END COMPONENT CordicSqrt;
         ELSE
             Output( 0 ) .Px <= TO_SIGNED(tempPx10,16);
             Output( 0 ) .Py <= TO_SIGNED(tempPy10,16);
-            Output( 0 ) .Et <= tempEt;
+            Output( 0 ) .Et <= TO_UNSIGNED(tempEt,16);
             
         END IF;
         

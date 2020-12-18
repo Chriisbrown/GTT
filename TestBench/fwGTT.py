@@ -212,20 +212,20 @@ def fwTrackMET(event,fwpt=True,Cordic=True):
 
         if (phi >= 0  and phi < int(np.pi/(2*hwu_binsize))):
             TrigLUT = TrigLUTlines[int(phi)].split(',')
-            sumpx_sectors[sector] += int(pt*int(TrigLUT[0][1:])/lut_precision)
-            sumpy_sectors[sector] += int(pt*int(TrigLUT[1][:-1])/lut_precision)
+            sumpx_sectors[sector] += int(pt*int(TrigLUT[0][1:])/(lut_precision*2))
+            sumpy_sectors[sector] += int(pt*int(TrigLUT[1][:-1])/(lut_precision*2))
         elif (phi >= int(np.pi/(2*hwu_binsize))  and phi < int(np.pi/(hwu_binsize))):
             TrigLUT = TrigLUTlines[int(phi-np.pi/(2*hwu_binsize))].split(',')
-            sumpx_sectors[sector] -= int(pt*int(TrigLUT[1][:-1])/lut_precision)
-            sumpy_sectors[sector] += int(pt*int(TrigLUT[0][1:])/lut_precision)
+            sumpx_sectors[sector] -= int(pt*int(TrigLUT[1][:-1])/(lut_precision*2))
+            sumpy_sectors[sector] += int(pt*int(TrigLUT[0][1:])/(lut_precision*2))
         elif (phi >= int(np.pi/(hwu_binsize) )  and phi < int(3*np.pi/(2*hwu_binsize))):
             TrigLUT = TrigLUTlines[int(phi-np.pi/(hwu_binsize))].split(',')
-            sumpx_sectors[sector] -= int(pt*int(TrigLUT[0][1:])/lut_precision)
-            sumpy_sectors[sector] -= int(pt*int(TrigLUT[1][:-1])/lut_precision)
+            sumpx_sectors[sector] -= int(pt*int(TrigLUT[0][1:])/(lut_precision*2))
+            sumpy_sectors[sector] -= int(pt*int(TrigLUT[1][:-1])/(lut_precision*2))
         elif (phi >= int(3*np.pi/(2*hwu_binsize) )  and phi < int(2*np.pi/(hwu_binsize))):
             TrigLUT = TrigLUTlines[int(phi-3*np.pi/(2*hwu_binsize) )].split(',')
-            sumpx_sectors[sector] += int(pt*int(TrigLUT[1][:-1])/lut_precision)
-            sumpy_sectors[sector] -= int(pt*int(TrigLUT[0][1:])/lut_precision)
+            sumpx_sectors[sector] += int(pt*int(TrigLUT[1][:-1])/(lut_precision*2))
+            sumpy_sectors[sector] -= int(pt*int(TrigLUT[0][1:])/(lut_precision*2))
 
   sumpx = np.sum(sumpx_sectors)
   sumpy = np.sum(sumpy_sectors)
@@ -233,10 +233,10 @@ def fwTrackMET(event,fwpt=True,Cordic=True):
   if Cordic:
     MET_phi,MET = fwCordicSqrt(int(sumpx),int(sumpy),4)
     MET_phi = MET_phi*2*np.pi/2304
-    MET = MET/2**6
+    MET = MET/2**5
 
   else:
-    MET = int(np.sqrt(sumpx*sumpx+sumpy*sumpy))/2**6
+    MET = int(np.sqrt(sumpx*sumpx+sumpy*sumpy))/2**5
     MET_phi = np.arctan2(sumpy,sumpx)
 
     if MET_phi > 0:
@@ -316,4 +316,4 @@ if __name__=="__main__":
   #print(cmssw_met[["EM_MET","EM_MET_phi","TrkMET","MCMET"]].head())
   #print(cmssw_met[["EM_Vertex","EM_Vtx_Weight","Pv_z0","Pv_weight","MCVertex"]].head())
 
-  emulation(135,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object.root",True,134)
+  emulation(779,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object_300k.root",True,778)

@@ -154,15 +154,15 @@ BEGIN
 
         IF tempdvld4 THEN
           IF PhixSign2 THEN
-            SumPx := SumPx - TO_INTEGER(tempPx)/2**11;
+            SumPx := SumPx - TO_INTEGER(tempPx)/2**12;
           ELSE
-            SumPx := SumPx +  TO_INTEGER(tempPx)/2**11;
+            SumPx := SumPx +  TO_INTEGER(tempPx)/2**12;
           END IF;
 
           IF PhiySign2 THEN
-            SumPy := SumPy - TO_INTEGER( tempPy)/2**11;
+            SumPy := SumPy - TO_INTEGER( tempPy)/2**12;
           ELSE
-            SumPy := SumPy +  TO_INTEGER(tempPy)/2**11;
+            SumPy := SumPy +  TO_INTEGER(tempPy)/2**12;
           END IF;
         ELSE
           SumPx := SumPx;
@@ -175,8 +175,8 @@ BEGIN
           SumPy := 0;
           Output( i ) <= ET.DataType.cNull;
         ELSE
-          Output( i ) .Px <= TO_SIGNED(SumPx/2,16);
-          Output( i ) .Py <=  TO_SIGNED(SumPy/2,16);
+          Output( i ) .Px <= TO_SIGNED(SumPx,16);
+          Output( i ) .Py <=  TO_SIGNED(SumPy,16);
           Output( i ) .Sector <=  TO_UNSIGNED(i/2,4);
         END IF;
 

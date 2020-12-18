@@ -97,7 +97,7 @@ BEGIN
 
 -- ----------------------------------------------------------------------------------------------
 -- Clock 4
-        IF tmp_trk3.DataValid AND z_diff < delta_z2 THEN
+        IF tmp_trk3.DataValid AND z_diff <= delta_z2 THEN
             temp_vld <= TRUE;
         ELSE
             temp_vld <= FALSE;

@@ -137,9 +137,13 @@ def loadDataSingleFile(filename, num):
     x.append(pd.DataFrame(transformEvent(y)))
   events = x
 
-  for event in events:
+  for i,event in enumerate(events):
 
     event['pt2'] = event['pt']**2
+    #for j,eta in enumerate(event["eta"]):
+    #  if eta == 0:
+    #    print(i,j,eta,event["pt"][j])
+
   return events
 
 def loadVertexInformation(filename,num_events=-1,write_to_file=False):

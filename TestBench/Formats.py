@@ -234,11 +234,11 @@ def eventDataFrameToPatternFile(event, nlinks=18, nframes=108, doheader=True, st
   # Push the tracks for each link into a list
   links = [] 
   for i in range(int(nlinks/2)):
-
+    
     trks = event[event['phiSector'] == i]
-    for j in [-1,1]:
+    for j in [True,False]:
       LW1 = []
-      splittrks = trks[np.sign(trks['eta']) == j]
+      splittrks = trks[np.signbit(trks['eta']) == j]
       ntrks = len(splittrks)
       for k in range(int((ntrks+1)/2)):
         if 2*k + 1 < ntrks:
