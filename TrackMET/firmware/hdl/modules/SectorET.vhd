@@ -100,14 +100,14 @@ BEGIN
             PhiySign <= FALSE;
 
         ELSIF GlobalPhi >= 3134 AND GlobalPhi < 4701 THEN
-            tempPhix <= TO_UNSIGNED(-TrigArray(GlobalPhi-3134)(0),12);  
-            tempPhiy <= TO_UNSIGNED(-TrigArray(GlobalPhi-3134)(1),12); 
+            tempPhix <= TO_UNSIGNED(TrigArray(GlobalPhi-3134)(0),12);  
+            tempPhiy <= TO_UNSIGNED(TrigArray(GlobalPhi-3134)(1),12); 
             PhixSign <= TRUE;
             PhiySign <= TRUE;
 
         ELSIF GlobalPhi >= 4701 AND GlobalPhi < 6268 THEN
             tempPhix <= TO_UNSIGNED(TrigArray(GlobalPhi-4701)(1),12); 
-            tempPhiy <= TO_UNSIGNED(-TrigArray(GlobalPhi-4701)(0),12); 
+            tempPhiy <= TO_UNSIGNED(TrigArray(GlobalPhi-4701)(0),12); 
             PhixSign <= FALSE;
             PhiySign <= TRUE;
         END IF;

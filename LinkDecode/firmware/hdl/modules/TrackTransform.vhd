@@ -90,10 +90,10 @@ BEGIN
     SIGNAL GlobalPhi2 : INTEGER := 0;
     SIGNAL GlobalPhi3 : INTEGER := 0;
 
+    SIGNAL tmp_z : INTEGER := 0;
     SIGNAL tmp_z1 : INTEGER := 0;
     SIGNAL tmp_z2 : INTEGER := 0;
     SIGNAL tmp_z3 : INTEGER := 0;
-    SIGNAL tmp_z4 : INTEGER := 0;
 
   BEGIN
 
@@ -110,7 +110,6 @@ BEGIN
     
     PROCESS( clk )
 
-    VARIABLE tmp_z : INTEGER := 0;
     BEGIN
       IF RISING_EDGE( clk ) THEN
 -- ----------------------------------------------------------------------------------------------
@@ -132,29 +131,29 @@ BEGIN
         temp_trk4     <= temp_trk3;
         IF temp_trk3.Z0Frac(temp_trk3.Z0Frac'left) = '1' THEN --negative
           IF temp_trk3.Z0Int >= 15 THEN
-            tmp_z := 0;
+            tmp_z <= 0;
           ELSE
-            tmp_z := -TO_INTEGER(temp_trk3.Z0Int)*8 + TO_INTEGER(temp_trk3.Z0Frac)/8 + TO_INTEGER(temp_trk3.Z0Frac)/64 + 128 - TO_INTEGER(temp_trk3.Z0Int)/2;
+            tmp_z <= -TO_INTEGER(temp_trk3.Z0Int)*8 + TO_INTEGER(temp_trk3.Z0Frac)/8 + TO_INTEGER(temp_trk3.Z0Frac)/64 + 128 - TO_INTEGER(temp_trk3.Z0Int)/2;
           END IF;
         ELSE  --positive
           IF temp_trk3.Z0Int >= 15 THEN
-            tmp_z := 255;
+            tmp_z <= 255;
           ELSE
-            tmp_z := TO_INTEGER(temp_trk3.Z0Int)*8 + TO_INTEGER(temp_trk3.Z0Frac)/8 + TO_INTEGER(temp_trk3.Z0Frac)/64 + 128 + TO_INTEGER(temp_trk3.Z0Int)/2;
+            tmp_z <= TO_INTEGER(temp_trk3.Z0Int)*8 + TO_INTEGER(temp_trk3.Z0Frac)/8 + TO_INTEGER(temp_trk3.Z0Frac)/64 + 128 + TO_INTEGER(temp_trk3.Z0Int)/2;
           END IF;
         END IF;
-        tmp_z1 <= tmp_z;
+
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------------------------------------------------------------------
 -- Clock 5
         temp_trk5    <= temp_trk4;
-        tmp_z2       <= tmp_z1;
+        tmp_z1       <= tmp_z;
         GlobalPhi1   <= TO_INTEGER(temp_trk4.phi) + Phi_shift(i) - 1024;
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------------------------------------------------------------------
 -- Clock 6
         temp_trk6  <= temp_trk5;
-        tmp_z3     <= tmp_z2;
+        tmp_z2    <= tmp_z1;
 
         IF GlobalPhi1 < 0 THEN
           GlobalPhi2 <= GlobalPhi1 + 6268;
@@ -167,7 +166,7 @@ BEGIN
 -- ----------------------------------------------------------------------------------------------
 -- Clock 7
         temp_trk7    <= temp_trk6;
-        tmp_z4       <= tmp_z3;
+        tmp_z3       <= tmp_z2;
         temp_eta     <= TanLLUT(TO_INTEGER(temp_trk6.tanlfrac))(abs(TO_INTEGER(temp_trk6.tanlint)));
         GlobalPhi3   <= GlobalPhi2;
 -- ----------------------------------------------------------------------------------------------
@@ -175,7 +174,7 @@ BEGIN
         Output( i ).Pt  <= TO_UNSIGNED(TO_INTEGER(IntOut)+TO_INTEGER(FracOut)/2**18,16);
         Output( i ).Phi <= TO_UNSIGNED(GlobalPhi3,13);
         Output( i ).Eta <= TO_UNSIGNED(temp_eta,16);
-        Output( i ).Z0  <= TO_UNSIGNED(tmp_z4,8);
+        Output( i ).Z0  <= TO_UNSIGNED(tmp_z3,8);
         Output( i ).Chi2rphi   <= temp_trk7.Chi2rphi;
         Output( i ).Chi2rz     <= temp_trk7.Chi2rz;
         Output( i ).BendChi2   <= temp_trk7.BendChi2;
