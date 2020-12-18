@@ -71,37 +71,14 @@ BEGIN
     l1TTTrack <= TTTrackPipeIn( PipeOffset )( i );
 
     PROCESS( clk )
-    VARIABLE tmp_pt : UNSIGNED( 15 DOWNTO 0 ) := ( OTHERS => '0' );
-    VARIABLE tmp_z  : INTEGER := 0;
-    VARIABLE tmp_dv : BOOLEAN := FALSE;
-    VARIABLE tmp_fv : BOOLEAN := FALSE;
+
     BEGIN
       IF RISING_EDGE( clk ) THEN
-
-        IF l1TTTrack.Z0Frac(l1TTTrack.Z0Frac'left) = '1' THEN --negative
-          IF l1TTTrack.Z0Int >= 15 THEN
-            tmp_z := 0;
-          ELSE
-            tmp_z := -TO_INTEGER(l1TTTrack.Z0Int)*8 + TO_INTEGER(l1TTTrack.Z0Frac)/8 + TO_INTEGER(l1TTTrack.Z0Frac)/64 + 128 - TO_INTEGER(l1TTTrack.Z0Int)/2;
-          END IF;
-        ELSE  --positive
-          IF l1TTTrack.Z0Int >= 15 THEN
-            tmp_z := 255;
-          ELSE
-            tmp_z := TO_INTEGER(l1TTTrack.Z0Int)*8 + TO_INTEGER(l1TTTrack.Z0Frac)/8 + TO_INTEGER(l1TTTrack.Z0Frac)/64 + 128 + TO_INTEGER(l1TTTrack.Z0Int)/2;
-          END IF;
-        END IF;
-
-        tmp_pt := l1TTTrack.Pt;
-        tmp_dv := l1TTTrack.DataValid;
-        tmp_fv := l1TTTrack.FrameValid;
-
-        Output( i ) .z0         <= TO_UNSIGNED(tmp_z,8);
-        Output( i ) .Weight     <= tmp_pt;
-        Output( i ) .SortKey    <= tmp_z;
-        Output( i ) .DataValid  <= tmp_dv;
-        Output( i ) .FrameValid <= tmp_fv;
-
+        Output( i ) .z0         <= l1TTTrack.z0;
+        Output( i ) .Weight     <= l1TTTrack.Pt;
+        Output( i ) .SortKey    <= TO_INTEGER(l1TTTrack.z0;)
+        Output( i ) .DataValid  <= l1TTTrack.DataValid;
+        Output( i ) .FrameValid <= l1TTTrack.FrameValid;
       END IF;
     END PROCESS;
   END GENERATE;

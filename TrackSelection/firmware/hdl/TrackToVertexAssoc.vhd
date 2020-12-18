@@ -37,13 +37,12 @@ BEGIN
     SIGNAL tmp_trk : TTTrack.DataType.tData := TTTrack.DataType.cNull;
     SIGNAL tmp_trk2 : TTTrack.DataType.tData := TTTrack.DataType.cNull;
     SIGNAL tmp_trk3 : TTTrack.DataType.tData := TTTrack.DataType.cNull;
-    SIGNAL tmp_trk4 : TTTrack.DataType.tData := TTTrack.DataType.cNull;
 
-    SIGNAL tmp_z : INTEGER := 0;
-    SIGNAL tmp_z2 : INTEGER := 0;
+    SIGNAL tmp_z1 : INTEGER := 0;
+    SIGNAL tmp_PV1 : INTEGER := 0;
 
-    SIGNAL tmp_eta : INTEGER := 0;
     SIGNAL temp_vld : BOOLEAN := FALSE;
+
     SIGNAL delta_z : INTEGER := 0;
     SIGNAL delta_z2 : INTEGER := 0;
     SIGNAL z_diff : INTEGER := 0;
@@ -52,23 +51,15 @@ BEGIN
   BEGIN
     l1TTTrack <= TTTrackPipeIn( 0 )( i );
     PROCESS( clk )
+
+    VARIABLE tmp_eta : INTEGER := 0;
     
     BEGIN
       IF RISING_EDGE( clk ) THEN
 -- ----------------------------------------------------------------------------------------------
+-- ----------------------------------------------------------------------------------------------
 -- Clock 1
-        IF l1TTTrack.Z0Frac(l1TTTrack.Z0Frac'left) = '1' THEN --negative
-          tmp_z <= -TO_INTEGER(l1TTTrack.Z0Int)*8 + TO_INTEGER(l1TTTrack.Z0Frac)/8 + TO_INTEGER(l1TTTrack.Z0Frac)/64 + 128 - TO_INTEGER(l1TTTrack.Z0Int)/2;
-        ELSE  --positive
-          tmp_z <= TO_INTEGER(l1TTTrack.Z0Int)*8 + TO_INTEGER(l1TTTrack.Z0Frac)/8 + TO_INTEGER(l1TTTrack.Z0Frac)/64 + 128 + TO_INTEGER(l1TTTrack.Z0Int)/2;
-        END IF;
-
-        tmp_eta <= TO_INTEGER(l1TTTrack.eta);
-        tmp_trk <= l1TTTrack;
--- ----------------------------------------------------------------------------------------------
--- ----------------------------------------------------------------------------------------------
--- Clock 2
-          
+        tmp_eta := TO_INTEGER(l1TTTrack.eta);
         IF tmp_eta >= 32768 AND tmp_eta < 41443 THEN
           delta_z <= 3;
         ELSIF tmp_eta >= 41443 AND tmp_eta < 45161 THEN
@@ -84,30 +75,32 @@ BEGIN
         ELSE
           delta_z <= 0;
         END IF;
-        tmp_trk2 <= tmp_trk;
-        tmp_z2 <= tmp_z;
+
+        tmp_trk1 <= l1TTTrack;
+        tmp_z1 <= TO_INTEGER(l1TTTrack.z0);
+        tmp_PV1 <= TO_INTEGER(l1TTTrack.PV);
 -- ----------------------------------------------------------------------------------------------
 
 -- ----------------------------------------------------------------------------------------------  
--- Clock 3
-        z_diff <= abs(tmp_z2 - TO_INTEGER(tmp_trk2.PV));
+-- Clock 2
+        z_diff <= abs(tmp_z1 - tmp_PV1);
         delta_z2 <= delta_z;
-        tmp_trk3 <= tmp_trk2;
+        tmp_trk2 <= tmp_trk1;
 -- ----------------------------------------------------------------------------------------------
 
 -- ----------------------------------------------------------------------------------------------
--- Clock 4
-        IF tmp_trk3.DataValid AND z_diff <= delta_z2 THEN
+-- Clock 3
+        IF tmp_trk2.DataValid AND z_diff <= delta_z2 THEN
             temp_vld <= TRUE;
         ELSE
             temp_vld <= FALSE;
         END IF;
-        tmp_trk4 <= tmp_trk3;
+        tmp_trk3 <= tmp_trk2;
 -- ----------------------------------------------------------------------------------------------
 
 -- ----------------------------------------------------------------------------------------------
--- Clock 5      
-        Output( i ) <= tmp_trk4;
+-- Clock 4     
+        Output( i ) <= tmp_trk3;
         Output( i ).DataValid <= temp_vld;
         Output( i ).PrimaryTrack <= temp_vld;
 -- ----------------------------------------------------------------------------------------------

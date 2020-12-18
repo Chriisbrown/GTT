@@ -25,6 +25,10 @@ LIBRARY Vertex;
 USE Vertex.DataType;
 USE Vertex.ArrayTypes;
 
+LIBRARY InTTTrack;
+USE InTTTrack.DataType;
+USE InTTTrack.ArrayTypes;
+
 LIBRARY TTTrack;
 USE TTTrack.DataType;
 USE TTTrack.ArrayTypes;
@@ -57,6 +61,9 @@ END GTTTop;
 -- -------------------------------------------------------------------------
 ARCHITECTURE rtl OF GTTTop IS
 
+  SUBTYPE tInTrackPipe IS InTTTrack.ArrayTypes.VectorPipe( 0 TO 9 )( 0 TO 17 );
+  CONSTANT NullInTrackPipe : tInTrackPipe := InTTTrack.ArrayTypes.NullVectorPipe( 10 , 18 );
+
   SUBTYPE tWordTrackPipe IS TTTrack.ArrayTypes.VectorPipe( 0 TO 9 )( 0 TO 17 );
   CONSTANT NullWordTrackPipe : tWordTrackPipe := TTTrack.ArrayTypes.NullVectorPipe( 10 , 18 );
 
@@ -69,7 +76,7 @@ ARCHITECTURE rtl OF GTTTop IS
   SUBTYPE tGlobEtPipe IS Et.ArrayTypes.VectorPipe( 0 TO 9 )( 0 TO 0 );
   CONSTANT NullGlobEtPipe      : tGlobEtPipe   := Et.ArrayTypes.NullVectorPipe( 10 , 1 );
 
-  SIGNAL InputPipe             : tWordTrackPipe        := NullWordTrackPipe;
+  SIGNAL InputPipe             : tInTrackPipe          := NullInTrackPipe;
   SIGNAL TrackPipe             : tWordTrackPipe        := NullWordTrackPipe;
   SIGNAl DelayedTracks         : tWordTrackPipe        := NullWordTrackPipe;
   SIGNAl PVTracks              : tWordTrackPipe        := NullWordTrackPipe;
@@ -89,7 +96,7 @@ PORT MAP(
   );
 -- -------------------------------------------------------------------------
 -- -------------------------------------------------------------------------
-PtCalculateInstance : ENTITY LinkDecode.PtCalculate
+PtCalculateInstance : ENTITY LinkDecode.TrackTransform
 PORT MAP(
   clk              => clk ,
   TTTrackPipeIn    => InputPipe ,

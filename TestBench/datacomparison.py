@@ -10,7 +10,7 @@ emulation_df = emulation(1000,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles
 print(".........Emulated...........")
 simulation_df = simulation(1000,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object_300k.root")
 print("........Simulated...........")
-fw_sim_df = fw_sim_reader(1000)
+fw_sim_df = fw_sim_reader(1000,"/home/cb719/Documents/L1Trigger/GTT/EMP/TestBench/output_files/sim/FullGTT")
 print(".....FPGA file read.........")
 
 MET_df_old = emulation_df[["EM_MET","EM_MET_phi"]].join(simulation_df[["SW_MET","SW_MET_phi","TrkMET","MCMET"]])

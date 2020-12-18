@@ -102,24 +102,24 @@ END GlobalET;
 
   SIGNAL tempPx1 : INTEGER := 0;
   SIGNAL tempPy1 : INTEGER := 0;
-  SIGNAL tempPx2 : INTEGER := 0;
-  SIGNAL tempPy2 : INTEGER := 0;
-  SIGNAL tempPx3 : INTEGER := 0;
-  SIGNAL tempPy3 : INTEGER := 0;
-  SIGNAL tempPx4 : INTEGER := 0;
-  SIGNAL tempPy4 : INTEGER := 0;
-  SIGNAL tempPx5 : INTEGER := 0;
-  SIGNAL tempPy5 : INTEGER := 0;
-  SIGNAL tempPx6 : INTEGER := 0;
-  SIGNAL tempPy6 : INTEGER := 0;
-  SIGNAL tempPx7 : INTEGER := 0;
-  SIGNAL tempPy7 : INTEGER := 0;
-  SIGNAL tempPx8 : INTEGER := 0;
-  SIGNAL tempPy8 : INTEGER := 0;
-  SIGNAL tempPx9 : INTEGER := 0;
-  SIGNAL tempPy9 : INTEGER := 0;
-  SIGNAL tempPx10 : INTEGER := 0;
-  SIGNAL tempPy10 : INTEGER := 0;
+  --SIGNAL tempPx2 : INTEGER := 0;
+  --SIGNAL tempPy2 : INTEGER := 0;
+  --SIGNAL tempPx3 : INTEGER := 0;
+  --SIGNAL tempPy3 : INTEGER := 0;
+  --SIGNAL tempPx4 : INTEGER := 0;
+  --SIGNAL tempPy4 : INTEGER := 0;
+  --SIGNAL tempPx5 : INTEGER := 0;
+  --SIGNAL tempPy5 : INTEGER := 0;
+  --SIGNAL tempPx6 : INTEGER := 0;
+  --SIGNAL tempPy6 : INTEGER := 0;
+  --SIGNAL tempPx7 : INTEGER := 0;
+  --SIGNAL tempPy7 : INTEGER := 0;
+  --SIGNAL tempPx8 : INTEGER := 0;
+  --SIGNAL tempPy8 : INTEGER := 0;
+  --SIGNAL tempPx9 : INTEGER := 0;
+  --SIGNAL tempPy9 : INTEGER := 0;
+  --SIGNAL tempPx10 : INTEGER := 0;
+  --SIGNAL tempPy10 : INTEGER := 0;
 
   SIGNAL RootSum   : SIGNED(15 DOWNTO 0) := (OTHERS => '0');
   SIGNAL tempEt    : INTEGER := 0;
@@ -176,57 +176,57 @@ END COMPONENT CordicSqrt;
         END IF;
       
   
-        tempPx2 <= tempPxSum;
-        tempPy2 <= tempPySum;
+        --tempPx2 <= tempPxSum;
+        --tempPy2 <= tempPySum;
         tempfvld2 <= tempfvld1;
 -- ----------------------------------------------------------------------------------------------
 -- CORDIC BEGINS for 8 Clocks
 -- ----------------------------------------------------------------------------------------------
 -- Clock 3
-        tempPx3 <= tempPx2;
-        tempPy3 <= tempPy2;
+        --tempPx3 <= tempPx2;
+        --tempPy3 <= tempPy2;
         tempfvld3 <= tempfvld2;
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------------------------------------------------------------------
 -- Clock 4
-        tempPx4 <= tempPx3;
-        tempPy4 <= tempPy3;
+        --tempPx4 <= tempPx3;
+        --tempPy4 <= tempPy3;
         tempfvld4 <= tempfvld3;
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------------------------------------------------------------------
 -- Clock 5
-        tempPx5 <= tempPx4;
-        tempPy5 <= tempPy4;
+        --tempPx5 <= tempPx4;
+        --tempPy5 <= tempPy4;
         tempfvld5 <= tempfvld4;
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------------------------------------------------------------------
 -- Clock 6
-        tempPx6 <= tempPx5;
-        tempPy6 <= tempPy5;
+        --tempPx6 <= tempPx5;
+        --tempPy6 <= tempPy5;
         tempfvld6 <= tempfvld5;
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------------------------------------------------------------------
 -- Clock 7
-        tempPx7 <= tempPx6;
-        tempPy7 <= tempPy6;
+        --tempPx7 <= tempPx6;
+        --tempPy7 <= tempPy6;
         tempfvld7 <= tempfvld6;
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------------------------------------------------------------------
 -- Clock 8
-        tempPx8 <= tempPx7;
-        tempPy8 <= tempPy7;
+        --tempPx8 <= tempPx7;
+        --tempPy8 <= tempPy7;
         tempfvld8 <= tempfvld7;
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------------------------------------------------------------------
 -- Clock 9
-        tempPx9 <= tempPx8;
-        tempPy9 <= tempPy8;
+        --tempPx9 <= tempPx8;
+        --tempPy9 <= tempPy8;
         tempfvld9 <= tempfvld8;
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------------------------------------------------------------------
 -- Clock 10
-        tempPx10 <= tempPx9;
-        tempPy10 <= tempPy9;
+        --tempPx10 <= tempPx9;
+        --tempPy10 <= tempPy9;
         tempfvld10 <= tempfvld9;
         tempEt <= (TO_INTEGER(RootSum)*39901)/2**15;
 -- ----------------------------------------------------------------------------------------------
@@ -240,8 +240,8 @@ END COMPONENT CordicSqrt;
           tempPySum := 0;
           Output( 0 ) <= ET.DataType.cNull;
         ELSE
-            Output( 0 ) .Px <= TO_SIGNED(tempPx10,16);
-            Output( 0 ) .Py <= TO_SIGNED(tempPy10,16);
+            --Output( 0 ) .Px <= TO_SIGNED(tempPx10,16);
+            --Output( 0 ) .Py <= TO_SIGNED(tempPy10,16);
             Output( 0 ) .Et <= TO_UNSIGNED(tempEt,16);
             
         END IF;

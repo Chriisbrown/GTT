@@ -19,6 +19,10 @@ USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.STD_LOGIC_MISC.ALL;
 USE IEEE.NUMERIC_STD.ALL;
 
+LIBRARY InTTTrack;
+USE InTTTrack.DataType;
+USE InTTTrack.ArrayTypes;
+
 LIBRARY TTTrack;
 USE TTTrack.DataType;
 USE TTTrack.ArrayTypes;
@@ -42,13 +46,11 @@ ENTITY PtCalculate IS
   );
   PORT(
     clk              : IN STD_LOGIC := '0'; -- The algorithm clock
-    TTTrackPipeIn    : IN TTTrack.ArrayTypes.VectorPipe;
+    TTTrackPipeIn    : IN InTTTrack.ArrayTypes.VectorPipe;
     TTTrackPipeOut   : OUT TTTrack.ArrayTypes.VectorPipe
   );
 END PtCalculate;
 -- -------------------------------------------------------------------------
-
-
 
 -- -------------------------------------------------------------------------
 ARCHITECTURE rtl OF PtCalculate IS
@@ -68,22 +70,29 @@ BEGIN
 
 -- -------------------------------------------------------------------------
   g1              : FOR i IN 0 TO 17 GENERATE
-    SIGNAL lTTTrack    : TTTrack.DataType.tData := TTTrack.DataType.cNull;
+    SIGNAL lTTTrack    : InTTTrack.DataType.tData := InTTTrack.DataType.cNull;
 
     
     SIGNAL InvR : UNSIGNED( 17 DOWNTO 0 ) := ( OTHERS => '0' );
     SIGNAL IntOut : UNSIGNED( 19 DOWNTO 0 ) := ( OTHERS => '0' );
     SIGNAL FracOut : UNSIGNED( 17 DOWNTO 0 ) := ( OTHERS => '0' );
-    SIGNAL temp_eta : INTEGER := 0;
+    SIGNAL temp_eta : UNSIGNED( 15 DOWNTO 0 ) := ( OTHERS => '0' );
 
-    SIGNAL temp_z01     : TTTrack.DataType.tData := TTTrack.DataType.cNull;
-    SIGNAL temp_z02     : TTTrack.DataType.tData := TTTrack.DataType.cNull;
-    SIGNAL temp_z03     : TTTrack.DataType.tData := TTTrack.DataType.cNull;
-    SIGNAL temp_z04     : TTTrack.DataType.tData := TTTrack.DataType.cNull;
-    SIGNAL temp_z05     : TTTrack.DataType.tData := TTTrack.DataType.cNull;
-    SIGNAL temp_z06     : TTTrack.DataType.tData := TTTrack.DataType.cNull;
-    SIGNAL temp_z07     : TTTrack.DataType.tData := TTTrack.DataType.cNull;
+    SIGNAL temp_trk1     : TTTrack.DataType.tData := TTTrack.DataType.cNull;
+    SIGNAL temp_trk2     : TTTrack.DataType.tData := TTTrack.DataType.cNull;
+    SIGNAL temp_trk3     : TTTrack.DataType.tData := TTTrack.DataType.cNull;
+    SIGNAL temp_trk4     : TTTrack.DataType.tData := TTTrack.DataType.cNull;
+    SIGNAL temp_trk5     : TTTrack.DataType.tData := TTTrack.DataType.cNull;
+    SIGNAL temp_trk6     : TTTrack.DataType.tData := TTTrack.DataType.cNull;
+    SIGNAL temp_trk7     : TTTrack.DataType.tData := TTTrack.DataType.cNull;
 
+    SIGNAL GlobalPhi1 : INTEGER := 0;
+    SIGNAL GlobalPhi2 : INTEGER := 0;
+
+    SIGNAL tmp_z1 : INTEGER := 0;
+    SIGNAL tmp_z2 : INTEGER := 0;
+    SIGNAL tmp_z3 : INTEGER := 0;
+    SIGNAL tmp_z4 : INTEGER := 0;
 
   BEGIN
 
@@ -99,43 +108,80 @@ BEGIN
     lTTTrack <= TTTrackPipeIn( PipeOffset )( i );
     
     PROCESS( clk )
+
+    VARIABLE tmp_z : INTEGER := 0;
     BEGIN
       IF RISING_EDGE( clk ) THEN
 -- ----------------------------------------------------------------------------------------------
 -- Clock 1
-        temp_z01         <= lTTTrack;
-        InvR             <= TO_UNSIGNED( abs(TO_INTEGER( lTTTrack.InvR )),18 );
+        temp_trk1   <= lTTTrack;
+        InvR        <= TO_UNSIGNED( abs(TO_INTEGER( lTTTrack.InvR )),18 );
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------------------------------------------------------------------
 -- Clock 2
-        temp_z02     <= temp_z01;
+        temp_trk2   <= temp_trk1;
+         
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------------------------------------------------------------------
 -- Clock 3
-        temp_z03     <= temp_z02;
+        temp_trk3   <= temp_trk2;
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------------------------------------------------------------------
 -- Clock 4
-        temp_z04     <= temp_z03;
+        temp_trk4     <= temp_trk3;
+        IF temp_trk3.Z0Frac(temp_trk3.Z0Frac'left) = '1' THEN --negative
+          IF temp_trk3.Z0Int >= 15 THEN
+            tmp_z := 0;
+          ELSE
+            tmp_z := -TO_INTEGER(temp_trk3.Z0Int)*8 + TO_INTEGER(temp_trk3.Z0Frac)/8 + TO_INTEGER(temp_trk3.Z0Frac)/64 + 128 - TO_INTEGER(temp_trk3.Z0Int)/2;
+          END IF;
+        ELSE  --positive
+          IF temp_trk3.Z0Int >= 15 THEN
+            tmp_z := 255;
+          ELSE
+            tmp_z := TO_INTEGER(temp_trk3.Z0Int)*8 + TO_INTEGER(temp_trk3.Z0Frac)/8 + TO_INTEGER(temp_trk3.Z0Frac)/64 + 128 + TO_INTEGER(temp_trk3.Z0Int)/2;
+          END IF;
+        END IF;
+        tmp_z1 <= tmp_z;
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------------------------------------------------------------------
 -- Clock 5
-        temp_z05     <= temp_z04;
+        temp_trk5    <= temp_trk4;
+        tmp_z2       <= tmp_z1;
+        GlobalPhi1   <= TO_INTEGER(temp_trk4.phi) + Phi_shift(i) - 1024;
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------------------------------------------------------------------
 -- Clock 6
-        temp_z06     <= temp_z05;
+        temp_trk6  <= temp_trk5;
+        tmp_z3     <= tmp_z2;
+
+        IF GlobalPhi1 < 0 THEN
+          GlobalPhi2 <= GlobalPhi1 + 6268;
+        ELSIF GlobalPhi1 > 6268 THEN
+          GlobalPhi2 <= GlobalPhi1 - 6268; 
+        ELSE
+          GlobalPhi2 <= GlobalPhi1;
+        END IF;
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------------------------------------------------------------------
 -- Clock 7
-        temp_z07     <= temp_z06;
-        temp_eta     <= TanLLUT(TO_INTEGER(temp_z06.tanlfrac))(abs(TO_INTEGER(temp_z06.tanlint)));
+        temp_trk7    <= temp_trk6;
+        tmp_z4       <= tmp_z3;
+        temp_eta     <= TanLLUT(TO_INTEGER(temp_trk6.tanlfrac))(abs(TO_INTEGER(temp_trk6.tanlint)));
+        GlobalPhi3   <= GlobalPhi2;
 -- ----------------------------------------------------------------------------------------------
-        Output( i )         <= temp_z07;
-        Output( i ) .eta    <= TO_UNSIGNED(temp_eta,16);
-        Output( i ) .Pt     <= TO_UNSIGNED(TO_INTEGER(IntOut)+TO_INTEGER(FracOut)/2**18,16);
-
-
+-- Clock 8
+        Output( i ).Pt  <= TO_UNSIGNED(TO_INTEGER(IntOut)+TO_INTEGER(FracOut)/2**18,16);
+        Output( i ).Phi <= TO_UNSIGNED(GlobalPhi3,14);
+        Output( i ).Eta <= TO_UNSIGNED(temp_eta,16);
+        Output( i ).Z0  <= TO_UNSIGNED(tmp_z4,8);
+        Output( i ).Chi2rphi   <= temp_trk7.Chi2rphi;
+        Output( i ).Chi2rz     <= temp_trk7.Chi2rz;
+        Output( i ).BendChi2   <= temp_trk7.BendChi2;
+        Output( i ).Hitpattern <= temp_trk7.Hitpattern;
+        Output( i ).DataValid  <= temp_trk7.DataValid;
+        Output( i ).FrameValid <= temp_trk7.FrameValid;
+        
       END IF;
     END PROCESS;
   END GENERATE;

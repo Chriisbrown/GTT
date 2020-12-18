@@ -6,6 +6,18 @@ use ieee.numeric_std.all;
 package TanLROM is
     type intArray is array(natural range <>) of integer;
     type intArray2D is array(natural range <>) of intArray;
+
+    constant Phi_shift : intArray(0 TO 17) := (
+        (0),(0),
+      (696),(696),
+     (1392),(1392),
+     (2088),(2088),
+     (2784),(2784),
+     (3480),(3480),
+     (4176),(4176),
+     (4872),(4872),
+     (5568),(5568));
+     
     constant TanLLUT : intArray2D(0 to 4095)(0 to 7) := (
         (32769,43691,50658,55303,58727,61425,63647,65535),
         (32771,43693,50659,55304,58728,61425,63648,0),

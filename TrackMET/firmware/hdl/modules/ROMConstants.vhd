@@ -7,18 +7,6 @@ use ieee.numeric_std.all;
 package ROMConstants is
   type intArray is array(natural range <>) of integer;
   type intArray2D is array(natural range <>) of intArray;
-  constant Phi_shift : intArray(0 TO 17) := (
-       (0),(0),
-     (696),(696),
-    (1392),(1392),
-    (2088),(2088),
-    (2784),(2784),
-    (3480),(3480),
-    (4176),(4176),
-    (4872),(4872),
-    (5568),(5568));
-
-
 
   constant TrigArray : intArray2D(0 TO 1566)(0 TO 1) := (
     (2048,0),

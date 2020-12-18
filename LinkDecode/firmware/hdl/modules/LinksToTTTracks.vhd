@@ -30,9 +30,9 @@ USE IEEE.NUMERIC_STD.ALL;
 library xil_defaultlib;
 use xil_defaultlib.emp_data_types.all;
 
-LIBRARY TTTrack;
-USE TTTrack.DataType.ALL;
-USE TTTrack.ArrayTypes.ALL;
+LIBRARY InTTTrack;
+USE InTTTrack.DataType.ALL;
+USE InTTTrack.ArrayTypes.ALL;
 
 LIBRARY Utilities;
 USE Utilities.debugging.ALL;
@@ -142,13 +142,13 @@ BEGIN
 
 -- -------------------------------------------------------------------------
 -- Store the result in a pipeline  
-  OutputPipeInstance : ENTITY TTTrack.DataPipe
+  OutputPipeInstance : ENTITY InTTTrack.DataPipe
   PORT MAP( clk , Output , WordTrackPipeOut );
 -- -------------------------------------------------------------------------
 
 -- -------------------------------------------------------------------------
  --Write the debug information to file
-    DebugInstance : ENTITY TTTrack.Debug
+    DebugInstance : ENTITY InTTTrack.Debug
     GENERIC MAP( "LinksToTTTrack" )
     PORT MAP( clk , Output ) ;
 -- -------------------------------------------------------------------------

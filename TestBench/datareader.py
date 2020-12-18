@@ -46,17 +46,17 @@ for file in sorted_filenames:
                             #FPGA_weight_array.append(weight)
 
 '''
-def fw_sim_reader(num_events):
+def fw_sim_reader(num_events,filename):
     sim_z0_array = []
     sim_weight_array = []
     sim_MET_array = []
 
-    all_filenames = os.listdir("output_files/sim/full_GTT")
+    all_filenames = os.listdir(filename)
     filenames = [file for file in all_filenames if file.endswith(".txt")]
     sorted_filenames = sorted(filenames, key=lambda x: int(x.split('_')[1].split('.')[0]))
     for file in sorted_filenames:
         if file.endswith(".txt"):
-            inputfile = open(os.path.join("output_files/sim/full_GTT", file), 'r') 
+            inputfile = open(os.path.join(filename, file), 'r') 
             inLines = inputfile .readlines() 
 
             for i,line in enumerate(inLines):
