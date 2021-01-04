@@ -35,7 +35,7 @@ MET_df["VTX_SW_error"] = abs(vtx_df["fw_z0"] - vtx_df["SW_Vertex"])
 print(MET_df.nlargest(10,'MET_EM_error'))
 print(MET_df.nlargest(10,'VTX_EM_error'))
 
-name = "performance_plots/indepth/"
+name = "performance_plots/efficiency/"
 
 #=========================================Emulation Vertex========================================================#
 fig,ax = plt.subplots(1,2,figsize=(18,9))

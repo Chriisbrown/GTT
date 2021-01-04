@@ -8,6 +8,12 @@ src --vhdl2008 -c RuflCore: -l Vertex ReuseableElements/DataRam.vhd
 src --vhdl2008 -c VertexFinder: -l Vertex track/Debugger.vhd
 src --vhdl2008 -c RuflCore: -l Vertex ReuseableElements/DistributionServer.vhd
 
+src --vhdl2008 -c LinkDecode: -l InTTTrack types/PkgInTTTrack.vhd
+src --vhdl2008 -c RuflCore:   -l InTTTrack ReuseableElements/PkgArrayTypes.vhd
+src --vhdl2008 -c RuflCore:   -l InTTTrack ReuseableElements/DataPipe.vhd
+src --vhdl2008 -c RuflCore:   -l InTTTrack ReuseableElements/Debugger.vhd
+src --vhdl2008 -c RuflCore:   -l InTTTrack ReuseableElements/DataRam.vhd
+
 src --vhdl2008 -c LinkDecode: -l TTTrack types/PkgTTTrack.vhd
 src --vhdl2008 -c LinkDecode: -l TTTrack track/PkgArrayTypes.vhd
 src --vhdl2008 -c LinkDecode: -l TTTrack track/DataPipe.vhd
@@ -18,8 +24,7 @@ src --vhdl2008 -c LinkDecode: -l LinkDecode modules/LinksToTTTracks.vhd
 src --vhdl2008 -c LinkDecode: -l LinkDecode modules/TTTrackSaver.vhd
 src --vhdl2008 -c LinkDecode: -l LinkDecode modules/InvRdivider.vhd
 src --vhdl2008 -c LinkDecode: -l LinkDecode modules/TanLROM.vhd
-src --vhdl2008 -c LinkDecode: -l LinkDecode modules/PtCalculate.vhd
-
+src --vhdl2008 -c LinkDecode: -l LinkDecode modules/TrackTransform.vhd
 
 src --vhdl2008 -c VertexFinder: -l VertexFinder modules/TTTracksToVertices.vhd
 src --vhdl2008 -c VertexFinder: -l VertexFinder modules/VertexDistribution.vhd
@@ -27,7 +32,6 @@ src --vhdl2008 -c VertexFinder: -l VertexFinder modules/Fanout.vhd
 src --vhdl2008 -c VertexFinder: -l VertexFinder modules/Histogram.vhd
 src --vhdl2008 -c VertexFinder: -l VertexFinder modules/MaximaFinder.vhd
 src --vhdl2008 -c VertexFinder: -l VertexFinder modules/VertexToLink.vhd
-src --vhdl2008 -c VertexFinder: -l VertexFinder top/VertexFinderProcessor.vhd
 src --vhdl2008 -c VertexFinder: -l VertexFinder top/VertexFinderModule.vhd
 
 src --vhdl2008 -c TrackSelection: -l TrackSelection TrackSelection.vhd

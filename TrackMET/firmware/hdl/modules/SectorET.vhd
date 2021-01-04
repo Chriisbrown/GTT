@@ -41,10 +41,12 @@ BEGIN
     SIGNAL tempfvld2 : BOOLEAN := FALSE;
     SIGNAL tempfvld3 : BOOLEAN := FALSE;
     SIGNAL tempfvld4 : BOOLEAN := FALSE;
+    SIGNAL tempfvld5 : BOOLEAN := FALSE;
 
     SIGNAL tempdvld1 : BOOLEAN := FALSE;
     SIGNAL tempdvld2 : BOOLEAN := FALSE;
     SIGNAL tempdvld3 : BOOLEAN := FALSE;
+    SIGNAL tempdvld4 : BOOLEAN := FALSE;
 
     SIGNAL tempPt1 : UNSIGNED( 15 DOWNTO 0 ) := ( OTHERS => '0' );
     SIGNAL tempPt2 : UNSIGNED( 15 DOWNTO 0 ) := ( OTHERS => '0' );
@@ -56,11 +58,16 @@ BEGIN
     SIGNAL PhiySign : BOOLEAN := FALSE;
     SIGNAL PhixSign2 : BOOLEAN := FALSE;    
     SIGNAL PhiySign2 : BOOLEAN := FALSE;
+    SIGNAL PhixSign3 : BOOLEAN := FALSE;    
+    SIGNAL PhiySign3 : BOOLEAN := FALSE;
 
     SIGNAL GlobalPhi : INTEGER := 0;
 
     SIGNAL tempPx : UNSIGNED( 27 DOWNTO 0) := ( OTHERS => '0' );
     SIGNAL tempPy : UNSIGNED( 27 DOWNTO 0) := ( OTHERS => '0' );
+
+    SIGNAL DSPfullPx : UNSIGNED(27 DOWNTO 0) := ( OTHERS => '0' );
+    SIGNAL DSPfullPy : UNSIGNED(27 DOWNTO 0) := ( OTHERS => '0' );
 
   BEGIN
     l1TTTrack <= TTTrackPipeIn( 0 )( i );
@@ -68,9 +75,6 @@ BEGIN
     PROCESS( clk )
       VARIABLE sumPx : INTEGER := 0;
       VARIABLE sumPy : INTEGER := 0;
-
-      VARIABLE DSPfullPx : UNSIGNED(27 DOWNTO 0) := ( OTHERS => '0' );
-      VARIABLE DSPfullPy : UNSIGNED(27 DOWNTO 0) := ( OTHERS => '0' );
 
       
     BEGIN
@@ -119,29 +123,34 @@ BEGIN
 
 -- ----------------------------------------------------------------------------------------------
 -- Clock 2
-        DSPfullPx := (tempPhix * tempPt2);
-        DSPfullPy := (tempPhiy * tempPt2);
-        tempPx <= DSPfullPx;
-        tempPy <= DSPfullPy;
+        DSPfullPx <= (tempPhix * tempPt2);
+        DSPfullPy <= (tempPhiy * tempPt2);
         PhixSign2 <= PhixSign; 
         PhiySign2 <= PhiySign;
         tempfvld3 <= tempfvld2;
         tempdvld3 <= tempdvld2;
 
 -- ----------------------------------------------------------------------------------------------
-
--- ----------------------------------------------------------------------------------------------
 -- Clock 3
-        tempfvld4 <= tempfvld3;
 
-        IF tempdvld3 THEN
-          IF PhixSign2 THEN
+        tempPx <= DSPfullPx;
+        tempPy <= DSPfullPy;
+        PhixSign3 <= PhixSign2; 
+        PhiySign3 <= PhiySign2;
+        tempfvld4 <= tempfvld3;
+        tempdvld4 <= tempdvld3;
+-- ----------------------------------------------------------------------------------------------
+-- Clock 4
+        tempfvld5 <= tempfvld4;
+
+        IF tempdvld4 THEN
+          IF PhixSign3 THEN
             SumPx := SumPx - TO_INTEGER(tempPx)/2**12;
           ELSE
             SumPx := SumPx +  TO_INTEGER(tempPx)/2**12;
           END IF;
 
-          IF PhiySign2 THEN
+          IF PhiySign3 THEN
             SumPy := SumPy - TO_INTEGER( tempPy)/2**12;
           ELSE
             SumPy := SumPy +  TO_INTEGER(tempPy)/2**12;
@@ -152,7 +161,7 @@ BEGIN
         END IF;
 
 
-        IF tempfvld4 AND NOT tempfvld3 THEN
+        IF tempfvld5 AND NOT tempfvld4 THEN
           SumPx := 0;
           SumPy := 0;
           Output( i ) <= ET.DataType.cNull;
@@ -162,8 +171,8 @@ BEGIN
           Output( i ) .Sector <=  TO_UNSIGNED(i/2,4);
         END IF;
 
-        Output( i ) .DataValid  <= tempfvld3 AND NOT tempfvld2;
-        Output( i ) .FrameValid <= tempfvld3;
+        Output( i ) .DataValid  <= tempfvld4 AND NOT tempfvld3;
+        Output( i ) .FrameValid <= tempfvld4;
   
       END IF;
     END PROCESS;

@@ -97,6 +97,7 @@ END GlobalET;
   SIGNAL tempfvld9 : BOOLEAN := FALSE;
   SIGNAL tempfvld10 : BOOLEAN := FALSE;
   SIGNAL tempfvld11 : BOOLEAN := FALSE;
+  SIGNAL tempfvld12 : BOOLEAN := FALSE;
 
   SIGNAL tempdvld1 : BOOLEAN := FALSE;
 
@@ -123,6 +124,8 @@ END GlobalET;
 
   SIGNAL RootSum   : SIGNED(15 DOWNTO 0) := (OTHERS => '0');
   SIGNAL tempEt    : INTEGER := 0;
+  SIGNAL outEt     : INTEGER := 0;
+
 
   SIGNAL tempPxSum : INTEGER := 0;
   SIGNAL tempPySum : INTEGER := 0;
@@ -230,24 +233,27 @@ END COMPONENT CordicSqrt;
         tempfvld10 <= tempfvld9;
         tempEt <= (TO_INTEGER(RootSum)*39901)/2**15;
 -- ----------------------------------------------------------------------------------------------
-
--- ----------------------------------------------------------------------------------------------
 -- Clock 11
         tempfvld11 <= tempfvld10;
+        outEt <= tempEt;
+-- ----------------------------------------------------------------------------------------------
+-- ----------------------------------------------------------------------------------------------
+-- Clock 112
+        tempfvld12 <= tempfvld11;
 
-        IF tempfvld11 AND NOT tempfvld10 THEN
+        IF tempfvld12 AND NOT tempfvld11 THEN
           tempPxSum := 0;
           tempPySum := 0;
           Output( 0 ) <= ET.DataType.cNull;
         ELSE
             --Output( 0 ) .Px <= TO_SIGNED(tempPx10,16);
             --Output( 0 ) .Py <= TO_SIGNED(tempPy10,16);
-            Output( 0 ) .Et <= TO_UNSIGNED(tempEt,16);
+            Output( 0 ) .Et <= TO_UNSIGNED(outEt,16);
             
         END IF;
         
-        Output( 0 ) .DataValid  <= tempfvld10 AND NOT tempfvld9;
-        Output( 0 ) .FrameValid <= tempfvld10;
+        Output( 0 ) .DataValid  <= tempfvld11 AND NOT tempfvld10;
+        Output( 0 ) .FrameValid <= tempfvld11;
   
       END IF;
   END PROCESS;

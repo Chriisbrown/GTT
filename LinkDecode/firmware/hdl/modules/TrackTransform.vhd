@@ -74,9 +74,17 @@ BEGIN
 
     
     SIGNAL InvR : UNSIGNED( 17 DOWNTO 0 ) := ( OTHERS => '0' );
+
+
     SIGNAL IntOut : UNSIGNED( 19 DOWNTO 0 ) := ( OTHERS => '0' );
     SIGNAL FracOut : UNSIGNED( 17 DOWNTO 0 ) := ( OTHERS => '0' );
+
+    SIGNAL temp_IntOut : UNSIGNED( 19 DOWNTO 0 ) := ( OTHERS => '0' );
+    SIGNAL temp_FracOut : UNSIGNED( 17 DOWNTO 0 ) := ( OTHERS => '0' );
+
+
     SIGNAL temp_eta : INTEGER := 0;
+    SIGNAL temp_eta2 : INTEGER := 0;
 
     SIGNAL temp_trk1     : InTTTrack.DataType.tData := InTTTrack.DataType.cNull;
     SIGNAL temp_trk2     : InTTTrack.DataType.tData := InTTTrack.DataType.cNull;
@@ -85,15 +93,18 @@ BEGIN
     SIGNAL temp_trk5     : InTTTrack.DataType.tData := InTTTrack.DataType.cNull;
     SIGNAL temp_trk6     : InTTTrack.DataType.tData := InTTTrack.DataType.cNull;
     SIGNAL temp_trk7     : InTTTrack.DataType.tData := InTTTrack.DataType.cNull;
+    SIGNAL temp_trk8     : InTTTrack.DataType.tData := InTTTrack.DataType.cNull;
 
     SIGNAL GlobalPhi1 : INTEGER := 0;
     SIGNAL GlobalPhi2 : INTEGER := 0;
     SIGNAL GlobalPhi3 : INTEGER := 0;
+    SIGNAL GlobalPhi4 : INTEGER := 0;
 
     SIGNAL tmp_z : INTEGER := 0;
     SIGNAL tmp_z1 : INTEGER := 0;
     SIGNAL tmp_z2 : INTEGER := 0;
     SIGNAL tmp_z3 : INTEGER := 0;
+    SIGNAL tmp_z4 : INTEGER := 0;
 
   BEGIN
 
@@ -170,17 +181,26 @@ BEGIN
         temp_eta     <= TanLLUT(TO_INTEGER(temp_trk6.tanlfrac))(abs(TO_INTEGER(temp_trk6.tanlint)));
         GlobalPhi3   <= GlobalPhi2;
 -- ----------------------------------------------------------------------------------------------
+-- ----------------------------------------------------------------------------------------------
 -- Clock 8
-        Output( i ).Pt  <= TO_UNSIGNED(TO_INTEGER(IntOut)+TO_INTEGER(FracOut)/2**18,16);
-        Output( i ).Phi <= TO_UNSIGNED(GlobalPhi3,13);
-        Output( i ).Eta <= TO_UNSIGNED(temp_eta,16);
-        Output( i ).Z0  <= TO_UNSIGNED(tmp_z3,8);
-        Output( i ).Chi2rphi   <= temp_trk7.Chi2rphi;
-        Output( i ).Chi2rz     <= temp_trk7.Chi2rz;
-        Output( i ).BendChi2   <= temp_trk7.BendChi2;
-        Output( i ).Hitpattern <= temp_trk7.Hitpattern;
-        Output( i ).DataValid  <= temp_trk7.DataValid;
-        Output( i ).FrameValid <= temp_trk7.FrameValid;
+        temp_trk8    <= temp_trk7;
+        tmp_z4       <= tmp_z3;
+        temp_eta2    <= temp_eta ;
+        GlobalPhi4   <= GlobalPhi3;
+        temp_IntOut  <= IntOut;
+        temp_FracOut <= FracOut;
+-- ----------------------------------------------------------------------------------------------
+-- Clock 9
+        Output( i ).Pt  <= TO_UNSIGNED(TO_INTEGER(temp_IntOut)+TO_INTEGER(temp_FracOut)/2**18,16);
+        Output( i ).Phi <= TO_UNSIGNED(GlobalPhi4,13);
+        Output( i ).Eta <= TO_UNSIGNED(temp_eta2,16);
+        Output( i ).Z0  <= TO_UNSIGNED(tmp_z4,8);
+        Output( i ).Chi2rphi   <= temp_trk8.Chi2rphi;
+        Output( i ).Chi2rz     <= temp_trk8.Chi2rz;
+        Output( i ).BendChi2   <= temp_trk8.BendChi2;
+        Output( i ).Hitpattern <= temp_trk8.Hitpattern;
+        Output( i ).DataValid  <= temp_trk8.DataValid;
+        Output( i ).FrameValid <= temp_trk8.FrameValid;
         
       END IF;
     END PROCESS;

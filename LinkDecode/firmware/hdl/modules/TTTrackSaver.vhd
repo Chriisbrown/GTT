@@ -45,6 +45,7 @@ g1 : FOR i IN 0 TO 17 GENERATE
   SIGNAL OutTrack : TTTrack.DataType.tData := TTTrack.DataType.cNull;
   SIGNAL PrimaryVertex : UNSIGNED( 7 DOWNTO 0 ) := "00000000" ;
   SIGNAL Temp_vld : BOOLEAN := FALSE;
+  SIGNAL WriteTotal : INTEGER := 0;
 
 
 BEGIN 
@@ -62,7 +63,7 @@ BEGIN
 
   VARIABLE Reading : BOOLEAN := FALSE;
   VARIABLE ReadTracks : INTEGER := 0;
-  VARIABLE WriteTotal : INTEGER := 0;
+  
   VARIABLE ReadTotal : INTEGER := 0;
 
   BEGIN
@@ -70,14 +71,13 @@ BEGIN
       IF( Input( i ).FrameValid) THEN
         IF( Input( i ) .DataValid ) THEN
           WriteAddr( i ) <= (WriteAddr( i ) + 1 ) MOD 512;
-          WriteTotal := WriteTotal + 1;
+          WriteTotal <= WriteTotal + 1;
         END IF;
-        WriteTotal := WriteTotal;
       END IF;
 
       IF (  Input( i ).FrameValid AND NOT NextTrackIn( i ) .FrameValid) THEN
         ReadTotal := WriteTotal;
-        WriteTotal := 0;
+        WriteTotal <= 0;
       END IF;
         
       IF (PrimaryVertexPipeIn( 0 )( 0 ).DataValid) THEN
