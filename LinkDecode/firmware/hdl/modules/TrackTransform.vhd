@@ -106,6 +106,11 @@ BEGIN
     SIGNAL tmp_z3 : INTEGER := 0;
     SIGNAL tmp_z4 : INTEGER := 0;
 
+    SIGNAL tanL_lut_0 : INTEGER := 0;
+    SIGNAL tanL_lut_1 : INTEGER := 0;
+
+    SIGNAL temp_fvld : BOOLEAN := FALSE;
+
   BEGIN
 
     Divider : InvRdivider
@@ -165,6 +170,8 @@ BEGIN
 -- Clock 6
         temp_trk6  <= temp_trk5;
         tmp_z2    <= tmp_z1;
+        tanL_lut_0 <= TO_INTEGER(temp_trk5.tanlfrac);
+        tanL_lut_1 <= abs(TO_INTEGER(temp_trk5.tanlint));
 
         IF GlobalPhi1 < 0 THEN
           GlobalPhi2 <= GlobalPhi1 + 6268;
@@ -178,7 +185,7 @@ BEGIN
 -- Clock 7
         temp_trk7    <= temp_trk6;
         tmp_z3       <= tmp_z2;
-        temp_eta     <= TanLLUT(TO_INTEGER(temp_trk6.tanlfrac))(abs(TO_INTEGER(temp_trk6.tanlint)));
+        temp_eta     <= TanLLUT(tanL_lut_0)(tanL_lut_1);
         GlobalPhi3   <= GlobalPhi2;
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------------------------------------------------------------------
@@ -189,6 +196,7 @@ BEGIN
         GlobalPhi4   <= GlobalPhi3;
         temp_IntOut  <= IntOut;
         temp_FracOut <= FracOut;
+        temp_fvld <= temp_trk7.FrameValid;
 -- ----------------------------------------------------------------------------------------------
 -- Clock 9
         Output( i ).Pt  <= TO_UNSIGNED(TO_INTEGER(temp_IntOut)+TO_INTEGER(temp_FracOut)/2**18,16);
@@ -200,7 +208,7 @@ BEGIN
         Output( i ).BendChi2   <= temp_trk8.BendChi2;
         Output( i ).Hitpattern <= temp_trk8.Hitpattern;
         Output( i ).DataValid  <= temp_trk8.DataValid;
-        Output( i ).FrameValid <= temp_trk8.FrameValid;
+        Output( i ).FrameValid <= temp_fvld;
         
       END IF;
     END PROCESS;

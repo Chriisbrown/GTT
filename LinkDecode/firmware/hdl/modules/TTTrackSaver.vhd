@@ -27,7 +27,7 @@ END TTTrackSaver;
 ARCHITECTURE rtl OF TTTrackSaver IS
   
   SIGNAL Output       : TTTrack.ArrayTypes.Vector( 0 TO 17 ) := TTTrack.ArrayTypes.NullVector( 18 );
-  SIGNAL Input, NextTrackIn : TTTrack.ArrayTypes.Vector( 0 TO 17 ) := TTTrack.ArrayTypes.NullVector( 18 );
+  SIGNAL Input        : TTTrack.ArrayTypes.Vector( 0 TO 17 ) := TTTrack.ArrayTypes.NullVector( 18 );
 
   SUBTYPE tAddress        IS INTEGER RANGE 0 TO 511;
   TYPE tAddressArray      IS ARRAY( 0 TO 17 ) OF tAddress;
@@ -38,14 +38,20 @@ ARCHITECTURE rtl OF TTTrackSaver IS
 
 BEGIN
 
-Input <= TTTrackPipeIn(1);
-NextTrackIn <= TTTrackPipeIn(0);
+Input <= TTTrackPipeIn(0);
+
 
 g1 : FOR i IN 0 TO 17 GENERATE
-  SIGNAL OutTrack : TTTrack.DataType.tData := TTTrack.DataType.cNull;
+  SIGNAL OutTrack  : TTTrack.DataType.tData := TTTrack.DataType.cNull;
+  SIGNAL TempTrack : TTTrack.DataType.tData := TTTrack.DataType.cNull;
+  SIGNAl Temp_fvld : BOOLEAN := FALSE;
   SIGNAL PrimaryVertex : UNSIGNED( 7 DOWNTO 0 ) := "00000000" ;
+
   SIGNAL Temp_vld : BOOLEAN := FALSE;
+  
   SIGNAL WriteTotal : INTEGER := 0;
+
+
 
 
 BEGIN 
@@ -53,8 +59,8 @@ BEGIN
   PORT MAP(
     clk         => clk , -- The algorithm clock
     WriteAddr   => WriteAddr( i ) ,
-    DataIn      => Input( i ) ,                        
-    WriteEnable => Input( i ).DataValid ,
+    DataIn      => TempTrack ,                        
+    WriteEnable => TempTrack.DataValid ,
     ReadAddr    => ReadAddr( i ) ,
     DataOut     => OutTrack
   );
@@ -68,14 +74,16 @@ BEGIN
 
   BEGIN
     IF( RISING_EDGE( clk ) ) THEN
-      IF( Input( i ).FrameValid) THEN
-        IF( Input( i ) .DataValid ) THEN
+      TempTrack <= Input( i );
+
+      IF( TempTrack.FrameValid) THEN
+        IF( TempTrack .DataValid ) THEN
           WriteAddr( i ) <= (WriteAddr( i ) + 1 ) MOD 512;
           WriteTotal <= WriteTotal + 1;
         END IF;
       END IF;
 
-      IF (  Input( i ).FrameValid AND NOT NextTrackIn( i ) .FrameValid) THEN
+      IF (  TempTrack.FrameValid AND NOT Input( i ) .FrameValid) THEN
         ReadTotal := WriteTotal;
         WriteTotal <= 0;
       END IF;

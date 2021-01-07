@@ -1,0 +1,8 @@
+# Location of ipbb area
+p2-xware: /home/hep/cb719/EMP/alt-work
+
+# Project name
+ProjName: GTT_sim
+
+depfile: GTT_sim.dep
+

@@ -98,6 +98,8 @@ END GlobalET;
   SIGNAL tempfvld10 : BOOLEAN := FALSE;
   SIGNAL tempfvld11 : BOOLEAN := FALSE;
   SIGNAL tempfvld12 : BOOLEAN := FALSE;
+  SIGNAL tempfvld13 : BOOLEAN := FALSE;
+
 
   SIGNAL tempdvld1 : BOOLEAN := FALSE;
 
@@ -123,8 +125,9 @@ END GlobalET;
   --SIGNAL tempPy10 : INTEGER := 0;
 
   SIGNAL RootSum   : SIGNED(15 DOWNTO 0) := (OTHERS => '0');
-  SIGNAL tempEt    : INTEGER := 0;
+  SIGNAL tempEt    : SIGNED(15 DOWNTO 0) := (OTHERS => '0');
   SIGNAL outEt     : INTEGER := 0;
+  SIGNAL outEt2     : INTEGER := 0;
 
 
   SIGNAL tempPxSum : INTEGER := 0;
@@ -231,29 +234,32 @@ END COMPONENT CordicSqrt;
         --tempPx10 <= tempPx9;
         --tempPy10 <= tempPy9;
         tempfvld10 <= tempfvld9;
-        tempEt <= (TO_INTEGER(RootSum)*39901)/2**15;
+        tempEt <= RootSum;
 -- ----------------------------------------------------------------------------------------------
 -- Clock 11
         tempfvld11 <= tempfvld10;
-        outEt <= tempEt;
+        outEt <= TO_INTEGER(tempEt)*39901;
 -- ----------------------------------------------------------------------------------------------
+-- Clock 12
+        tempfvld12 <= tempfvld11;
+        outEt2 <= outEt/2**15;
 -- ----------------------------------------------------------------------------------------------
 -- Clock 112
-        tempfvld12 <= tempfvld11;
+        tempfvld13 <= tempfvld12;
 
-        IF tempfvld12 AND NOT tempfvld11 THEN
+        IF tempfvld13 AND NOT tempfvld12 THEN
           tempPxSum := 0;
           tempPySum := 0;
           Output( 0 ) <= ET.DataType.cNull;
         ELSE
             --Output( 0 ) .Px <= TO_SIGNED(tempPx10,16);
             --Output( 0 ) .Py <= TO_SIGNED(tempPy10,16);
-            Output( 0 ) .Et <= TO_UNSIGNED(outEt,16);
+            Output( 0 ) .Et <= TO_UNSIGNED(outEt2,16);
             
         END IF;
         
-        Output( 0 ) .DataValid  <= tempfvld11 AND NOT tempfvld10;
-        Output( 0 ) .FrameValid <= tempfvld11;
+        Output( 0 ) .DataValid  <= tempfvld12 AND NOT tempfvld11;
+        Output( 0 ) .FrameValid <= tempfvld12;
   
       END IF;
   END PROCESS;
