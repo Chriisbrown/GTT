@@ -17,7 +17,6 @@ src --vhdl2008 -c TrackSelection: -l TrackSelection TrackToVertexAssoc.vhd
 src --vhdl2008 -c TrackSelection: -l TrackSelection TrackSelection.vhd
 
 src --vhdl2008 -c VertexFinder: -l VertexFinder top/VertexFinderModule.vhd
-src --vhdl2008 -c VertexFinder: -l VertexFinder modules/VertexToLink.vhd
 src --vhdl2008 -c VertexFinder: -l VertexFinder modules/MaximaFinder.vhd
 src --vhdl2008 -c VertexFinder: -l VertexFinder modules/Histogram.vhd
 src --vhdl2008 -c VertexFinder: -l VertexFinder modules/Fanout.vhd
