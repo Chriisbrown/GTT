@@ -15,6 +15,7 @@ USE Utilities.Utilities.ALL;
 LIBRARY TrackMET;
 USE TrackMET.ROMConstants.all;
 USE TrackMET.CordicSqrt;
+USE TrackMET.AC;
 
 -- -------------------------------------------------------------------------
 ENTITY GlobalET IS
@@ -28,34 +29,6 @@ END GlobalET;
 
 
   ARCHITECTURE rtl OF GlobalET IS
-
-  FUNCTION SumPx (EtVector : Vector) return Integer IS
-  VARIABLE temp_px : INTEGER := 0;
-  BEGIN
-    FOR i IN EtVector'RANGE LOOP
-      IF EtVector( i ).DataValid THEN
-        temp_px := temp_px + TO_INTEGER(EtVector( i ).Px);
-      ELSE
-        temp_px := temp_px;
-      END IF;
-    END LOOP;
-
-  RETURN temp_px; 
-  END FUNCTION SumPx;
-
-  FUNCTION SumPy (EtVector : Vector) return Integer IS
-  VARIABLE temp_py : INTEGER := 0;
-  BEGIN
-    FOR i IN EtVector'RANGE LOOP
-      IF EtVector( i ).DataValid THEN
-        temp_py := temp_py + TO_INTEGER(EtVector( i ).Py);
-      ELSE
-        temp_py := temp_py;
-      END IF;
-    END LOOP;
-
-  RETURN temp_py;
-  END FUNCTION SumPy;
 
   FUNCTION AnyFrameValid (EtVector : Vector) return BOOLEAN IS
   VARIABLE valid_count : INTEGER := 0;
@@ -83,184 +56,70 @@ END GlobalET;
   RETURN valid_count > 0;
   END FUNCTION AnyDataValid;
 
+
   SIGNAL Output : Vector( 0 TO 0 ) := NullVector( 1 );
   SIGNAL InputEt : Vector( 0 TO 17 ) := NullVector( 18 );
+  SIGNAL vldEt : Vector( 0 TO 17 ) := NullVector( 18 );
 
-  SIGNAL tempfvld1 : BOOLEAN := FALSE;
-  SIGNAL tempfvld2 : BOOLEAN := FALSE;
-  SIGNAL tempfvld3 : BOOLEAN := FALSE;
-  SIGNAL tempfvld4 : BOOLEAN := FALSE;
-  SIGNAL tempfvld5 : BOOLEAN := FALSE;
-  SIGNAL tempfvld6 : BOOLEAN := FALSE;
-  SIGNAL tempfvld7 : BOOLEAN := FALSE;
-  SIGNAL tempfvld8 : BOOLEAN := FALSE;
-  SIGNAL tempfvld9 : BOOLEAN := FALSE;
-  SIGNAL tempfvld10 : BOOLEAN := FALSE;
-  SIGNAL tempfvld11 : BOOLEAN := FALSE;
-  SIGNAL tempfvld12 : BOOLEAN := FALSE;
-  SIGNAL tempfvld13 : BOOLEAN := FALSE;
+  SIGNAL ExSignal : INTEGER := 0;
+  SIGNAL EYSignal : INTEGER := 0;
+  SIGNAL resetSignal : STD_LOGIC := '0';
 
+  SIGNAL framesignal : STD_LOGIC := '0';
+  constant full_dn : INTEGER := 9;
+  signal framedelay: std_logic_vector(0 to full_dn - 1);
 
-  SIGNAL tempdvld1 : BOOLEAN := FALSE;
-
-  SIGNAL tempPx1 : INTEGER := 0;
-  SIGNAL tempPy1 : INTEGER := 0;
-  SIGNAL tempPx2 : INTEGER := 0;
-  SIGNAL tempPy2 : INTEGER := 0;
-  SIGNAL tempPx3 : INTEGER := 0;
-  SIGNAL tempPy3 : INTEGER := 0;
-  SIGNAL tempPx4 : INTEGER := 0;
-  SIGNAL tempPy4 : INTEGER := 0;
-  SIGNAL tempPx5 : INTEGER := 0;
-  SIGNAL tempPy5 : INTEGER := 0;
-  SIGNAL tempPx6 : INTEGER := 0;
-  SIGNAL tempPy6 : INTEGER := 0;
-  SIGNAL tempPx7 : INTEGER := 0;
-  SIGNAL tempPy7 : INTEGER := 0;
-  SIGNAL tempPx8 : INTEGER := 0;
-  SIGNAL tempPy8 : INTEGER := 0;
-  SIGNAL tempPx9 : INTEGER := 0;
-  SIGNAL tempPy9 : INTEGER := 0;
-  SIGNAL tempPx10 : INTEGER := 0;
-  SIGNAL tempPy10 : INTEGER := 0;
-  SIGNAL tempPx11 : INTEGER := 0;
-  SIGNAL tempPy11 : INTEGER := 0;
-  SIGNAL tempPx12 : INTEGER := 0;
-  SIGNAL tempPy12 : INTEGER := 0;
-
-  SIGNAL RootSum   : SIGNED(15 DOWNTO 0) := (OTHERS => '0');
-  SIGNAL tempEt    : SIGNED(15 DOWNTO 0) := (OTHERS => '0');
-  SIGNAL outEt     : INTEGER := 0;
-  SIGNAL outEt2     : INTEGER := 0;
-
-
-  SIGNAL tempPxSum : INTEGER := 0;
-  SIGNAL tempPySum : INTEGER := 0;
+  SIGNAL NormedEt : INTEGER := 0;
+  SIGNAL RootSum : SIGNED( 15 DOWNTO 0 ) := (OTHERS=>'0');
 
   BEGIN
-    Sqrt : ENTITY TrackMET.CordicSqrt
-    GENERIC MAP (n_steps => 4)
-    PORT MAP(
-      clk => clk,
-      Xin => TO_SIGNED(tempPx2,16),
-      Yin => TO_SIGNED(tempPy2,16),
-      Root  => RootSum
-    );
+  Sqrt : ENTITY TrackMET.CordicSqrt
+  GENERIC MAP (n_steps => 4)
+  PORT MAP(
+    clk => clk,
+    Xin => TO_SIGNED(ExSignal,16),
+    Yin => TO_SIGNED(EySignal,16),
+    Root  => RootSum
+  );
+
+  Accumulator : ENTITY TrackMET.AC
+  PORT MAP(
+    clk => clk,
+    reset => resetSignal,
+    Et => vldEt,
+    SumEx  => ExSignal,
+    SumEy => EySignal
+  );
 
 
-    InputEt <= SectorEtPipeIn( 0 );
-    PROCESS( clk )
+  InputEt <= SectorEtPipeIn( 0 );
 
-      VARIABLE tempPxSum : INTEGER := 0;
-      VARIABLE tempPySum : INTEGER := 0;
-      
-    BEGIN
-      
-      IF RISING_EDGE( clk ) THEN
--- ----------------------------------------------------------------------------------------------
--- Clock 1
-        tempfvld1 <= AnyFrameValid(InputEt);
-        tempdvld1 <= AnyDataValid(InputEt);
-        tempPx1 <= SumPx( InputEt );
-        tempPy1 <= SumPy( InputEt );
--- ----------------------------------------------------------------------------------------------
-
--- ----------------------------------------------------------------------------------------------
--- Clock 2
-        IF tempdvld1 THEN
-          tempPxSum := tempPxSum + tempPx1;
-          tempPySum := tempPySum + tempPy1;
+  PROCESS( clk )
+  BEGIN
+    IF RISING_EDGE( clk ) THEN
+      IF AnyFrameValid(InputEt) THEN
+        framesignal <= '1';
+        IF AnyDataValid(InputEt) THEN
+          vldEt <= InputEt;
         ELSE
-          tempPxSum := tempPxSum;
-          tempPySum := tempPySum;
+          vldEt <= NullVector( 18 );
         END IF;
-      
-  
-        tempPx2 <= tempPxSum;
-        tempPy2 <= tempPySum;
-        tempfvld2 <= tempfvld1;
--- ----------------------------------------------------------------------------------------------
--- CORDIC BEGINS for 8 Clocks
--- ----------------------------------------------------------------------------------------------
--- Clock 3
-        tempPx3 <= tempPx2;
-        tempPy3 <= tempPy2;
-        tempfvld3 <= tempfvld2;
--- ----------------------------------------------------------------------------------------------
--- ----------------------------------------------------------------------------------------------
--- Clock 4
-        tempPx4 <= tempPx3;
-        tempPy4 <= tempPy3;
-        tempfvld4 <= tempfvld3;
--- ----------------------------------------------------------------------------------------------
--- ----------------------------------------------------------------------------------------------
--- Clock 5
-        tempPx5 <= tempPx4;
-        tempPy5 <= tempPy4;
-        tempfvld5 <= tempfvld4;
--- ----------------------------------------------------------------------------------------------
--- ----------------------------------------------------------------------------------------------
--- Clock 6
-        tempPx6 <= tempPx5;
-        tempPy6 <= tempPy5;
-        tempfvld6 <= tempfvld5;
--- ----------------------------------------------------------------------------------------------
--- ----------------------------------------------------------------------------------------------
--- Clock 7
-        tempPx7 <= tempPx6;
-        tempPy7 <= tempPy6;
-        tempfvld7 <= tempfvld6;
--- ----------------------------------------------------------------------------------------------
--- ----------------------------------------------------------------------------------------------
--- Clock 8
-        tempPx8 <= tempPx7;
-        tempPy8 <= tempPy7;
-        tempfvld8 <= tempfvld7;
--- ----------------------------------------------------------------------------------------------
--- ----------------------------------------------------------------------------------------------
--- Clock 9
-        tempPx9 <= tempPx8;
-        tempPy9 <= tempPy8;
-        tempfvld9 <= tempfvld8;
--- ----------------------------------------------------------------------------------------------
--- ----------------------------------------------------------------------------------------------
--- Clock 10
-        tempPx10 <= tempPx9;
-        tempPy10 <= tempPy9;
-        tempfvld10 <= tempfvld9;
-        tempEt <= RootSum;
--- ----------------------------------------------------------------------------------------------
--- Clock 11
-        tempPx11 <= tempPx10;
-        tempPy11 <= tempPy10;
-        tempfvld11 <= tempfvld10;
-        outEt <= TO_INTEGER(tempEt)*39901/2**16;
--- ----------------------------------------------------------------------------------------------
--- Clock 12
-        tempPx12 <= tempPx11;
-        tempPy12 <= tempPy11;
-        tempfvld12 <= tempfvld11;
-        outEt2 <= outEt;
--- ----------------------------------------------------------------------------------------------
--- Clock 112
-        tempfvld13 <= tempfvld12;
-
-        IF tempfvld13 AND NOT tempfvld12 THEN
-          tempPxSum := 0;
-          tempPySum := 0;
-          Output( 0 ) <= ET.DataType.cNull;
-        ELSE
-            Output( 0 ) .Px <= TO_SIGNED(tempPx12,16);
-            Output( 0 ) .Py <= TO_SIGNED(tempPy12,16);
-            Output( 0 ) .Et <= TO_UNSIGNED(outEt2,16);
-            
-        END IF;
-        
-        Output( 0 ) .DataValid  <= tempfvld12 AND NOT tempfvld11;
-        Output( 0 ) .FrameValid <= tempfvld12;
-  
+      ELSE 
+        framesignal <= '0';
+        vldEt <= NullVector( 18 );
       END IF;
+
+      framedelay <= framesignal & framedelay(0 to full_dn - 2);
+
+    END IF;
   END PROCESS;
+
+  resetSignal <= '1' WHEN (framedelay(full_dn  -1) = '1') AND (framedelay(full_dn - 2) = '0') ELSE '0';
+  NormedEt <= TO_INTEGER(RootSum)*39901/2**16;
+  Output( 0 ) .Et <= TO_UNSIGNED(NormedEt,16);   
+  Output( 0 ) .DataValid  <= TRUE WHEN (framedelay(full_dn -1) = '1') AND (framedelay(full_dn - 2) = '0') ELSE FALSE;
+  Output( 0 ) .FrameValid <= TRUE WHEN (framedelay(full_dn -1) = '1') AND (framedelay(full_dn - 2) = '0') ELSE FALSE;
+
 
 -- -------------------------------------------------------------------------
 -- Store the result in a pipeline

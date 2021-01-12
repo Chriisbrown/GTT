@@ -84,10 +84,9 @@ BEGIN
   SIGNAL SumPx : SIGNED  ( 15 DOWNTO 0 ) := ( OTHERS => '0' );
   SIGNAL SumPy : SIGNED  ( 15 DOWNTO 0 ) := ( OTHERS => '0' );
 
-
-  SIGNAL vld : STD_LOGIC := '0';
+  SIGNAL framesignal : STD_LOGIC := '0';
   constant dn: INTEGER := 5;
-  signal delay: std_logic_vector(0 to dn - 1);
+  signal framedelay: std_logic_vector(0 to dn - 1);
 
   BEGIN
 
@@ -109,40 +108,32 @@ BEGIN
       SumPt => SumPy
     );
 
-    
-
     GlobalPhiLUT(vldTrack,tempPhix,tempPhiy,tempPt);
 
     PROCESS( clk )
     BEGIN
       IF RISING_EDGE( clk ) THEN
         IF TTTrackPipeIn( 0 )( i ).FrameValid THEN
+          framesignal <= '1';
           IF TTTrackPipeIn( 0 )( i ).DataValid THEN
             vldTrack <= TTTrackPipeIn( 0 )( i );
           ELSE
             vldTrack <= TTTrack.DataType.cNull;
           END IF;
         ELSE 
+          framesignal <= '0';
           vldTrack <= TTTrack.DataType.cNull;
         END IF;
 
-        IF TTTrackPipeIn( 1 )( i ).FrameValid AND NOT TTTrackPipeIn( 0 )( i ).FrameValid THEN
-          vld <= '1';
-        ELSE
-          vld <= '0';
-        END IF;
-
-        delay <= vld & delay(0 to dn - 2);
-
-
+        framedelay <= framesignal & framedelay(0 to dn - 2);
 
       END IF;
     END PROCESS;
 
-    reset <= delay(dn - 1);
+    reset <= '1' WHEN (framedelay(dn -1) = '1') AND (framedelay(dn -2) = '0') ELSE '0';
 
-    Output( i ) .DataValid  <= TRUE WHEN (delay(dn -1) = '1' AND delay(dn -2) = '0') ELSE FALSE;
-    Output( i ) .FrameValid <= TRUE WHEN (delay(dn -1) = '1' AND delay(dn -2) = '0') ELSE FALSE;
+    Output( i ) .DataValid  <= TRUE WHEN (framedelay(dn -1) = '1') AND (framedelay(dn -2) = '0') ELSE FALSE;
+    Output( i ) .FrameValid <= TRUE WHEN (framedelay(dn -1) = '1') ELSE FALSE;
     Output( i ) .Px <= SumPx;
     Output( i ) .Py <= SumPy;
     Output( i ) .Sector <= TO_UNSIGNED(i/2,4);

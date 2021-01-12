@@ -94,7 +94,6 @@ def fwTrackToVertex(event,vertex):
 
         elif ( eta >= toHWU("HWUeta",2.0)  and eta <= toHWU("HWUeta",2.4)  ):
           DeltaZ = int(2.2/bin_width)
-        print(HWUz,DeltaZ,eta)
         if ( abs(HWUz - toHWU('HWUz0',vertex)) <= DeltaZ):
             in_window.append(i)
 
@@ -315,9 +314,10 @@ def emulation(num_events,file_name,specific_event=False,specific_id=0):
         print("=====================================================")
 
 if __name__=="__main__":
+  import sys
 
   #cmssw_met = emulation(2,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object.root")
   #print(cmssw_met[["EM_MET","EM_MET_phi","TrkMET","MCMET"]].head())
   #print(cmssw_met[["EM_Vertex","EM_Vtx_Weight","Pv_z0","Pv_weight","MCVertex"]].head())
 
-  emulation(1,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object.root",True,0)
+  emulation(int(sys.argv[1])+1,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object.root",True,int(sys.argv[1]))

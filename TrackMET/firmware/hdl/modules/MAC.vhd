@@ -22,7 +22,6 @@ begin
     process(clk) is
 
       variable input_pt, input_phi : INTEGER := 0;
-      variable part_product_1 : INTEGER := 0;
       variable product, sum : INTEGER := 0;
 
      
