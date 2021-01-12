@@ -63,6 +63,7 @@ BEGIN
         END IF;
         Output( i ) <= l1TTTrack;
         Output( i ).DataValid <= Temp_vld;
+        Output( i ).FrameValid <= l1TTTrack.FrameValid; 
       END IF;
     END PROCESS;
   END GENERATE;

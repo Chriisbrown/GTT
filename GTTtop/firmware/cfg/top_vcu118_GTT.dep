@@ -1,5 +1,9 @@
-include GTT.dep
+src vcu118_decl_full.vhd
 include -c emp-fwk:boards/vcu118 vcu118.dep
-src -c emp-fwk:projects/examples/vcu118 vcu118_decl_full.vhd
+
+addrtab -c emp-fwk:components/payload emp_payload.xml
 src --cd ../ucf slrs.tcl
-setup -f vhdl2008.tcl
+
+include GTT.dep
+
+

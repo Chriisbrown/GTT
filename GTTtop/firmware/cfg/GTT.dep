@@ -36,15 +36,7 @@ src --vhdl2008 -c VertexFinder: -l VertexFinder top/VertexFinderModule.vhd
 src --vhdl2008 -c TrackSelection: -l TrackSelection TrackSelection.vhd
 src --vhdl2008 -c TrackSelection: -l TrackSelection TrackToVertexAssoc.vhd
 
-src --vhdl2008 -c TrackMET: -l ET types/PkgEt.vhd
-src --vhdl2008 -c TrackMET: -l ET track/PkgArrayTypes.vhd
-src --vhdl2008 -c TrackMET: -l ET track/DataPipe.vhd
-src --vhdl2008 -c TrackMET: -l ET track/Debugger.vhd
-
-src --vhdl2008 -c TrackMET: -l TrackMET modules/CordicSqrt.vhd
-src --vhdl2008 -c TrackMET: -l TrackMET modules/ROMConstants.vhd
-src --vhdl2008 -c TrackMET: -l TrackMET modules/SectorET.vhd
-src --vhdl2008 -c TrackMET: -l TrackMET modules/GlobalET.vhd
+include -c TrackMET: TrackMET.dep
 
 src --vhdl2008 -l GTT modules/ObjectsToLinks.vhd
 src --vhdl2008 -l GTT top/GTT.vhd

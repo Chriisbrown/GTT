@@ -94,6 +94,7 @@ def fwTrackToVertex(event,vertex):
 
         elif ( eta >= toHWU("HWUeta",2.0)  and eta <= toHWU("HWUeta",2.4)  ):
           DeltaZ = int(2.2/bin_width)
+        print(HWUz,DeltaZ,eta)
         if ( abs(HWUz - toHWU('HWUz0',vertex)) <= DeltaZ):
             in_window.append(i)
 
@@ -227,8 +228,8 @@ def fwTrackMET(event,fwpt=True,Cordic=True):
             sumpx_sectors[sector] += int(pt*int(TrigLUT[1][:-1])/(lut_precision*2))
             sumpy_sectors[sector] -= int(pt*int(TrigLUT[0][1:])/(lut_precision*2))
 
-  #print(sumpx_sectors)
-  #print(sumpy_sectors)
+  print(sumpx_sectors)
+  print(sumpy_sectors)
 
   sumpx = np.sum(sumpx_sectors)
   sumpy = np.sum(sumpy_sectors)

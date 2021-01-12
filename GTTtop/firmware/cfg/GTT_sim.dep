@@ -3,15 +3,7 @@ src --vhdl2008 top/payload.vhd
 src --vhdl2008 -l GTT top/GTT.vhd
 src --vhdl2008 -l GTT modules/ObjectsToLinks.vhd
 
-src --vhdl2008 -c TrackMET: -l TrackMET modules/GlobalET.vhd
-src --vhdl2008 -c TrackMET: -l TrackMET modules/SectorET.vhd
-src --vhdl2008 -c TrackMET: -l TrackMET modules/ROMConstants.vhd
-src --vhdl2008 -c TrackMET: -l TrackMET modules/CordicSqrt.vhd
-
-src --vhdl2008 -c RuflCore: -l ET ReuseableElements/Debugger.vhd
-src --vhdl2008 -c RuflCore: -l ET ReuseableElements/DataPipe.vhd
-src --vhdl2008 -c RuflCore: -l ET ReuseableElements/PkgArrayTypes.vhd
-src --vhdl2008 -c TrackMET: -l ET types/PkgEt.vhd
+include -c TrackMET: TrackMET_sim.dep
 
 src --vhdl2008 -c TrackSelection: -l TrackSelection TrackToVertexAssoc.vhd
 src --vhdl2008 -c TrackSelection: -l TrackSelection TrackSelection.vhd

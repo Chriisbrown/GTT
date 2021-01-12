@@ -85,7 +85,7 @@ BEGIN
         ELSIF tmp_eta >= 52596 AND tmp_eta < 57554 THEN
           delta_z <= 14;
         ELSIF tmp_eta >= 57554 AND tmp_eta <= 62511 THEN
-          delta_z <= 19;
+          delta_z <= 18;
         ELSE
           delta_z <= 0;
         END IF;
@@ -115,6 +115,7 @@ BEGIN
 -- ----------------------------------------------------------------------------------------------
 -- Clock 5     
         Output( i ) <= tmp_trk4;
+        Output( i ).FrameValid <= tmp_trk4.FrameValid;
         Output( i ).DataValid <= temp_vld;
         Output( i ).PrimaryTrack <= temp_vld;
 -- ----------------------------------------------------------------------------------------------

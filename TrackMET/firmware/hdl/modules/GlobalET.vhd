@@ -107,22 +107,26 @@ END GlobalET;
   SIGNAL tempPy1 : INTEGER := 0;
   SIGNAL tempPx2 : INTEGER := 0;
   SIGNAL tempPy2 : INTEGER := 0;
-  --SIGNAL tempPx3 : INTEGER := 0;
-  --SIGNAL tempPy3 : INTEGER := 0;
-  --SIGNAL tempPx4 : INTEGER := 0;
-  --SIGNAL tempPy4 : INTEGER := 0;
-  --SIGNAL tempPx5 : INTEGER := 0;
-  --SIGNAL tempPy5 : INTEGER := 0;
-  --SIGNAL tempPx6 : INTEGER := 0;
-  --SIGNAL tempPy6 : INTEGER := 0;
-  --SIGNAL tempPx7 : INTEGER := 0;
-  --SIGNAL tempPy7 : INTEGER := 0;
-  --SIGNAL tempPx8 : INTEGER := 0;
-  --SIGNAL tempPy8 : INTEGER := 0;
-  --SIGNAL tempPx9 : INTEGER := 0;
-  --SIGNAL tempPy9 : INTEGER := 0;
-  --SIGNAL tempPx10 : INTEGER := 0;
-  --SIGNAL tempPy10 : INTEGER := 0;
+  SIGNAL tempPx3 : INTEGER := 0;
+  SIGNAL tempPy3 : INTEGER := 0;
+  SIGNAL tempPx4 : INTEGER := 0;
+  SIGNAL tempPy4 : INTEGER := 0;
+  SIGNAL tempPx5 : INTEGER := 0;
+  SIGNAL tempPy5 : INTEGER := 0;
+  SIGNAL tempPx6 : INTEGER := 0;
+  SIGNAL tempPy6 : INTEGER := 0;
+  SIGNAL tempPx7 : INTEGER := 0;
+  SIGNAL tempPy7 : INTEGER := 0;
+  SIGNAL tempPx8 : INTEGER := 0;
+  SIGNAL tempPy8 : INTEGER := 0;
+  SIGNAL tempPx9 : INTEGER := 0;
+  SIGNAL tempPy9 : INTEGER := 0;
+  SIGNAL tempPx10 : INTEGER := 0;
+  SIGNAL tempPy10 : INTEGER := 0;
+  SIGNAL tempPx11 : INTEGER := 0;
+  SIGNAL tempPy11 : INTEGER := 0;
+  SIGNAL tempPx12 : INTEGER := 0;
+  SIGNAL tempPy12 : INTEGER := 0;
 
   SIGNAL RootSum   : SIGNED(15 DOWNTO 0) := (OTHERS => '0');
   SIGNAL tempEt    : SIGNED(15 DOWNTO 0) := (OTHERS => '0');
@@ -133,18 +137,8 @@ END GlobalET;
   SIGNAL tempPxSum : INTEGER := 0;
   SIGNAL tempPySum : INTEGER := 0;
 
-  COMPONENT CordicSqrt IS
-  GENERIC(n_steps : NATURAL RANGE 1 TO 8 := 4);
-  PORT(
-    clk  : IN STD_LOGIC; -- clock
-    Xin  : IN SIGNED ( 15 DOWNTO 0 )  := ( OTHERS => '0' );
-    Yin  : IN SIGNED ( 15 DOWNTO 0 )  := ( OTHERS => '0' );
-    Root : OUT SIGNED ( 15 DOWNTO 0 ) := ( OTHERS => '0' )
-  );
-END COMPONENT CordicSqrt;
-
   BEGIN
-    Sqrt : CordicSqrt
+    Sqrt : ENTITY TrackMET.CordicSqrt
     GENERIC MAP (n_steps => 4)
     PORT MAP(
       clk => clk,
@@ -189,60 +183,64 @@ END COMPONENT CordicSqrt;
 -- CORDIC BEGINS for 8 Clocks
 -- ----------------------------------------------------------------------------------------------
 -- Clock 3
-        --tempPx3 <= tempPx2;
-        --tempPy3 <= tempPy2;
+        tempPx3 <= tempPx2;
+        tempPy3 <= tempPy2;
         tempfvld3 <= tempfvld2;
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------------------------------------------------------------------
 -- Clock 4
-        --tempPx4 <= tempPx3;
-        --tempPy4 <= tempPy3;
+        tempPx4 <= tempPx3;
+        tempPy4 <= tempPy3;
         tempfvld4 <= tempfvld3;
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------------------------------------------------------------------
 -- Clock 5
-        --tempPx5 <= tempPx4;
-        --tempPy5 <= tempPy4;
+        tempPx5 <= tempPx4;
+        tempPy5 <= tempPy4;
         tempfvld5 <= tempfvld4;
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------------------------------------------------------------------
 -- Clock 6
-        --tempPx6 <= tempPx5;
-        --tempPy6 <= tempPy5;
+        tempPx6 <= tempPx5;
+        tempPy6 <= tempPy5;
         tempfvld6 <= tempfvld5;
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------------------------------------------------------------------
 -- Clock 7
-        --tempPx7 <= tempPx6;
-        --tempPy7 <= tempPy6;
+        tempPx7 <= tempPx6;
+        tempPy7 <= tempPy6;
         tempfvld7 <= tempfvld6;
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------------------------------------------------------------------
 -- Clock 8
-        --tempPx8 <= tempPx7;
-        --tempPy8 <= tempPy7;
+        tempPx8 <= tempPx7;
+        tempPy8 <= tempPy7;
         tempfvld8 <= tempfvld7;
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------------------------------------------------------------------
 -- Clock 9
-        --tempPx9 <= tempPx8;
-        --tempPy9 <= tempPy8;
+        tempPx9 <= tempPx8;
+        tempPy9 <= tempPy8;
         tempfvld9 <= tempfvld8;
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------------------------------------------------------------------
 -- Clock 10
-        --tempPx10 <= tempPx9;
-        --tempPy10 <= tempPy9;
+        tempPx10 <= tempPx9;
+        tempPy10 <= tempPy9;
         tempfvld10 <= tempfvld9;
         tempEt <= RootSum;
 -- ----------------------------------------------------------------------------------------------
 -- Clock 11
+        tempPx11 <= tempPx10;
+        tempPy11 <= tempPy10;
         tempfvld11 <= tempfvld10;
-        outEt <= TO_INTEGER(tempEt)*39901;
+        outEt <= TO_INTEGER(tempEt)*39901/2**16;
 -- ----------------------------------------------------------------------------------------------
 -- Clock 12
+        tempPx12 <= tempPx11;
+        tempPy12 <= tempPy11;
         tempfvld12 <= tempfvld11;
-        outEt2 <= outEt/2**15;
+        outEt2 <= outEt;
 -- ----------------------------------------------------------------------------------------------
 -- Clock 112
         tempfvld13 <= tempfvld12;
@@ -252,8 +250,8 @@ END COMPONENT CordicSqrt;
           tempPySum := 0;
           Output( 0 ) <= ET.DataType.cNull;
         ELSE
-            --Output( 0 ) .Px <= TO_SIGNED(tempPx10,16);
-            --Output( 0 ) .Py <= TO_SIGNED(tempPy10,16);
+            Output( 0 ) .Px <= TO_SIGNED(tempPx12,16);
+            Output( 0 ) .Py <= TO_SIGNED(tempPy12,16);
             Output( 0 ) .Et <= TO_UNSIGNED(outEt2,16);
             
         END IF;
