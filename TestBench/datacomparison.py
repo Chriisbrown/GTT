@@ -1,6 +1,6 @@
 from fwGTT import emulation
 from swGTT import simulation
-from datareader import fw_sim_reader,fw_hw_reader
+from datareader import fw_sim_reader,fw_hw_reader,fw_sim4link_reader
 from scipy import stats
 import matplotlib.pyplot as plt
 import mplhep as hep
@@ -44,7 +44,7 @@ vtx_df["VTX_fpga_error"] = abs(vtx_df["fw_z0"] - vtx_df["fpga_z0"])
 print(MET_df.nlargest(10,'MET_EM_error'))
 print(vtx_df.nlargest(10,'VTX_EM_error'))
 
-name = "performance_plots/fullfpga/"
+name = "performance_plots/newMET/"
 
 #=========================================Emulation Vertex========================================================#
 fig,ax = plt.subplots(1,2,figsize=(18,9))

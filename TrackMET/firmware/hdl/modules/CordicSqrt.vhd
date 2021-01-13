@@ -5,12 +5,13 @@ USE IEEE.NUMERIC_STD.ALL;
 
 
 ENTITY CordicSqrt IS
-    GENERIC (n_steps : NATURAL RANGE 1 TO 8 := 4);
+    GENERIC (n_steps : NATURAL RANGE 1 TO 8 := 4;
+             multiplier : INTEGER := 1);
     PORT (
         clk : IN STD_LOGIC := '0';
         Xin : IN SIGNED ( 15 DOWNTO 0 );
         Yin : IN SIGNED ( 15 DOWNTO 0 );
-        Root : OUT SIGNED ( 15 DOWNTO 0 )
+        Root : OUT SIGNED ( 39 DOWNTO 0 )
     );
 END CordicSqrt;
 
@@ -27,6 +28,7 @@ ARCHITECTURE behavioral OF CordicSqrt IS
   TYPE tCordicSteps IS ARRAY( n_steps + 1 DOWNTO 0 ) OF tCordic; -- Number of steps used by the CORDIC
   SIGNAL CordicSteps  : tCordicSteps := ( OTHERS => cEmptyCordic );
 
+  SIGNAL NormedRoot : SIGNED (39 DOWNTO 0) := ( OTHERS => '0' );
 
 
 BEGIN
@@ -83,6 +85,8 @@ END GENERATE steps;
 
 CordicSteps( n_steps + 1 ) <= CordicSteps( n_steps ) WHEN RISING_EDGE( clk );
 
-Root <= CordicSteps( n_steps + 1 ).x  WHEN RISING_EDGE( clk );
+NormedRoot <= CordicSteps( n_steps + 1 ).x*TO_SIGNED(multiplier,24) WHEN RISING_EDGE( clk );
+
+Root <= NormedRoot  WHEN RISING_EDGE( clk );
 
 END ARCHITECTURE behavioral;

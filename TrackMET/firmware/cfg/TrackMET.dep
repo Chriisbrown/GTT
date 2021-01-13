@@ -7,5 +7,6 @@ src --vhdl2008 -c TrackMET: -l ET track/Debugger.vhd
 src --vhdl2008 -c TrackMET: -l TrackMET modules/CordicSqrt.vhd
 src --vhdl2008 -c TrackMET: -l TrackMET modules/ROMConstants.vhd
 src --vhdl2008 -c TrackMET: -l TrackMET modules/SectorET.vhd
+src --vhdl2008 -c TrackMET: -l TrackMET modules/AC.vhd
 src --vhdl2008 -c TrackMET: -l TrackMET modules/MAC.vhd
 src --vhdl2008 -c TrackMET: -l TrackMET modules/GlobalET.vhd

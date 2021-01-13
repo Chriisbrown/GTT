@@ -66,15 +66,15 @@ END GlobalET;
   SIGNAL resetSignal : STD_LOGIC := '0';
 
   SIGNAL framesignal : STD_LOGIC := '0';
-  constant full_dn : INTEGER := 9;
+  constant full_dn : INTEGER := 10;
   signal framedelay: std_logic_vector(0 to full_dn - 1);
 
-  SIGNAL NormedEt : INTEGER := 0;
-  SIGNAL RootSum : SIGNED( 15 DOWNTO 0 ) := (OTHERS=>'0');
+  SIGNAL RootSum : SIGNED( 31 DOWNTO 0 ) := (OTHERS=>'0');
 
   BEGIN
   Sqrt : ENTITY TrackMET.CordicSqrt
-  GENERIC MAP (n_steps => 4)
+  GENERIC MAP (n_steps => 4,
+               multiplier => 39901)
   PORT MAP(
     clk => clk,
     Xin => TO_SIGNED(ExSignal,16),
@@ -115,8 +115,8 @@ END GlobalET;
   END PROCESS;
 
   resetSignal <= '1' WHEN (framedelay(full_dn  -1) = '1') AND (framedelay(full_dn - 2) = '0') ELSE '0';
-  NormedEt <= TO_INTEGER(RootSum)*39901/2**16;
-  Output( 0 ) .Et <= TO_UNSIGNED(NormedEt,16);   
+  
+  Output( 0 ) .Et <= TO_UNSIGNED(TO_INTEGER(RootSum/2**16),16);   
   Output( 0 ) .DataValid  <= TRUE WHEN (framedelay(full_dn -1) = '1') AND (framedelay(full_dn - 2) = '0') ELSE FALSE;
   Output( 0 ) .FrameValid <= TRUE WHEN (framedelay(full_dn -1) = '1') AND (framedelay(full_dn - 2) = '0') ELSE FALSE;
 
