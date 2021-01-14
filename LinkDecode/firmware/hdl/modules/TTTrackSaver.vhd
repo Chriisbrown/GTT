@@ -42,16 +42,12 @@ Input <= TTTrackPipeIn(0);
 
 
 g1 : FOR i IN 0 TO 17 GENERATE
+
   SIGNAL OutTrack  : TTTrack.DataType.tData := TTTrack.DataType.cNull;
   SIGNAL TempTrack : TTTrack.DataType.tData := TTTrack.DataType.cNull;
-  SIGNAl Temp_fvld : BOOLEAN := FALSE;
+
   SIGNAL PrimaryVertex : UNSIGNED( 7 DOWNTO 0 ) := "00000000" ;
-
-  SIGNAL Temp_vld : BOOLEAN := FALSE;
-  
-  SIGNAL WriteTotal : INTEGER := 0;
-
-
+  SIGNAL Track_vld : BOOLEAN := FALSE;
 
 
 BEGIN 
@@ -67,56 +63,51 @@ BEGIN
 
   PROCESS( clk )
 
-  VARIABLE Reading : BOOLEAN := FALSE;
-  VARIABLE ReadTracks : INTEGER := 0;
-  
-  VARIABLE ReadTotal : INTEGER := 0;
+  VARIABLE Read_Reset : BOOLEAN := FALSE;
+
+  VARIABLE NumReadTracks : INTEGER := 0;
+  VARIABLE ReadTotal     : INTEGER := 0;
+  VARIABLE WriteTotal    : INTEGER := 0;
 
   BEGIN
     IF( RISING_EDGE( clk ) ) THEN
-      TempTrack <= Input( i );
-
+      TempTrack <= Input( i );  -- Delay Input Tracks by 1 clock
       IF( TempTrack.FrameValid) THEN
         IF( TempTrack .DataValid ) THEN
-          WriteAddr( i ) <= (WriteAddr( i ) + 1 ) MOD 512;
-          WriteTotal <= WriteTotal + 1;
+          WriteAddr( i ) <= (WriteAddr( i ) + 1 ) MOD 512;  --Increment Write Pointer If Track is Valid
+          WriteTotal := WriteTotal + 1;      -- Update Track Totals
         END IF;
       END IF;
 
-      IF (  TempTrack.FrameValid AND NOT Input( i ) .FrameValid) THEN
-        ReadTotal := WriteTotal;
-        WriteTotal <= 0;
+      IF (  TempTrack.FrameValid AND NOT Input( i ) .FrameValid) THEN  -- Check if end of tracks being read in
+        ReadTotal := WriteTotal;     -- Copy Track totals to number of tracks to be read
+        WriteTotal := 0;             -- Reset Track Totals
       END IF;
         
-      IF (PrimaryVertexPipeIn( 0 )( 0 ).DataValid) THEN
-        PrimaryVertex <= PrimaryVertexPipeIn( 0 )( 0 ).Z0;
-        ReadTracks := 0;
-        Reading := TRUE;
+      IF (PrimaryVertexPipeIn( 0 )( 0 ).DataValid) THEN   -- Wait for Primary Vertex valid
+        PrimaryVertex <= PrimaryVertexPipeIn( 0 )( 0 ).Z0; -- Store PV
+        NumReadTracks := 0;     -- Reset Number of read tracks
+        Read_Reset := TRUE;     -- Start Reading
       END IF;
 
       
-      IF ReadTracks < ReadTotal THEN
-        IF Reading THEN
-          ReadAddr( i ) <= (ReadAddr( i ) + 1)  MOD 512;
-          ReadTracks := ReadTracks + 1;
-          Temp_vld <= True;  
-        ELSE
-          ReadTracks := ReadTracks;
-          Temp_vld <= False;  
+      IF NumReadTracks < ReadTotal THEN  -- If Number of read tracks < total number stored tracks
+        IF Read_Reset THEN  
+          ReadAddr( i ) <= (ReadAddr( i ) + 1)  MOD 512;  -- Increment Read pointer if reading
+          NumReadTracks := NumReadTracks + 1;  -- Update read totals
+          Track_vld <= True;  -- Track is Valid
         END IF;
-
       ELSE
-        Reading := FALSE;
-        Temp_vld <= FALSE;
-        ReadTotal := 0;
-        ReadTracks := 0;
-
+        Read_Reset := FALSE;  -- Finished reading 
+        Track_vld <= FALSE;   -- Not valid track
+        ReadTotal := 0;       -- Update track totals
+        NumReadTracks := 0;
       END IF;
 
       Output( i ) <= OutTrack;
       Output( i ).PV <= PrimaryVertex;
-      Output( i ).DataValid <= Temp_vld;
-      Output( i ).FrameValid <= Temp_vld;
+      Output( i ).DataValid <= Track_vld;
+      Output( i ).FrameValid <= Track_vld;
      
       
     END IF;

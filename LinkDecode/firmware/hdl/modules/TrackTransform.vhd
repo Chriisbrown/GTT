@@ -1,17 +1,3 @@
--- #########################################################################
--- #########################################################################
--- ###                                                                   ###
--- ###   Use of this code, whether in its current form or modified,      ###
--- ###   implies that you consent to the terms and conditions, namely:   ###
--- ###    - You acknowledge my contribution                              ###
--- ###    - This copyright notification remains intact                   ###
--- ###                                                                   ###
--- ###   Many thanks,                                                    ###
--- ###     Dr. Andrew W. Rose, Imperial College London, 2018             ###
--- ###                                                                   ###
--- #########################################################################
--- #########################################################################
-
 
 -- -------------------------------------------------------------------------
 LIBRARY IEEE;
@@ -55,163 +41,146 @@ END TrackTransform;
 -- -------------------------------------------------------------------------
 ARCHITECTURE rtl OF TrackTransform IS
   SIGNAL Output : TTTrack.ArrayTypes.Vector( 0 TO 17 ) := TTTrack.ArrayTypes.NullVector( 18 );
-  COMPONENT InvRdivider IS
 
-    PORT(
-      clk : IN STD_LOGIC; -- clock
-      NumeratorIn   : IN UNSIGNED;
-      DenominatorIn : IN UNSIGNED( 17 DOWNTO 0 );
-      IntegerOut    : OUT UNSIGNED( 19 DOWNTO 0 ) := ( OTHERS => '0' );
-      FractionOut   : OUT UNSIGNED( 17 DOWNTO 0 ) := ( OTHERS => '0' )
-    );
-  END COMPONENT InvRdivider;
+
+  PROCEDURE RescaleZ0 (signal TTTrack : IN InTTTrack.DataType.tData;
+                       signal z0 : OUT Integer) is
+    VARIABLE tmp_z : INTEGER := 0;
+
+    BEGIN
+    IF TTTrack.Z0Frac(TTTrack.Z0Frac'left) = '1' THEN --negative
+      IF TTTrack.Z0Int >= 15 THEN
+        tmp_z := 0;
+      ELSE
+        tmp_z := -TO_INTEGER(TTTrack.Z0Int)*8 + TO_INTEGER(TTTrack.Z0Frac)/8 + TO_INTEGER(TTTrack.Z0Frac)/64 + 128 - TO_INTEGER(TTTrack.Z0Int)/2;
+      END IF;
+    ELSE  --positive
+      IF TTTrack.Z0Int >= 15 THEN
+        tmp_z := 255;
+      ELSE
+        tmp_z := TO_INTEGER(TTTrack.Z0Int)*8 + TO_INTEGER(TTTrack.Z0Frac)/8 + TO_INTEGER(TTTrack.Z0Frac)/64 + 128 + TO_INTEGER(TTTrack.Z0Int)/2;
+      END IF;
+    END IF;
+
+    z0 <= tmp_z;
+
+    END PROCEDURE RescaleZ0;
+
+
+  PROCEDURE GlobalPhi (SIGNAL TTTrack : IN InTTTrack.DataType.tData;
+                       SIGNAL Sector  : IN INTEGER;
+                       SIGNAL Phi : OUT INTEGER) IS
+  VARIABLE TempPhi : INTEGER := 0;
+  BEGIN
+    TempPhi   := TO_INTEGER(TTTrack.phi) + Phi_shift(Sector) - 1024;
+    IF TempPhi < 0 THEN
+      TempPhi := TempPhi + 6268;
+    ELSIF TempPhi > 6268 THEN
+      TempPhi := TempPhi - 6268; 
+    ELSE
+      TempPhi := TempPhi;
+    END IF;
+
+  Phi <= TempPhi;
+
+  END PROCEDURE GlobalPhi;
+
+  PROCEDURE TanLookup (SIGNAL TTTrack : IN InTTTrack.DataType.tData;
+                       SIGNAL eta : OUT INTEGER) IS
+    VARIABLE tanL_lut_0 : INTEGER := 0;
+    VARIABLE tanL_lut_1 : INTEGER := 0;
+    BEGIN
+        tanL_lut_0 := TO_INTEGER(TTTrack.tanlfrac);
+        tanL_lut_1 := abs(TO_INTEGER(TTTrack.tanlint));
+        eta  <= TanLLUT(tanL_lut_0)(tanL_lut_1);
+
+  END PROCEDURE TanLookup;
+
 
 BEGIN
 
 -- -------------------------------------------------------------------------
   g1              : FOR i IN 0 TO 17 GENERATE
-    SIGNAL lTTTrack    : InTTTrack.DataType.tData := InTTTrack.DataType.cNull;
-
-    
-    SIGNAL InvR : UNSIGNED( 17 DOWNTO 0 ) := ( OTHERS => '0' );
-
-
-    SIGNAL IntOut : UNSIGNED( 19 DOWNTO 0 ) := ( OTHERS => '0' );
+    SIGNAL IntOut  : UNSIGNED( 19 DOWNTO 0 ) := ( OTHERS => '0' );
     SIGNAL FracOut : UNSIGNED( 17 DOWNTO 0 ) := ( OTHERS => '0' );
 
-    SIGNAL temp_IntOut : UNSIGNED( 19 DOWNTO 0 ) := ( OTHERS => '0' );
-    SIGNAL temp_FracOut : UNSIGNED( 17 DOWNTO 0 ) := ( OTHERS => '0' );
+    SIGNAL Sector : INTEGER := 0;
+
+    constant track_dn: INTEGER := 6;
+    constant vld_dn: INTEGER := 5;
+
+    SIGNAL framesignal : STD_LOGIC := '0';
+    signal frame_array: std_logic_vector(0 to vld_dn - 1);
+
+    SIGNAL validsignal : STD_LOGIC := '0';
+    signal valid_array: std_logic_vector(0 to vld_dn - 1);
+
+    SIGNAL rescaledZ0  : INTEGER := 0;
+    constant z0_dn: INTEGER := 6;
+    signal z0_array: integer_vector(0 to z0_dn - 1);
+
+    SIGNAL rescaledPhi : INTEGER := 0;
+    constant phi_dn: INTEGER := 6;
+    signal phi_array: integer_vector(0 to phi_dn - 1);
 
 
-    SIGNAL temp_eta : INTEGER := 0;
-    SIGNAL temp_eta2 : INTEGER := 0;
+    SIGNAL eta         : INTEGER := 0;
+    constant eta_dn: INTEGER := 6;
+    signal eta_array: integer_vector(0 to eta_dn - 1);
+    
+    signal Chi2rphi_array: integer_vector(0 to track_dn - 1);
+    signal Chi2rz_array: integer_vector(0 to track_dn - 1);
+    signal BendChi2_array: integer_vector(0 to track_dn - 1);
+    signal Hitpattern_array: integer_vector(0 to track_dn - 1);
 
-    SIGNAL temp_trk1     : InTTTrack.DataType.tData := InTTTrack.DataType.cNull;
-    SIGNAL temp_trk2     : InTTTrack.DataType.tData := InTTTrack.DataType.cNull;
-    SIGNAL temp_trk3     : InTTTrack.DataType.tData := InTTTrack.DataType.cNull;
-    SIGNAL temp_trk4     : InTTTrack.DataType.tData := InTTTrack.DataType.cNull;
-    SIGNAL temp_trk5     : InTTTrack.DataType.tData := InTTTrack.DataType.cNull;
-    SIGNAL temp_trk6     : InTTTrack.DataType.tData := InTTTrack.DataType.cNull;
-    SIGNAL temp_trk7     : InTTTrack.DataType.tData := InTTTrack.DataType.cNull;
-    SIGNAL temp_trk8     : InTTTrack.DataType.tData := InTTTrack.DataType.cNull;
-
-    SIGNAL GlobalPhi1 : INTEGER := 0;
-    SIGNAL GlobalPhi2 : INTEGER := 0;
-    SIGNAL GlobalPhi3 : INTEGER := 0;
-    SIGNAL GlobalPhi4 : INTEGER := 0;
-
-    SIGNAL tmp_z : INTEGER := 0;
-    SIGNAL tmp_z1 : INTEGER := 0;
-    SIGNAL tmp_z2 : INTEGER := 0;
-    SIGNAL tmp_z3 : INTEGER := 0;
-    SIGNAL tmp_z4 : INTEGER := 0;
-
-    SIGNAL tanL_lut_0 : INTEGER := 0;
-    SIGNAL tanL_lut_1 : INTEGER := 0;
-
-    SIGNAL temp_fvld : BOOLEAN := FALSE;
 
   BEGIN
 
-    Divider : InvRdivider
+    Divider : ENTITY LinkDecode.InvRdivider
     PORT MAP(
       clk => clk, -- clock
       NumeratorIn   => TO_UNSIGNED(700573,20),
-      DenominatorIn => InvR,
+      DenominatorIn => TO_UNSIGNED( abs(TO_INTEGER( TTTrackPipeIn( 0 )( i ).InvR )),18 ),
       IntegerOut    => IntOut,
       FractionOut   => FracOut
     );
 
-    lTTTrack <= TTTrackPipeIn( PipeOffset )( i );
-    
-    PROCESS( clk )
+    Sector <= i;
+    RescaleZ0(TTTrackPipeIn( 0 )( i ),rescaledZ0);
+    GlobalPhi(TTTrackPipeIn( 0 )( i ),Sector,rescaledPhi);
+    TanLookup(TTTrackPipeIn( 0 )( i ),eta);
 
+    PROCESS( clk )
     BEGIN
       IF RISING_EDGE( clk ) THEN
--- ----------------------------------------------------------------------------------------------
--- Clock 1
-        temp_trk1   <= lTTTrack;
-        InvR        <= TO_UNSIGNED( abs(TO_INTEGER( lTTTrack.InvR )),18 );
--- ----------------------------------------------------------------------------------------------
--- ----------------------------------------------------------------------------------------------
--- Clock 2
-        temp_trk2   <= temp_trk1;
-         
--- ----------------------------------------------------------------------------------------------
--- ----------------------------------------------------------------------------------------------
--- Clock 3
-        temp_trk3   <= temp_trk2;
--- ----------------------------------------------------------------------------------------------
--- ----------------------------------------------------------------------------------------------
--- Clock 4
-        temp_trk4     <= temp_trk3;
-        IF temp_trk3.Z0Frac(temp_trk3.Z0Frac'left) = '1' THEN --negative
-          IF temp_trk3.Z0Int >= 15 THEN
-            tmp_z <= 0;
-          ELSE
-            tmp_z <= -TO_INTEGER(temp_trk3.Z0Int)*8 + TO_INTEGER(temp_trk3.Z0Frac)/8 + TO_INTEGER(temp_trk3.Z0Frac)/64 + 128 - TO_INTEGER(temp_trk3.Z0Int)/2;
-          END IF;
-        ELSE  --positive
-          IF temp_trk3.Z0Int >= 15 THEN
-            tmp_z <= 255;
-          ELSE
-            tmp_z <= TO_INTEGER(temp_trk3.Z0Int)*8 + TO_INTEGER(temp_trk3.Z0Frac)/8 + TO_INTEGER(temp_trk3.Z0Frac)/64 + 128 + TO_INTEGER(temp_trk3.Z0Int)/2;
-          END IF;
-        END IF;
+        framesignal <= '1' WHEN TTTrackPipeIn( 0 )( i ).FrameValid ELSE '0';
+        validsignal <= '1' WHEN TTTrackPipeIn( 0 )( i ).DataValid ELSE '0';
+      
+        frame_array <= framesignal & frame_array(0 to vld_dn - 2);
+        valid_array <= validsignal & valid_array(0 to vld_dn - 2);
 
--- ----------------------------------------------------------------------------------------------
--- ----------------------------------------------------------------------------------------------
--- Clock 5
-        temp_trk5    <= temp_trk4;
-        tmp_z1       <= tmp_z;
-        GlobalPhi1   <= TO_INTEGER(temp_trk4.phi) + Phi_shift(i) - 1024;
--- ----------------------------------------------------------------------------------------------
--- ----------------------------------------------------------------------------------------------
--- Clock 6
-        temp_trk6  <= temp_trk5;
-        tmp_z2    <= tmp_z1;
-        tanL_lut_0 <= TO_INTEGER(temp_trk5.tanlfrac);
-        tanL_lut_1 <= abs(TO_INTEGER(temp_trk5.tanlint));
+        z0_array <= rescaledZ0 & z0_array(0 to z0_dn - 2);
+        phi_array <= rescaledPhi & phi_array(0 to phi_dn - 2);
+        eta_array <= eta & eta_array(0 to eta_dn - 2);
 
-        IF GlobalPhi1 < 0 THEN
-          GlobalPhi2 <= GlobalPhi1 + 6268;
-        ELSIF GlobalPhi1 > 6268 THEN
-          GlobalPhi2 <= GlobalPhi1 - 6268; 
-        ELSE
-          GlobalPhi2 <= GlobalPhi1;
-        END IF;
--- ----------------------------------------------------------------------------------------------
--- ----------------------------------------------------------------------------------------------
--- Clock 7
-        temp_trk7    <= temp_trk6;
-        tmp_z3       <= tmp_z2;
-        temp_eta     <= TanLLUT(tanL_lut_0)(tanL_lut_1);
-        GlobalPhi3   <= GlobalPhi2;
--- ----------------------------------------------------------------------------------------------
--- ----------------------------------------------------------------------------------------------
--- Clock 8
-        temp_trk8    <= temp_trk7;
-        tmp_z4       <= tmp_z3;
-        temp_eta2    <= temp_eta ;
-        GlobalPhi4   <= GlobalPhi3;
-        temp_IntOut  <= IntOut;
-        temp_FracOut <= FracOut;
-        temp_fvld <= temp_trk7.FrameValid;
--- ----------------------------------------------------------------------------------------------
--- Clock 9
-        Output( i ).Pt  <= TO_UNSIGNED(TO_INTEGER(temp_IntOut)+TO_INTEGER(temp_FracOut)/2**18,16);
-        Output( i ).Phi <= TO_UNSIGNED(GlobalPhi4,13);
-        Output( i ).Eta <= TO_UNSIGNED(temp_eta2,16);
-        Output( i ).Z0  <= TO_UNSIGNED(tmp_z4,8);
-        Output( i ).Chi2rphi   <= temp_trk8.Chi2rphi;
-        Output( i ).Chi2rz     <= temp_trk8.Chi2rz;
-        Output( i ).BendChi2   <= temp_trk8.BendChi2;
-        Output( i ).Hitpattern <= temp_trk8.Hitpattern;
-        Output( i ).DataValid  <= temp_trk8.DataValid;
-        Output( i ).FrameValid <= temp_fvld;
-        
+        Chi2rphi_array <= TO_INTEGER(TTTrackPipeIn( 0 )( i ).Chi2rphi) & Chi2rphi_array(0 to track_dn - 2);
+        Chi2rz_array <= TO_INTEGER(TTTrackPipeIn( 0 )( i ).Chi2rz) & Chi2rz_array(0 to track_dn - 2);
+        BendChi2_array <= TO_INTEGER(TTTrackPipeIn( 0 )( i ).BendChi2) & BendChi2_array(0 to track_dn - 2);
+        Hitpattern_array <= TO_INTEGER(TTTrackPipeIn( 0 )( i ).Hitpattern) & Hitpattern_array(0 to track_dn - 2);
       END IF;
     END PROCESS;
+
+    Output( i ).Pt  <= TO_UNSIGNED(TO_INTEGER(IntOut)+TO_INTEGER(FracOut)/2**18,16);
+    Output( i ).Phi <= TO_UNSIGNED(phi_array(phi_dn-1),13);
+    Output( i ).Eta <= TO_UNSIGNED(eta_array(eta_dn-1),16);
+    Output( i ).Z0  <= TO_UNSIGNED(z0_array(z0_dn-1),8);
+    Output( i ).Chi2rphi   <= TO_UNSIGNED(Chi2rphi_array(track_dn - 1),4);
+    Output( i ).Chi2rz     <= TO_UNSIGNED(Chi2rz_array(track_dn - 1),4);
+    Output( i ).BendChi2   <= TO_UNSIGNED(BendChi2_array(track_dn - 1),3);
+    Output( i ).Hitpattern <= TO_UNSIGNED(Hitpattern_array(track_dn - 1),7);
+    Output( i ).DataValid  <= TRUE WHEN (valid_array(vld_dn -1) = '1') ELSE FALSE;
+    Output( i ).FrameValid <= TRUE WHEN (frame_array(vld_dn -1) = '1') ELSE FALSE;
+        
   END GENERATE;
 -- -------------------------------------------------------------------------
 
