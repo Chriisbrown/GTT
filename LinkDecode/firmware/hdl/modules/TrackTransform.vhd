@@ -18,6 +18,7 @@ USE Utilities.Utilities.ALL;
 LIBRARY LinkDecode;
 USE LinkDecode.InvRdivider;
 USE LinkDecode.TanLROM.all;
+USE LinkDecode.Constants.all;
 -- -------------------------------------------------------------------------
 
 -- -------------------------------------------------------------------------
@@ -37,22 +38,26 @@ END TrackTransform;
 ARCHITECTURE rtl OF TrackTransform IS
   SIGNAL Output : TTTrack.ArrayTypes.Vector( 0 TO 17 ) := TTTrack.ArrayTypes.NullVector( 18 );
 
-  PROCEDURE RescaleZ0 (SIGNAL TTTrack : IN InTTTrack.DataType.tData := InTTTrack.DataType.cNull;   --Procedure rescaling Z for vertex finder
-                       SIGNAL z0      : OUT Integer := 0) IS
+  PROCEDURE RescaleZ0 (SIGNAL TTTrack : IN InTTTrack.DataType.tData;   --Procedure rescaling Z for vertex finder
+                       SIGNAL z0      : OUT Integer) IS
     VARIABLE tmp_z : INTEGER := 0;
 
     BEGIN
     IF TTTrack.Z0Frac(TTTrack.Z0Frac'left) = '1' THEN --negative
-      IF TTTrack.Z0Int >= 15 THEN
-        tmp_z := 0;  -- Saturate at out of range Z
+      IF TTTrack.Z0Int >= ZMax THEN
+        tmp_z := Zsaturate( 0 );  -- Saturate at out of range Z
       ELSE   --Approximation of z0 transformation that saves complex division and multiplications
-        tmp_z := -TO_INTEGER(TTTrack.Z0Int)*8 + TO_INTEGER(TTTrack.Z0Frac)/8 + TO_INTEGER(TTTrack.Z0Frac)/64 + 128 - TO_INTEGER(TTTrack.Z0Int)/2;
+        tmp_z := (- TO_INTEGER(TTTrack.Z0Int)*ZIntScale( 0 )   - TO_INTEGER(TTTrack.Z0Int)/ZIntScale( 1 )
+                  + TO_INTEGER(TTTrack.Z0Frac)/ZFracScale( 0 ) + TO_INTEGER(TTTrack.Z0Frac)/ZFracScale( 1 ) 
+                  + ZConstant );
       END IF;
     ELSE  --positive
-      IF TTTrack.Z0Int >= 15 THEN
-        tmp_z := 255;  -- Saturate at out of range Z --CONSTANTS TODO place in constants file
+      IF TTTrack.Z0Int >= ZMax THEN
+        tmp_z := Zsaturate( 1 );  -- Saturate at out of range Z 
       ELSE
-        tmp_z := TO_INTEGER(TTTrack.Z0Int)*8 + TO_INTEGER(TTTrack.Z0Frac)/8 + TO_INTEGER(TTTrack.Z0Frac)/64 + 128 + TO_INTEGER(TTTrack.Z0Int)/2;
+        tmp_z := (  TO_INTEGER(TTTrack.Z0Int)*ZIntScale( 0 )   + TO_INTEGER(TTTrack.Z0Int)/ZIntScale( 1 )
+                  + TO_INTEGER(TTTrack.Z0Frac)/ZFracScale( 0 ) + TO_INTEGER(TTTrack.Z0Frac)/ZFracScale( 1 )
+                  + ZConstant );
       END IF;
     END IF;
 
@@ -60,16 +65,16 @@ ARCHITECTURE rtl OF TrackTransform IS
 
   END PROCEDURE RescaleZ0;
 -- -------------------------------------------------------------------------
-  PROCEDURE GlobalPhi (SIGNAL TTTrack : IN InTTTrack.DataType.tData := InTTTrack.DataType.cNull;  --Procedure for chaning sector phi to global phi using LUT
-                       SIGNAL Sector  : IN INTEGER  := 0;
-                       SIGNAL Phi     : OUT INTEGER := 0) IS
+  PROCEDURE GlobalPhi (SIGNAL TTTrack : IN InTTTrack.DataType.tData;  --Procedure for chaning sector phi to global phi using LUT
+                       SIGNAL Sector  : IN INTEGER;
+                       SIGNAL Phi     : OUT INTEGER) IS
   VARIABLE TempPhi : INTEGER := 0;
   BEGIN
-    TempPhi   := TO_INTEGER(TTTrack.phi) + Phi_shift(Sector) - 1024;  --CONSTANTS TODO place in constants file
-    IF TempPhi < 0 THEN
-      TempPhi := TempPhi + 6268;
-    ELSIF TempPhi > 6268 THEN
-      TempPhi := TempPhi - 6268; 
+    TempPhi   := TO_INTEGER(TTTrack.phi) + Phi_shift(Sector) - PhiShift;  --CONSTANTS TODO place in constants file
+    IF TempPhi < PhiMin THEN
+      TempPhi := TempPhi + PhiMax;
+    ELSIF TempPhi > PhiMax THEN
+      TempPhi := TempPhi - PhiMax; 
     ELSE
       TempPhi := TempPhi;
     END IF;
@@ -78,8 +83,8 @@ ARCHITECTURE rtl OF TrackTransform IS
 
   END PROCEDURE GlobalPhi;
 -- -------------------------------------------------------------------------
-  PROCEDURE TanLookup (SIGNAL TTTrack : IN InTTTrack.DataType.tData := InTTTrack.DataType.cNull;  --Procedure for chaning TanL to eta based on a LUT
-                       SIGNAL eta : OUT INTEGER := 0) IS
+  PROCEDURE TanLookup (SIGNAL TTTrack : IN InTTTrack.DataType.tData;  --Procedure for chaning TanL to eta based on a LUT
+                       SIGNAL eta : OUT INTEGER) IS
     VARIABLE tanL_lut_0 : INTEGER := 0;
     VARIABLE tanL_lut_1 : INTEGER := 0;
     BEGIN
@@ -91,7 +96,7 @@ ARCHITECTURE rtl OF TrackTransform IS
 -- -------------------------------------------------------------------------
   -- Constants for delaying signals
   CONSTANT track_delay         : INTEGER := 6;
-  CONSTANT vld_delay           : INTEGER := 5;  --CONSTANTS TODO place in constants file
+  CONSTANT vld_delay           : INTEGER := 5;  --CONSTANTS TODO place in constants file?
 
 BEGIN
   g1              : FOR i IN 0 TO 17 GENERATE
@@ -130,8 +135,8 @@ BEGIN
     Divider : ENTITY LinkDecode.InvRdivider
     PORT MAP(
       clk => clk, -- clock
-      NumeratorIn   => TO_UNSIGNED(700573,20), --CONSTANT TODO place in constants file
-      DenominatorIn => TO_UNSIGNED( abs(TO_INTEGER( TTTrackPipeIn( 0 )( i ).InvR )),18 ), --Convert input to correct format
+      NumeratorIn   => TO_UNSIGNED(InvRtoPtNormalisation,IntOut'length), 
+      DenominatorIn => TO_UNSIGNED( abs(TO_INTEGER( TTTrackPipeIn( 0 )( i ).InvR )),FracOut'length ), --Convert input to correct format
       IntegerOut    => IntOut,
       FractionOut   => FracOut
     );
@@ -164,14 +169,14 @@ BEGIN
       END IF;
     END PROCESS;
     -- Fill new track word
-    Output( i ).Pt         <= TO_UNSIGNED( TO_INTEGER( IntOut )+TO_INTEGER( FracOut )/2**18 ,16 );
-    Output( i ).Phi        <= TO_UNSIGNED( phi_array       ( track_delay - 1 ) ,13 );
-    Output( i ).Eta        <= TO_UNSIGNED( eta_array       ( track_delay - 1 ) ,16 );
-    Output( i ).Z0         <= TO_UNSIGNED( z0_array        ( track_delay - 1 ) ,8  );
-    Output( i ).Chi2rphi   <= TO_UNSIGNED( Chi2rphi_array  ( track_delay - 1 ) ,4  );
-    Output( i ).Chi2rz     <= TO_UNSIGNED( Chi2rz_array    ( track_delay - 1 ) ,4  );
-    Output( i ).BendChi2   <= TO_UNSIGNED( BendChi2_array  ( track_delay - 1 ) ,3  );
-    Output( i ).Hitpattern <= TO_UNSIGNED( Hitpattern_array( track_delay - 1 ) ,7  );
+    Output( i ).Pt         <= TO_UNSIGNED( TO_INTEGER( IntOut )+TO_INTEGER( FracOut )/FracScale ,TTTrack.Pt'length );
+    Output( i ).Phi        <= TO_UNSIGNED( phi_array       ( track_delay - 1 ) ,TTTrack.Phi'length);
+    Output( i ).Eta        <= TO_UNSIGNED( eta_array       ( track_delay - 1 ) ,TTTrack.Eta'length );
+    Output( i ).Z0         <= TO_UNSIGNED( z0_array        ( track_delay - 1 ) ,TTTrack.Z0'length  );
+    Output( i ).Chi2rphi   <= TO_UNSIGNED( Chi2rphi_array  ( track_delay - 1 ) ,TTTrack.Chi2rphi'length  );
+    Output( i ).Chi2rz     <= TO_UNSIGNED( Chi2rz_array    ( track_delay - 1 ) ,TTTrack.Chi2rz'length  );
+    Output( i ).BendChi2   <= TO_UNSIGNED( BendChi2_array  ( track_delay - 1 ) ,TTTrack.BendChi2'length  );
+    Output( i ).Hitpattern <= TO_UNSIGNED( Hitpattern_array( track_delay - 1 ) ,TTTrack.Hitpattern'length  );
     Output( i ).DataValid  <= TRUE WHEN ( valid_array( vld_delay - 1 ) = '1' ) ELSE FALSE;
     Output( i ).FrameValid <= TRUE WHEN ( frame_array( vld_delay - 1 ) = '1' ) ELSE FALSE;
         

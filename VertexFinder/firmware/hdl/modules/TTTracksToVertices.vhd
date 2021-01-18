@@ -71,7 +71,7 @@ BEGIN
       IF RISING_EDGE( clk ) THEN
         Output( i ) .z0         <= l1TTTrack.z0;
         Output( i ) .Weight     <= l1TTTrack.Pt;
-        Output( i ) .SortKey    <= TO_INTEGER(l1TTTrack.z0):
+        Output( i ) .SortKey    <= TO_INTEGER(l1TTTrack.z0);
         Output( i ) .DataValid  <= l1TTTrack.DataValid;
         Output( i ) .FrameValid <= l1TTTrack.FrameValid;
       END IF;

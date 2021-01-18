@@ -10,6 +10,9 @@ LIBRARY InTTTrack;
 USE InTTTrack.DataType.ALL;
 USE InTTTrack.ArrayTypes.ALL;
 
+LIBRARY LinkDecode;
+USE LinkDecode.constants.all;
+
 LIBRARY Utilities;
 USE Utilities.debugging.ALL;
 USE Utilities.Utilities.ALL;
@@ -30,7 +33,7 @@ END LinksToTTTracks;
 -- -------------------------------------------------------------------------
 ARCHITECTURE rtl OF LinksToTTTracks IS
   SIGNAL Output : Vector( 0 TO 17 ) := NullVector( 18 );
-  CONSTANT LinkWordLength : INTEGER := 64;
+  CONSTANT LinkWordLength : INTEGER := WordLength;
 
 BEGIN
   g1 : FOR i IN 0 TO 17 GENERATE

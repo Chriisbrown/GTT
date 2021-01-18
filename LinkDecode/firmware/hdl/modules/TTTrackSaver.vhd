@@ -14,6 +14,9 @@ LIBRARY Vertex;
 USE Vertex.DataType;
 USE Vertex.ArrayTypes;
 
+LIBRARY LinkDecode;
+USE LinkDecode.Constants.all;
+
 ENTITY TTTrackSaver IS
 
   PORT(
@@ -28,7 +31,7 @@ ARCHITECTURE rtl OF TTTrackSaver IS
   
   SIGNAL   Output      : TTTrack.ArrayTypes.Vector( 0 TO 17 ) := TTTrack.ArrayTypes.NullVector( 18 );
   CONSTANT frame_delay : INTEGER                              := 2;
-  CONSTANT ram_depth   : INTEGER                              := 512; --Max number of tracks per FIFO, (18 FIFOs Total)
+  CONSTANT ram_depth   : INTEGER                              := RAMDepth; --Max number of tracks per FIFO, (18 FIFOs Total)
 
 BEGIN 
 

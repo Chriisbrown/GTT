@@ -17,7 +17,7 @@ USE Utilities.debugging.ALL;
 USE Utilities.Utilities.ALL;
 
 LIBRARY TrackSelection;
-USE TrackSelection.Constants.ALL;
+USE TrackSelection.constants.ALL;
 
 -- -------------------------------------------------------------------------
 ENTITY TrackSelection IS
