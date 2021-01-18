@@ -138,11 +138,23 @@ PORT MAP(
 );
 -- -------------------------------------------------------------------------
 -- -------------------------------------------------------------------------
+--ObjectsToLinksInstance : ENTITY GTT.ObjectsToLinks
+--PORT MAP(
+--  clk => clk ,
+--  VertexPipeIn => PrimaryVertexPipe,
+--  METPipeIn => GlobalEtPipe,
+--  linksOut => LinksOut
+--);
+-- -------------------------------------------------------------------------
+-- -------------------------------------------------------------------------
 ObjectsToLinksInstance : ENTITY GTT.ObjectsToLinks
 PORT MAP(
   clk => clk ,
   VertexPipeIn => PrimaryVertexPipe,
   METPipeIn => GlobalEtPipe,
+  SectorMETPipeIn => EtPipe,
+  TTTrackIn => DelayedTracks,
+  SelectedTTTrackIn => CutTracks,
   linksOut => LinksOut
 );
 

@@ -4,22 +4,9 @@ src --vhdl2008 -l GTT top/GTT.vhd
 src --vhdl2008 -l GTT modules/ObjectsToLinks.vhd
 
 include -c TrackMET: TrackMET_sim.dep
-
-src --vhdl2008 -c TrackSelection: -l TrackSelection TrackToVertexAssoc.vhd
-src --vhdl2008 -c TrackSelection: -l TrackSelection TrackSelection.vhd
-
-src --vhdl2008 -c VertexFinder: -l VertexFinder top/VertexFinderModule.vhd
-src --vhdl2008 -c VertexFinder: -l VertexFinder modules/MaximaFinder.vhd
-src --vhdl2008 -c VertexFinder: -l VertexFinder modules/Histogram.vhd
-src --vhdl2008 -c VertexFinder: -l VertexFinder modules/Fanout.vhd
-src --vhdl2008 -c VertexFinder: -l VertexFinder modules/VertexDistribution.vhd
-src --vhdl2008 -c VertexFinder: -l VertexFinder modules/TTTracksToVertices.vhd
-
-src --vhdl2008 -c LinkDecode: -l LinkDecode modules/TrackTransform.vhd
-src --vhdl2008 -c LinkDecode: -l LinkDecode modules/TanLROM.vhd
-src --vhdl2008 -c LinkDecode: -l LinkDecode modules/InvRdivider.vhd
-src --vhdl2008 -c LinkDecode: -l LinkDecode modules/TTTrackSaver.vhd
-src --vhdl2008 -c LinkDecode: -l LinkDecode modules/LinksToTTTracks.vhd
+include -c TrackSelection: TrackSelection_sim.dep
+include -c VertexFinder: VertexFinder_sim.dep
+include -c LinkDecode: LinkDecode_sim.dep
 
 src --vhdl2008 -c RuflCore:   -l TTTrack ReuseableElements/DataRam.vhd
 src --vhdl2008 -c RuflCore:   -l TTTrack ReuseableElements/Debugger.vhd
@@ -33,7 +20,6 @@ src --vhdl2008 -c RuflCore:   -l InTTTrack ReuseableElements/DataPipe.vhd
 src --vhdl2008 -c RuflCore:   -l InTTTrack ReuseableElements/PkgArrayTypes.vhd
 src --vhdl2008 -c LinkDecode: -l InTTTrack types/PkgInTTTrack.vhd
 
-src --vhdl2008 -c RuflCore: -l Vertex ReuseableElements/DistributionServer.vhd
 src --vhdl2008 -c RuflCore: -l Vertex ReuseableElements/Debugger.vhd
 src --vhdl2008 -c RuflCore: -l Vertex ReuseableElements/DataRam.vhd
 src --vhdl2008 -c RuflCore: -l Vertex ReuseableElements/DataPipe.vhd

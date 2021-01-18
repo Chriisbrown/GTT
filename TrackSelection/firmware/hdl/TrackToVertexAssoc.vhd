@@ -30,8 +30,8 @@ ARCHITECTURE rtl OF TrackToVertexAssoc IS
 
   SIGNAL Output : TTTrack.ArrayTypes.Vector( 0 TO 17 ) := TTTrack.ArrayTypes.NullVector( 18 );
 
-  PROCEDURE DeltaZ ( SIGNAL TTTrack : IN TTTrack.DataType.tData := TTTrack.DataType.cNull;   --Procedure for selecting z window based on eta
-                     SIGNAL delta_z : OUT INTEGER               := 0) IS
+  PROCEDURE DeltaZ ( SIGNAL TTTrack : IN TTTrack.DataType.tData;   --Procedure for selecting z window based on eta
+                     SIGNAL delta_z : OUT INTEGER) IS
     VARIABLE temp_z : INTEGER := 0;
 
     BEGIN

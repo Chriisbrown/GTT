@@ -6,6 +6,10 @@ USE IEEE.NUMERIC_STD.ALL;
 library xil_defaultlib;
 use xil_defaultlib.emp_data_types.all;
 
+LIBRARY TTTrack;
+USE TTTrack.DataType;
+USE TTTrack.ArrayTypes;
+
 library Vertex;
 use Vertex.DataType.all;
 use Vertex.ArrayTypes;
@@ -22,6 +26,9 @@ port(
   clk : in std_logic := '0';
   VertexPipeIn : in Vertex.ArrayTypes.VectorPipe;
   METPipeIn : in Et.ArrayTypes.VectorPipe;
+  SectorMETPipeIn : in Et.ArrayTypes.VectorPipe;
+  TTTrackIn : in TTTrack.ArrayTypes.VectorPipe;
+  SelectedTTTrackIn : in TTTrack.ArrayTypes.VectorPipe;
   linksOut : out ldata  
 );
 end ObjectsToLinks;
@@ -67,29 +74,51 @@ begin
       linksOut(1).start <= '0';
       linksOut(1).strobe <= '1';
 
-      linksOut(2).data(15 downto 0) <= std_logic_vector(METPipeIn(0)(0).Px);
-      linksOut(2).valid <= '1';
-      linksOut(2).start <= '0';
-      linksOut(2).strobe <= '1';
-
-      linksOut(3).data(15 downto 0) <= std_logic_vector(METPipeIn(0)(0).Py);
-      linksOut(3).valid <= '1';
-      linksOut(3).start <= '0';
-      linksOut(3).strobe <= '1';
     else
       linksOut(1).data <= (others => '0');
       linksOut(1).start <= '0';
       linksOut(1).strobe <= '1';
       linksOut(1).valid <= '0';
+    end if;
+
+    if SectorMETPipeIn(0)(0).DataValid then
+      linksOut(2).data(15 downto 0) <= std_logic_vector(SectorMETPipeIn(0)(0).Px);
+      linksOut(2).data(31 downto 16) <= std_logic_vector(SectorMETPipeIn(0)(0).Py);
+      linksOut(2).valid <= '1';
+      linksOut(2).start <= '0';
+      linksOut(2).strobe <= '1';
+
+    else
       linksOut(2).data <= (others => '0');
       linksOut(2).start <= '0';
       linksOut(2).strobe <= '1';
       linksOut(2).valid <= '0';
+    end if;
+
+    if TTTrackIn(0)(0).DataValid then 
+      linksOut(3).data(15 downto 0) <= std_logic_vector(TTTrackIn(0)(0).Pt);
+      linksOut(3).valid <= '1';
+      linksOut(3).start <= '0';
+      linksOut(3).strobe <= '1';
+    else
       linksOut(3).data <= (others => '0');
       linksOut(3).start <= '0';
       linksOut(3).strobe <= '1';
       linksOut(3).valid <= '0';
     end if;
+
+    if SelectedTTTrackIn(0)(0).DataValid then 
+      linksOut(4).data(15 downto 0) <= std_logic_vector(SelectedTTTrackIn(0)(0).Pt);
+      linksOut(4).valid <= '1';
+      linksOut(4).start <= '0';
+      linksOut(4).strobe <= '1';
+    else
+      linksOut(4).data <= (others => '0');
+      linksOut(4).start <= '0';
+      linksOut(4).strobe <= '1';
+      linksOut(4).valid <= '0';
+    end if;
+
   end if;
 end process;
 
