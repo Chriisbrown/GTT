@@ -1,5 +1,19 @@
+src --vhdl2008 -c LinkDecode: -l InTTTrack types/PkgInTTTrack.vhd
+src --vhdl2008 -c RuflCore:   -l InTTTrack ReuseableElements/PkgArrayTypes.vhd
+src --vhdl2008 -c RuflCore:   -l InTTTrack ReuseableElements/DataPipe.vhd
+src --vhdl2008 -c RuflCore:   -l InTTTrack ReuseableElements/Debugger.vhd
+src --vhdl2008 -c RuflCore:   -l InTTTrack ReuseableElements/DataRam.vhd
+
+src --vhdl2008 -c LinkDecode: -l TTTrack types/PkgTTTrack.vhd
+src --vhdl2008 -c RuflCore: -l TTTrack ReuseableElements/PkgArrayTypes.vhd
+src --vhdl2008 -c RuflCore: -l TTTrack ReuseableElements/DataPipe.vhd
+src --vhdl2008 -c RuflCore: -l TTTrack ReuseableElements/Debugger.vhd
+src --vhdl2008 -c RuflCore: -l TTTrack ReuseableElements/DataRam.vhd
+
+
 src --vhdl2008 -c LinkDecode: -l LinkDecode modules/LinksToTTTracks.vhd
 src --vhdl2008 -c LinkDecode: -l LinkDecode modules/TTTrackSaver.vhd
 src --vhdl2008 -c LinkDecode: -l LinkDecode modules/InvRdivider.vhd
 src --vhdl2008 -c LinkDecode: -l LinkDecode modules/TanLROM.vhd
 src --vhdl2008 -c LinkDecode: -l LinkDecode modules/TrackTransform.vhd
+

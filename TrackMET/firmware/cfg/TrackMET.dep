@@ -4,6 +4,7 @@ src --vhdl2008 -c TrackMET: -l ET track/PkgArrayTypes.vhd
 src --vhdl2008 -c TrackMET: -l ET track/DataPipe.vhd
 src --vhdl2008 -c TrackMET: -l ET track/Debugger.vhd
 
+src --vhdl2008 -c TrackMET: -l TrackMET common/PkgConstants.vhd
 src --vhdl2008 -c TrackMET: -l TrackMET common/CordicSqrt.vhd
 src --vhdl2008 -c TrackMET: -l TrackMET common/ROMConstants.vhd
 src --vhdl2008 -c TrackMET: -l TrackMET common/AC.vhd

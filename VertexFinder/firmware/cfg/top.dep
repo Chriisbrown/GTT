@@ -1,7 +1,0 @@
-# MP7 utilities required for payload
-include -c phase2-infra-fw:boards/mpultra mpultra.dep
-
-src -c mp7:components/mp7_datapath mp7_data_types.vhd
-src -c ipbus-firmware:components/ipbus_slaves ipbus_reg_v.vhd ipbus_ctrlreg_v.vhd ipbus_reg_types.vhd
-src -c ipbus-firmware:components/ipbus_core ipbus_package.vhd ipbus_fabric_sel.vhd
-

@@ -18,6 +18,7 @@ USE Utilities.Utilities.ALL;
 LIBRARY TrackMET;
 USE TrackMET.ROMConstants.all;
 USE TrackMET.MAC;
+USE TrackMET.constants.all;
 
 -- -------------------------------------------------------------------------
 ENTITY SectorET IS
@@ -43,23 +44,23 @@ ARCHITECTURE rtl OF SectorET IS
         GlobalPhi := TO_INTEGER( TTTrack.phi );
         TempPt    := TO_INTEGER( TTTrack.pt );
 
-        IF GlobalPhi >= 0 AND GlobalPhi < 1567 THEN
+        IF GlobalPhi >= PhiBins( 0 ) AND GlobalPhi < PhiBins( 1 ) THEN
           Phix <= TrigArray( GlobalPhi )( 0 );  
           Phiy <= TrigArray( GlobalPhi )( 1 ); 
-        ELSIF GlobalPhi >= 1567 AND GlobalPhi < 3134 THEN
-          Phix <= -TrigArray( GlobalPhi-1567 )( 1 ); 
-          Phiy <= TrigArray(  GlobalPhi-1567 )( 0 ); 
-        ELSIF GlobalPhi >= 3134 AND GlobalPhi < 4701 THEN
-          Phix <= -TrigArray( GlobalPhi-3134 )( 0 );  
-          Phiy <= -TrigArray( GlobalPhi-3134 )( 1 ); 
-        ELSIF GlobalPhi >= 4701 AND GlobalPhi < 6268 THEN
-          Phix <= TrigArray(  GlobalPhi-4701 )( 1 ); 
-          Phiy <= -TrigArray( GlobalPhi-4701 )( 0 ); 
+        ELSIF GlobalPhi >= PhiBins( 1 ) AND GlobalPhi < PhiBins( 2 ) THEN
+          Phix <= -TrigArray( GlobalPhi - PhiBins( 1 ) )( 1 ); 
+          Phiy <= TrigArray(  GlobalPhi - PhiBins( 1 ) )( 0 ); 
+        ELSIF GlobalPhi >= PhiBins( 2 ) AND GlobalPhi < PhiBins( 3 ) THEN
+          Phix <= -TrigArray( GlobalPhi - PhiBins( 2 ) )( 0 );  
+          Phiy <= -TrigArray( GlobalPhi - PhiBins( 2 ) )( 1 ); 
+        ELSIF GlobalPhi >= PhiBins( 3 ) AND GlobalPhi < PhiBins( 4 ) THEN
+          Phix <= TrigArray(  GlobalPhi - PhiBins( 3 ) )( 1 ); 
+          Phiy <= -TrigArray( GlobalPhi - PhiBins( 3 ) )( 0 ); 
         END IF;
         Pt <= TempPt;
   END PROCEDURE GlobalPhiLUT;
 
-  CONSTANT frame_delay        : INTEGER := 5; --Constant latency of algorithm steps
+  CONSTANT frame_delay : INTEGER := 5; --Constant latency of algorithm steps
   
 BEGIN
   g1              : FOR i IN 0 TO 17 GENERATE
@@ -81,20 +82,22 @@ BEGIN
 
   PxMAC : ENTITY TrackMET.MAC  --Multiplier acumulator, finds cos/sin * px and sums until reset
     PORT MAP(
-      clk   => clk, -- clock
-      reset => reset,
-      Pt    => tempPt,
-      Phi   => tempPhix,
-      SumPt => SumPx
+      clk    => clk, -- clock
+      reset  => reset,
+      Factor => MACNormalisation
+      Pt     => tempPt,
+      Phi    => tempPhix,
+      SumPt  => SumPx
     );
 
   PyMAC : ENTITY TrackMet.MAC  --Multiplier acumulator, finds cos/sin * py and sums until reset
     PORT MAP(
-      clk   => clk, -- clock
-      reset => reset,
-      Pt    => tempPt,
-      Phi   => tempPhiy,
-      SumPt => SumPy
+      clk    => clk, -- clock
+      reset  => reset,
+      Factor => MACNormalisation.
+      Pt     => tempPt,
+      Phi    => tempPhiy,
+      SumPt  => SumPy
     );
 
     GlobalPhiLUT( vldTrack, tempPhix, tempPhiy, tempPt);

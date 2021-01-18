@@ -12,6 +12,9 @@ LIBRARY TTTrack;
 USE TTTrack.DataType;
 USE TTTrack.ArrayTypes;
 
+LIBRARY TrackSelection;
+USE TrackSelection.Constants.all;
+
 LIBRARY Utilities;
 USE Utilities.debugging.ALL;
 USE Utilities.Utilities.ALL;
@@ -35,18 +38,18 @@ ARCHITECTURE rtl OF TrackToVertexAssoc IS
     VARIABLE temp_z : INTEGER := 0;
 
     BEGIN
-        IF TTTrack.eta >= 32768 AND TTTrack.eta < 41443 THEN
-          temp_z := 3;
-        ELSIF TTTrack.eta >= 41443 AND TTTrack.eta < 45161 THEN
-          temp_z := 5;
-        ELSIF TTTrack.eta >= 45161 AND TTTrack.eta < 47639 THEN
-          temp_z := 6;
-        ELSIF TTTrack.eta >= 47639 AND TTTrack.eta < 52596 THEN
-          temp_z := 8;
-        ELSIF TTTrack.eta >= 52596 AND TTTrack.eta < 57554 THEN
-          temp_z := 14;
-        ELSIF TTTrack.eta >= 57554 AND TTTrack.eta <= 62511 THEN
-          temp_z := 18;
+        IF TTTrack.eta >= EtaBins( 0 ) AND TTTrack.eta < EtaBins( 1 )  THEN
+          temp_z := DeltaZ( 0 );
+        ELSIF TTTrack.eta >= EtaBins( 1 ) AND TTTrack.eta < EtaBins( 2 )  THEN
+          temp_z := DeltaZ( 1 );
+        ELSIF TTTrack.eta >= EtaBins( 2 )  AND TTTrack.eta < EtaBins( 3 )  THEN
+          temp_z := DeltaZ( 2 );
+        ELSIF TTTrack.eta >= EtaBins( 3 )  AND TTTrack.eta < EtaBins( 4 )  THEN
+          temp_z := DeltaZ( 3 );
+        ELSIF TTTrack.eta >= EtaBins( 4 )  AND TTTrack.eta < EtaBins( 5 )  THEN
+          temp_z := DeltaZ( 4 );
+        ELSIF TTTrack.eta >= EtaBins( 5 )  AND TTTrack.eta <= EtaBins( 6 )  THEN
+          temp_z := DeltaZ( 5 );
         ELSE
           temp_z := 0;
         END IF;

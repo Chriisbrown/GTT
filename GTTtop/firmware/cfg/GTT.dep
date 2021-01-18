@@ -1,24 +1,6 @@
 src --vhdl2008 -c RuflCore: -l Utilities ReuseableElements/PkgDebug.vhd
 src --vhdl2008 -c RuflCore: -l Utilities ReuseableElements/PkgUtilities.vhd
 
-src --vhdl2008 -c VertexFinder: -l Vertex types/PkgVertex.vhd
-src --vhdl2008 -c RuflCore: -l Vertex ReuseableElements/PkgArrayTypes.vhd
-src --vhdl2008 -c RuflCore: -l Vertex ReuseableElements/DataPipe.vhd
-src --vhdl2008 -c RuflCore: -l Vertex ReuseableElements/DataRam.vhd
-src --vhdl2008 -c RuflCore: -l Vertex ReuseableElements/Debugger.vhd
-
-src --vhdl2008 -c LinkDecode: -l InTTTrack types/PkgInTTTrack.vhd
-src --vhdl2008 -c RuflCore:   -l InTTTrack ReuseableElements/PkgArrayTypes.vhd
-src --vhdl2008 -c RuflCore:   -l InTTTrack ReuseableElements/DataPipe.vhd
-src --vhdl2008 -c RuflCore:   -l InTTTrack ReuseableElements/Debugger.vhd
-src --vhdl2008 -c RuflCore:   -l InTTTrack ReuseableElements/DataRam.vhd
-
-src --vhdl2008 -c LinkDecode: -l TTTrack types/PkgTTTrack.vhd
-src --vhdl2008 -c RuflCore: -l TTTrack ReuseableElements/PkgArrayTypes.vhd
-src --vhdl2008 -c RuflCore: -l TTTrack ReuseableElements/DataPipe.vhd
-src --vhdl2008 -c RuflCore: -l TTTrack ReuseableElements/Debugger.vhd
-src --vhdl2008 -c RuflCore: -l TTTrack ReuseableElements/DataRam.vhd
-
 include -c LinkDecode: LinkDecode.dep
 include -c VertexFinder: VertexFinder.dep
 include -c TrackSelection: TrackSelection.dep

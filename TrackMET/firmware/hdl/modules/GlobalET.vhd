@@ -16,6 +16,7 @@ LIBRARY TrackMET;
 USE TrackMET.ROMConstants.all;
 USE TrackMET.CordicSqrt;
 USE TrackMET.AC;
+USE TrackMET.Constants.all;
 
 -- -------------------------------------------------------------------------
 ENTITY GlobalET IS
@@ -73,8 +74,8 @@ END GlobalET;
 
   BEGIN
   Sqrt : ENTITY TrackMET.CordicSqrt
-  GENERIC MAP ( n_steps => 4,
-                multiplier => 39901 )  --Constants TODO constants file
+  GENERIC MAP ( n_steps => CordicSteps,
+                multiplier => CordicNormalisation )  --Constants TODO constants file
   PORT MAP(
     clk  => clk,
     Xin  => TO_SIGNED( ExSignal, 16 ) ,

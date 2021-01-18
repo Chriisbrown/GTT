@@ -5,3 +5,10 @@ src --vhdl2008 -c VertexFinder: -l VertexFinder modules/Fanout.vhd
 src --vhdl2008 -c VertexFinder: -l VertexFinder modules/VertexDistribution.vhd
 src --vhdl2008 -c VertexFinder: -l VertexFinder modules/TTTracksToVertices.vhd
 src --vhdl2008 -c RuflCore: -l Vertex ReuseableElements/DistributionServer.vhd
+
+
+src --vhdl2008 -c RuflCore: -l Vertex ReuseableElements/Debugger.vhd
+src --vhdl2008 -c RuflCore: -l Vertex ReuseableElements/DataRam.vhd
+src --vhdl2008 -c RuflCore: -l Vertex ReuseableElements/DataPipe.vhd
+src --vhdl2008 -c RuflCore: -l Vertex ReuseableElements/PkgArrayTypes.vhd
+src --vhdl2008 -c VertexFinder: -l Vertex types/PkgVertex.vhd

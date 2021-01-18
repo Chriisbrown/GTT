@@ -2,8 +2,10 @@ LIBRARY IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
+
 ENTITY MAC is
     PORT (clk, reset : IN std_logic := '0';
+          Factor     : IN INTEGER := 4096;
           Pt         : IN INTEGER   := 0;
           Phi        : IN INTEGER   := 0;
           SumPt      : OUT SIGNED ( 15 DOWNTO 0 ) := (OTHERS => '0')
@@ -41,6 +43,6 @@ BEGIN
         END IF;
     END PROCESS;
 
-    SumPt <= TO_SIGNED( s_sum / 2**12, 16) ;
+    SumPt <= TO_SIGNED( s_sum / Factor, 16) ;
     
 END ARCHITECTURE BEHAVIORAL;

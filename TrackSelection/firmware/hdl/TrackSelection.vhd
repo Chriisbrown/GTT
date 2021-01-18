@@ -16,26 +16,29 @@ LIBRARY Utilities;
 USE Utilities.debugging.ALL;
 USE Utilities.Utilities.ALL;
 
+LIBRARY TrackSelection;
+USE TrackSelection.Constants.ALL;
+
 -- -------------------------------------------------------------------------
 ENTITY TrackSelection IS
 
   PORT(
     clk                 : IN  STD_LOGIC := '0'; -- The algorithm clock
-    TTTrackPipeIn       : IN TTTrack.ArrayTypes.VectorPipe;
+    TTTrackPipeIn       : IN  TTTrack.ArrayTypes.VectorPipe;
     TTTrackPipeOut      : OUT TTTrack.ArrayTypes.VectorPipe
   );
 END TrackSelection;
 
 ARCHITECTURE rtl OF TrackSelection IS
 
-  FUNCTION Nstub ( hitmask : STD_LOGIC_VECTOR( 6 DOWNTO 0 ) := (OTHERS => '0') ) RETURN BOOLEAN IS  --Function to calculate N stub from hitmask and return if > 3
+  FUNCTION Nstub ( hitmask : STD_LOGIC_VECTOR( TTTrack.Hitpattern'RANGE ) := (OTHERS => '0') ) RETURN BOOLEAN IS  --Function to calculate N stub from hitmask and return if > 3
   VARIABLE temp_count : NATURAL := 0;
   BEGIN
     FOR i IN hitmask'RANGE LOOP
       IF hitmask( i ) = '1' THEN temp_count := temp_count + 1;
       END IF;
     END LOOP;
-  RETURN temp_count > 3;  -- CONSTANT TODO Constant file
+  RETURN temp_count >= MaxNstub; 
   END FUNCTION Nstub;
 
   SIGNAL Output : TTTrack.ArrayTypes.Vector( 0 TO 17 ) := TTTrack.ArrayTypes.NullVector( 18 );
@@ -58,11 +61,11 @@ BEGIN
 
         ELSIF l1TTTrack.DataValid THEN
           IF    ( Nstub( STD_LOGIC_VECTOR( l1TTTrack.Hitpattern ) ) ) 
-            AND ( TO_INTEGER( l1TTTrack.BendChi2 ) < 3  ) 
-            AND ( TO_INTEGER( l1TTTrack.Chi2rphi ) + TO_INTEGER( l1TTTrack.Chi2rz ) <= 16 ) 
-            AND ( TO_INTEGER( l1TTTrack.Chi2rphi ) <= 9 ) 
-            AND ( TO_INTEGER( l1TTTrack.Chi2rz   ) <= 9 ) 
-            AND ( TO_INTEGER( l1TTTrack.pt ) >= 128 ) THEN   --TODO CONSTANTS FILE
+            AND ( TO_INTEGER( l1TTTrack.BendChi2 ) < MaxBendChi2  ) 
+            AND ( TO_INTEGER( l1TTTrack.Chi2rphi ) + TO_INTEGER( l1TTTrack.Chi2rz ) <= MaxChi2Sum ) 
+            AND ( TO_INTEGER( l1TTTrack.Chi2rphi ) <= MaxSplitChi2 ) 
+            AND ( TO_INTEGER( l1TTTrack.Chi2rz   ) <= MaxSplitChi2 ) 
+            AND ( TO_INTEGER( l1TTTrack.pt ) >= MaxTrackPt ) THEN  
               Track_vld := TRUE;
           END IF;
         END IF;
