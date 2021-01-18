@@ -8,6 +8,8 @@ include -c TrackSelection: TrackSelection_sim.dep
 include -c VertexFinder: VertexFinder_sim.dep
 include -c LinkDecode: LinkDecode_sim.dep
 
+include Types_sim.dep
+
 src --vhdl2008 -c RuflCore: -l Utilities ReuseableElements/PkgUtilities.vhd
 src --vhdl2008 -c RuflCore: -l Utilities ReuseableElements/PkgDebug.vhd
 

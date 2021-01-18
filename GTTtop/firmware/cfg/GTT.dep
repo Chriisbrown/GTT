@@ -1,6 +1,8 @@
 src --vhdl2008 -c RuflCore: -l Utilities ReuseableElements/PkgDebug.vhd
 src --vhdl2008 -c RuflCore: -l Utilities ReuseableElements/PkgUtilities.vhd
 
+include Types.dep
+
 include -c LinkDecode: LinkDecode.dep
 include -c VertexFinder: VertexFinder.dep
 include -c TrackSelection: TrackSelection.dep

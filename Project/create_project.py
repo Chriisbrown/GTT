@@ -12,5 +12,5 @@ if __name__ == "__main__":
   yamlConfig = yaml.load(open(options.config, 'r'))
   os.chdir(yamlConfig['p2-xware'])
 
-  call(["ipbb", "proj", "create", "sim", "{}".format(yamlConfig['ProjName']), "/home/hep/cb719/EMP/alt-work/src/GTTtop", yamlConfig['depfile']])
+  call(["ipbb", "proj", "create", "sim", "{}".format(yamlConfig['ProjName']), "/home/hep/cb719/EMP/alt-work/src/GTTtop:", yamlConfig['depfile']])
   os.chdir('proj/{}'.format(yamlConfig['ProjName']))
