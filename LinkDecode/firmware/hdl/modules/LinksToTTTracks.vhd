@@ -1,27 +1,3 @@
--- #########################################################################
--- #########################################################################
--- ###                                                                   ###
--- ###   Use of this code, whether in its current form or modified,      ###
--- ###   implies that you consent to the terms and conditions, namely:   ###
--- ###    - You acknowledge my contribution                              ###
--- ###    - This copyright notification remains intact                   ###
--- ###                                                                   ###
--- ###   Many thanks,                                                    ###
--- ###     Dr. Andrew W. Rose, Imperial College London, 2018             ###
--- ###                                                                   ###
--- #########################################################################
--- #########################################################################
-
--- .library VertexFinder
--- .include types/PkgTrack.vhd
--- .include ReuseableElements/PkgArrayTypes.vhd in Track
--- .include ReuseableElements/DataPipe.vhd in Track
--- .include ReuseableElements/Debugger.vhd in Track
--- .include ReuseableElements/PkgDebug.vhd
--- .include ReuseableElements/PkgUtilities.vhd
--- .include TopLevelInterfaces/mp7_data_types.vhd
-
--- -------------------------------------------------------------------------
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.STD_LOGIC_MISC.ALL;
@@ -59,11 +35,11 @@ ARCHITECTURE rtl OF LinksToTTTracks IS
 BEGIN
   g1 : FOR i IN 0 TO 17 GENERATE
 
-  SIGNAL temp_framevalid1   : BOOLEAN;
-  SIGNAL temp_framevalid2   : BOOLEAN;
-  SIGNAL temp_framevalid3   : BOOLEAN;
+  SIGNAL temp_framevalid1   : BOOLEAN := FALSE;
+  SIGNAL temp_framevalid2   : BOOLEAN := FALSE;
+  SIGNAL temp_framevalid3   : BOOLEAN := FALSE;
 
-  SIGNAL track_words : STD_LOGIC_VECTOR(LinkWordLength*3 - 1 DOWNTO 0);
+  SIGNAL track_words : STD_LOGIC_VECTOR(LinkWordLength*3 - 1 DOWNTO 0) := (OTHERS => '0');
   SIGNAL clockCounter : INTEGER := 1;
 
   BEGIN
@@ -127,7 +103,7 @@ BEGIN
           ELSE
             Output( i ) . DataValid  <= FALSE;
             Output( i ) . FrameValid <= temp_framevalid3;
-            IF to_boolean(linksIn( i ) .valid) = TRUE OR temp_framevalid1 = TRUE OR temp_framevalid2 = TRUE THEN
+            IF to_boolean(linksIn( i ) .valid)  OR temp_framevalid1 OR temp_framevalid2 THEN
               clockCounter <= clockCounter + 1;
             ELSE
               clockCounter <= 0;

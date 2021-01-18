@@ -33,110 +33,99 @@ ARCHITECTURE rtl OF SectorET IS
 
   SIGNAL Output : ET.ArrayTypes.Vector( 0 TO 17 ) := ET.ArrayTypes.NullVector( 18 );
 
-  PROCEDURE GlobalPhiLUT (signal TTTrack : IN TTTrack.DataType.tData;
-                          signal Phix : OUT Integer;
-                          signal Phiy : OUT Integer;
-                          signal Pt : OUT Integer) is
+  PROCEDURE GlobalPhiLUT (SIGNAL TTTrack : IN TTTrack.DataType.tData ;  --Procedure for finding cos and sin of phi
+                          SIGNAL Phix    : OUT INTEGER ;
+                          SIGNAL Phiy    : OUT INTEGER ;
+                          SIGNAL Pt      : OUT INTEGER ) IS
     VARIABLE GlobalPhi : INTEGER := 0;
-    VARIABLE TempPt : INTEGER := 0;
+    VARIABLE TempPt    : INTEGER := 0;
     BEGIN
-        GlobalPhi := TO_INTEGER(TTTrack.phi);
-        TempPt := TO_INTEGER(TTTrack.pt);
+        GlobalPhi := TO_INTEGER( TTTrack.phi );
+        TempPt    := TO_INTEGER( TTTrack.pt );
 
         IF GlobalPhi >= 0 AND GlobalPhi < 1567 THEN
-          Phix <= TrigArray(GlobalPhi)(0);  
-          Phiy <= TrigArray(GlobalPhi)(1); 
+          Phix <= TrigArray( GlobalPhi )( 0 );  
+          Phiy <= TrigArray( GlobalPhi )( 1 ); 
         ELSIF GlobalPhi >= 1567 AND GlobalPhi < 3134 THEN
-          Phix <= -TrigArray(GlobalPhi-1567)(1); 
-          Phiy <= TrigArray(GlobalPhi-1567)(0); 
+          Phix <= -TrigArray( GlobalPhi-1567 )( 1 ); 
+          Phiy <= TrigArray(  GlobalPhi-1567 )( 0 ); 
         ELSIF GlobalPhi >= 3134 AND GlobalPhi < 4701 THEN
-          Phix <= -TrigArray(GlobalPhi-3134)(0);  
-          Phiy <= -TrigArray(GlobalPhi-3134)(1); 
+          Phix <= -TrigArray( GlobalPhi-3134 )( 0 );  
+          Phiy <= -TrigArray( GlobalPhi-3134 )( 1 ); 
         ELSIF GlobalPhi >= 4701 AND GlobalPhi < 6268 THEN
-          Phix <= TrigArray(GlobalPhi-4701)(1); 
-          Phiy <= -TrigArray(GlobalPhi-4701)(0); 
+          Phix <= TrigArray(  GlobalPhi-4701 )( 1 ); 
+          Phiy <= -TrigArray( GlobalPhi-4701 )( 0 ); 
         END IF;
-
         Pt <= TempPt;
   END PROCEDURE GlobalPhiLUT;
 
-
-  COMPONENT MAC IS
-    PORT(
-        clk  : IN STD_LOGIC; -- clock
-        rst  : IN STD_LOGIC;
-        Pt   : IN INTEGER := 0;
-        Phi  : IN INTEGER := 0;
-        SumPt : OUT SIGNED ( 15 DOWNTO 0 ) := ( OTHERS => '0' )
-    );
-  END COMPONENT MAC;
+  CONSTANT frame_delay        : INTEGER := 5; --Constant latency of algorithm steps
   
 BEGIN
   g1              : FOR i IN 0 TO 17 GENERATE
 
-  SIGNAL vldTrack       : TTTrack.DataType.tData := TTTrack.DataType.cNull;
+  SIGNAL vldTrack : TTTrack.DataType.tData := TTTrack.DataType.cNull;
   
-  SIGNAl tempPt : INTEGER := 0;
+  SIGNAl tempPt   : INTEGER := 0;  --Temporaries for procedure outputs
   SIGNAL tempPhix : INTEGER := 0;
   SIGNAL tempPhiy : INTEGER := 0;
 
-  SIGNAL reset : STD_LOGIC := '0';
-  SIGNAL SumPx : SIGNED  ( 15 DOWNTO 0 ) := ( OTHERS => '0' );
+  SIGNAL reset : STD_LOGIC := '0';  --MAC reset signal
+  SIGNAL SumPx : SIGNED  ( 15 DOWNTO 0 ) := ( OTHERS => '0' );  --MAC outputs
   SIGNAL SumPy : SIGNED  ( 15 DOWNTO 0 ) := ( OTHERS => '0' );
 
-  SIGNAL framesignal : STD_LOGIC := '0';
-  constant dn: INTEGER := 5;
-  signal framedelay: std_logic_vector(0 to dn - 1);
+  SIGNAL frame_signal : STD_LOGIC := '0';
+  SIGNAL frame_array  : STD_LOGIC_VECTOR(0 TO frame_delay - 1) :=  ( OTHERS => '0' );  --Delaying frame valid signals
 
   BEGIN
 
-  PxMAC : ENTITY TrackMET.MAC
+  PxMAC : ENTITY TrackMET.MAC  --Multiplier acumulator, finds cos/sin * px and sums until reset
     PORT MAP(
-      clk => clk, -- clock
+      clk   => clk, -- clock
       reset => reset,
-      Pt => tempPt,
-      Phi => tempPhix,
+      Pt    => tempPt,
+      Phi   => tempPhix,
       SumPt => SumPx
     );
 
-  PyMAC : ENTITY TrackMet.MAC
+  PyMAC : ENTITY TrackMet.MAC  --Multiplier acumulator, finds cos/sin * py and sums until reset
     PORT MAP(
-      clk => clk, -- clock
+      clk   => clk, -- clock
       reset => reset,
-      Pt => tempPt,
-      Phi => tempPhiy,
+      Pt    => tempPt,
+      Phi   => tempPhiy,
       SumPt => SumPy
     );
 
-    GlobalPhiLUT(vldTrack,tempPhix,tempPhiy,tempPt);
+    GlobalPhiLUT( vldTrack, tempPhix, tempPhiy, tempPt);
 
-    PROCESS( clk )
+    PROCESS( clk )  --Clocked process for storing frame valids and sending to MACs
     BEGIN
       IF RISING_EDGE( clk ) THEN
         IF TTTrackPipeIn( 0 )( i ).FrameValid THEN
-          framesignal <= '1';
+          frame_signal <= '1';
           IF TTTrackPipeIn( 0 )( i ).DataValid THEN
             vldTrack <= TTTrackPipeIn( 0 )( i );
           ELSE
             vldTrack <= TTTrack.DataType.cNull;
           END IF;
         ELSE 
-          framesignal <= '0';
+          frame_signal <= '0';
           vldTrack <= TTTrack.DataType.cNull;
         END IF;
 
-        framedelay <= framesignal & framedelay(0 to dn - 2);
+        frame_array <= frame_signal & frame_array( 0 TO frame_delay - 2 );
 
       END IF;
     END PROCESS;
 
-    reset <= '1' WHEN (framedelay(dn -1) = '1') AND (framedelay(dn -2) = '0') ELSE '0';
+    reset <= '1' WHEN (frame_array( frame_delay -1 ) = '1') AND (frame_array(frame_delay -2) = '0') ELSE '0';  --Reset MACs when end of valid frames
 
-    Output( i ) .DataValid  <= TRUE WHEN (framedelay(dn -1) = '1') AND (framedelay(dn -2) = '0') ELSE FALSE;
-    Output( i ) .FrameValid <= TRUE WHEN (framedelay(dn -1) = '1') ELSE FALSE;
+    Output( i ) .DataValid  <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1') AND ( frame_array( frame_delay - 2 )  = '0') ELSE FALSE;
+    Output( i ) .FrameValid <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1') ELSE FALSE;
     Output( i ) .Px <= SumPx;
     Output( i ) .Py <= SumPy;
-    Output( i ) .Sector <= TO_UNSIGNED(i/2,4);
+    Output( i ) .Sector <= TO_UNSIGNED( i / 2, 4 );
 
   END GENERATE;
 

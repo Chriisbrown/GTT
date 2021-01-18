@@ -22,7 +22,7 @@ ENTITY GlobalET IS
 
   PORT(
     clk                  : IN  STD_LOGIC := '0'; -- The algorithm clock
-    SectorEtPipeIn       : IN VectorPipe;
+    SectorEtPipeIn       : IN  VectorPipe;
     EtOut                : OUT VectorPipe
   );
 END GlobalET;
@@ -30,7 +30,7 @@ END GlobalET;
 
   ARCHITECTURE rtl OF GlobalET IS
 
-  FUNCTION AnyFrameValid (EtVector : Vector) return BOOLEAN IS
+  FUNCTION AnyFrameValid (EtVector : Vector := NullVector( 18 ) ) return BOOLEAN IS
   VARIABLE valid_count : INTEGER := 0;
   BEGIN
     FOR i IN EtVector'RANGE LOOP
@@ -43,7 +43,7 @@ END GlobalET;
   RETURN valid_count > 0;
   END FUNCTION AnyFrameValid;
 
-  FUNCTION AnyDataValid (EtVector : Vector) return BOOLEAN IS
+  FUNCTION AnyDataValid (EtVector : Vector := NullVector( 18 ) ) return BOOLEAN IS
   VARIABLE valid_count : INTEGER := 0;
   BEGIN
     FOR i IN EtVector'RANGE LOOP
@@ -57,37 +57,37 @@ END GlobalET;
   END FUNCTION AnyDataValid;
 
 
-  SIGNAL Output : Vector( 0 TO 0 ) := NullVector( 1 );
+  SIGNAL Output  : Vector( 0 TO 0 )  := NullVector( 1 );
   SIGNAL InputEt : Vector( 0 TO 17 ) := NullVector( 18 );
-  SIGNAL vldEt : Vector( 0 TO 17 ) := NullVector( 18 );
+  SIGNAL vldEt   : Vector( 0 TO 17 ) := NullVector( 18 );
 
-  SIGNAL ExSignal : INTEGER := 0;
-  SIGNAL EYSignal : INTEGER := 0;
+  SIGNAL ExSignal    : INTEGER   := 0;
+  SIGNAL EYSignal    : INTEGER   := 0;
   SIGNAL resetSignal : STD_LOGIC := '0';
 
-  SIGNAL framesignal : STD_LOGIC := '0';
-  constant full_dn : INTEGER := 10;
-  signal framedelay: std_logic_vector(0 to full_dn - 1);
+  SIGNAL   frame_signal : STD_LOGIC                              := '0';
+  CONSTANT frame_delay  : INTEGER                                := 10;
+  SIGNAL   frame_array  : STD_LOGIC_VECTOR(0 TO frame_delay - 1) := ( OTHERS => '0' );
 
-  SIGNAL RootSum : SIGNED( 31 DOWNTO 0 ) := (OTHERS=>'0');
+  SIGNAL RootSum : SIGNED( 39 DOWNTO 0 ) := ( OTHERS => '0' );
 
   BEGIN
   Sqrt : ENTITY TrackMET.CordicSqrt
-  GENERIC MAP (n_steps => 4,
-               multiplier => 39901)
+  GENERIC MAP ( n_steps => 4,
+                multiplier => 39901 )  --Constants TODO constants file
   PORT MAP(
-    clk => clk,
-    Xin => TO_SIGNED(ExSignal,16),
-    Yin => TO_SIGNED(EySignal,16),
-    Root  => RootSum
+    clk  => clk,
+    Xin  => TO_SIGNED( ExSignal, 16 ) ,
+    Yin  => TO_SIGNED( EySignal, 16 ),
+    Root => RootSum
   );
 
   Accumulator : ENTITY TrackMET.AC
   PORT MAP(
-    clk => clk,
+    clk   => clk,
     reset => resetSignal,
-    Et => vldEt,
-    SumEx  => ExSignal,
+    Et    => vldEt,
+    SumEx => ExSignal,
     SumEy => EySignal
   );
 
@@ -97,28 +97,28 @@ END GlobalET;
   PROCESS( clk )
   BEGIN
     IF RISING_EDGE( clk ) THEN
-      IF AnyFrameValid(InputEt) THEN
-        framesignal <= '1';
-        IF AnyDataValid(InputEt) THEN
+      IF AnyFrameValid( InputEt ) THEN
+        frame_signal <= '1';
+        IF AnyDataValid( InputEt ) THEN
           vldEt <= InputEt;
         ELSE
           vldEt <= NullVector( 18 );
         END IF;
       ELSE 
-        framesignal <= '0';
+        frame_signal <= '0';
         vldEt <= NullVector( 18 );
       END IF;
 
-      framedelay <= framesignal & framedelay(0 to full_dn - 2);
+      frame_array <= frame_signal & frame_array( 0 TO frame_delay - 2 );
 
     END IF;
   END PROCESS;
 
-  resetSignal <= '1' WHEN (framedelay(full_dn  -1) = '1') AND (framedelay(full_dn - 2) = '0') ELSE '0';
+  resetSignal <= '1' WHEN ( frame_array( frame_delay  - 1 ) = '1' ) AND ( frame_array( frame_delay - 2 ) = '0' ) ELSE '0';
   
-  Output( 0 ) .Et <= TO_UNSIGNED(TO_INTEGER(RootSum/2**16),16);   
-  Output( 0 ) .DataValid  <= TRUE WHEN (framedelay(full_dn -1) = '1') AND (framedelay(full_dn - 2) = '0') ELSE FALSE;
-  Output( 0 ) .FrameValid <= TRUE WHEN (framedelay(full_dn -1) = '1') AND (framedelay(full_dn - 2) = '0') ELSE FALSE;
+  Output( 0 ) .Et <= TO_UNSIGNED(TO_INTEGER( RootSum / 2**16 ), 16 );   
+  Output( 0 ) .DataValid  <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1' ) AND ( frame_array( frame_delay - 2 ) = '0' ) ELSE FALSE;
+  Output( 0 ) .FrameValid <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1' ) AND ( frame_array( frame_delay - 2 ) = '0' ) ELSE FALSE;
 
 
 -- -------------------------------------------------------------------------

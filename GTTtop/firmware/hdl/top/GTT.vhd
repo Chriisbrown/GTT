@@ -1,18 +1,3 @@
--- #########################################################################
--- #########################################################################
--- ###                                                                   ###
--- ###   Use of this code, whether in its current form or modified,      ###
--- ###   implies that you consent to the terms and conditions, namely:   ###
--- ###    - You acknowledge my contribution                              ###
--- ###    - This copyright notification remains intact                   ###
--- ###                                                                   ###
--- ###   Many thanks,                                                    ###
--- ###     Dr. Andrew W. Rose, Imperial College London, 2018             ###
--- ###                                                                   ###
--- #########################################################################
--- #########################################################################
-
--- -------------------------------------------------------------------------
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.NUMERIC_STD.ALL;
@@ -76,14 +61,14 @@ ARCHITECTURE rtl OF GTTTop IS
   SUBTYPE tGlobEtPipe IS Et.ArrayTypes.VectorPipe( 0 TO 9 )( 0 TO 0 );
   CONSTANT NullGlobEtPipe      : tGlobEtPipe   := Et.ArrayTypes.NullVectorPipe( 10 , 1 );
 
-  SIGNAL InputPipe             : tInTrackPipe          := NullInTrackPipe;
-  SIGNAL TrackPipe             : tWordTrackPipe        := NullWordTrackPipe;
-  SIGNAl DelayedTracks         : tWordTrackPipe        := NullWordTrackPipe;
-  SIGNAl PVTracks              : tWordTrackPipe        := NullWordTrackPipe;
-  SIGNAl CutTracks             : tWordTrackPipe        := NullWordTrackPipe;
-  SIGNAL PrimaryVertexPipe     : tPrimaryVertexPipe    := NullPrimaryVertexPipe;
-  SIGNAL EtPipe                : tEtPipe               := NullEtPipe;
-  SIGNAL GlobalEtPipe          : tGlobEtPipe           := NullGlobEtPipe;
+  SIGNAL InputPipe             : tInTrackPipe          := NullInTrackPipe;    --Initial Input tracks, taken from links
+  SIGNAL TrackPipe             : tWordTrackPipe        := NullWordTrackPipe;  --Transformed Tracks
+  SIGNAl DelayedTracks         : tWordTrackPipe        := NullWordTrackPipe;  --Tracks from FIFO after vertexing
+  SIGNAl PVTracks              : tWordTrackPipe        := NullWordTrackPipe;  --Tracks of Primary Vertex
+  SIGNAl CutTracks             : tWordTrackPipe        := NullWordTrackPipe;  --Tracks after quality selection
+  SIGNAL PrimaryVertexPipe     : tPrimaryVertexPipe    := NullPrimaryVertexPipe; -- Primary Vertex 
+  SIGNAL EtPipe                : tEtPipe               := NullEtPipe;            -- Sector Et
+  SIGNAL GlobalEtPipe          : tGlobEtPipe           := NullGlobEtPipe;        -- Global Et
  
 BEGIN
 
@@ -96,7 +81,7 @@ PORT MAP(
   );
 -- -------------------------------------------------------------------------
 -- -------------------------------------------------------------------------
-PtCalculateInstance : ENTITY LinkDecode.TrackTransform
+TrackTransformInstance : ENTITY LinkDecode.TrackTransform
 PORT MAP(
   clk              => clk ,
   TTTrackPipeIn    => InputPipe ,

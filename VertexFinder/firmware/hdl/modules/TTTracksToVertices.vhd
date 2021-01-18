@@ -40,10 +40,6 @@ USE TTTrack.ArrayTypes;
 LIBRARY Utilities;
 USE Utilities.debugging.ALL;
 USE Utilities.Utilities.ALL;
-
--- -------------------------------------------------------------------------
-
-
 -- -------------------------------------------------------------------------
 ENTITY TTTracksToVertices IS
   GENERIC(
@@ -56,7 +52,6 @@ ENTITY TTTracksToVertices IS
   );
 END TTTracksToVertices;
 -- -------------------------------------------------------------------------
-
 -- -------------------------------------------------------------------------
 ARCHITECTURE rtl OF TTTracksToVertices IS
   SIGNAL Output : Vertex.ArrayTypes.Vector( 0 TO 17 ) := Vertex.ArrayTypes.NullVector( 18 );

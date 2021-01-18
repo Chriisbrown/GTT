@@ -3,44 +3,44 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY MAC is
-    port (clk, reset : in std_logic;
-          Pt  : IN INTEGER;
-          Phi : IN INTEGER;
-          SumPt : OUT SIGNED ( 15 DOWNTO 0 )
+    PORT (clk, reset : IN std_logic := '0';
+          Pt         : IN INTEGER   := 0;
+          Phi        : IN INTEGER   := 0;
+          SumPt      : OUT SIGNED ( 15 DOWNTO 0 ) := (OTHERS => '0')
     );
 END ENTITY MAC;
 
-architecture behavioral of MAC is
+ARCHITECTURE BEHAVIORAL OF MAC IS
     
-    signal s_pt,s_phi,s_sum : INTEGER;
+    SIGNAL s_pt,s_phi,s_sum : INTEGER := 0;
     
-begin
+BEGIN
 
-    s_pt <= Pt;
+    s_pt  <= Pt;
     s_phi <= Phi;
 
-    process(clk) is
+    PROCESS( clk)  IS
 
-      variable input_pt, input_phi : INTEGER := 0;
-      variable product, sum : INTEGER := 0;
+      VARIABLE input_pt, input_phi : INTEGER := 0;
+      VARIABLE product, sum        : INTEGER := 0;
 
      
-    begin
-        if rising_edge(clk) THEN
-            if reset THEN
+    BEGIN
+        IF RISING_EDGE(clk) THEN
+            IF reset THEN
                 sum := 0;
-            else
+            ELSE
                 sum := product + sum;
-            end if;
+            END IF;
 
             s_sum <= sum;
 
-            product := input_pt * input_phi;
-            input_pt := s_pt;
+            product   := input_pt * input_phi;
+            input_pt  := s_pt;
             input_phi := s_phi;
-        end if;
-    end process;
+        END IF;
+    END PROCESS;
 
-    SumPt <= TO_SIGNED(s_sum/2**12,16);
+    SumPt <= TO_SIGNED( s_sum / 2**12, 16) ;
     
-end architecture behavioral;
+END ARCHITECTURE BEHAVIORAL;
