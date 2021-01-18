@@ -31,7 +31,7 @@ END TrackSelection;
 
 ARCHITECTURE rtl OF TrackSelection IS
 
-  FUNCTION Nstub ( hitmask : STD_LOGIC_VECTOR( l1TTTrack.Hitpattern'RANGE ) := (OTHERS => '0') ) RETURN BOOLEAN IS  --Function to calculate N stub from hitmask and return if > 3
+  FUNCTION Nstub ( hitmask : STD_LOGIC_VECTOR ) RETURN BOOLEAN IS  --Function to calculate N stub from hitmask and return if > 3
   VARIABLE temp_count : NATURAL := 0;
   BEGIN
     FOR i IN hitmask'RANGE LOOP
