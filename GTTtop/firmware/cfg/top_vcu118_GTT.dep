@@ -1,4 +1,4 @@
-src vcu118_decl_full.vhd
+src top/vcu118_decl_full.vhd
 include -c emp-fwk:boards/vcu118 vcu118.dep
 
 addrtab -c emp-fwk:components/payload emp_payload.xml

@@ -11,9 +11,9 @@ src --vhdl2008 -c RuflCore: -l TTTrack ReuseableElements/Debugger.vhd
 src --vhdl2008 -c RuflCore: -l TTTrack ReuseableElements/DataRam.vhd
 
 src --vhdl2008 -c TrackMET: -l ET types/PkgEt.vhd
-src --vhdl2008 -c TrackMET: -l ET track/PkgArrayTypes.vhd
-src --vhdl2008 -c TrackMET: -l ET track/DataPipe.vhd
-src --vhdl2008 -c TrackMET: -l ET track/Debugger.vhd
+src --vhdl2008 -c RuflCore: -l ET ReuseableElements/PkgArrayTypes.vhd
+src --vhdl2008 -c RuflCore: -l ET ReuseableElements/DataPipe.vhd
+src --vhdl2008 -c RuflCore: -l ET ReuseableElements/Debugger.vhd
 
 src --vhdl2008 -c VertexFinder: -l Vertex types/PkgVertex.vhd
 src --vhdl2008 -c RuflCore: -l Vertex ReuseableElements/PkgArrayTypes.vhd
