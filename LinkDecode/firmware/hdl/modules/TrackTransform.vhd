@@ -169,14 +169,14 @@ BEGIN
       END IF;
     END PROCESS;
     -- Fill new track word
-    Output( i ).Pt         <= TO_UNSIGNED( TO_INTEGER( IntOut )+TO_INTEGER( FracOut )/FracScale ,TTTrack.Pt'length );
-    Output( i ).Phi        <= TO_UNSIGNED( phi_array       ( track_delay - 1 ) ,TTTrack.Phi'length);
-    Output( i ).Eta        <= TO_UNSIGNED( eta_array       ( track_delay - 1 ) ,TTTrack.Eta'length );
-    Output( i ).Z0         <= TO_UNSIGNED( z0_array        ( track_delay - 1 ) ,TTTrack.Z0'length  );
-    Output( i ).Chi2rphi   <= TO_UNSIGNED( Chi2rphi_array  ( track_delay - 1 ) ,TTTrack.Chi2rphi'length  );
-    Output( i ).Chi2rz     <= TO_UNSIGNED( Chi2rz_array    ( track_delay - 1 ) ,TTTrack.Chi2rz'length  );
-    Output( i ).BendChi2   <= TO_UNSIGNED( BendChi2_array  ( track_delay - 1 ) ,TTTrack.BendChi2'length  );
-    Output( i ).Hitpattern <= TO_UNSIGNED( Hitpattern_array( track_delay - 1 ) ,TTTrack.Hitpattern'length  );
+    Output( i ).Pt         <= TO_UNSIGNED( TO_INTEGER( IntOut )+TO_INTEGER( FracOut )/FracScale ,Output( i ).Pt'length );
+    Output( i ).Phi        <= TO_UNSIGNED( phi_array       ( track_delay - 1 ) ,Output( i ).Phi'length );
+    Output( i ).Eta        <= TO_UNSIGNED( eta_array       ( track_delay - 1 ) ,Output( i ).Eta'length );
+    Output( i ).Z0         <= TO_UNSIGNED( z0_array        ( track_delay - 1 ) ,Output( i ).Z0'length  );
+    Output( i ).Chi2rphi   <= TO_UNSIGNED( Chi2rphi_array  ( track_delay - 1 ) ,Output( i ).Chi2rphi'length  );
+    Output( i ).Chi2rz     <= TO_UNSIGNED( Chi2rz_array    ( track_delay - 1 ) ,Output( i ).Chi2rz'length  );
+    Output( i ).BendChi2   <= TO_UNSIGNED( BendChi2_array  ( track_delay - 1 ) ,Output( i ).BendChi2'length  );
+    Output( i ).Hitpattern <= TO_UNSIGNED( Hitpattern_array( track_delay - 1 ) ,Output( i ).Hitpattern'length  );
     Output( i ).DataValid  <= TRUE WHEN ( valid_array( vld_delay - 1 ) = '1' ) ELSE FALSE;
     Output( i ).FrameValid <= TRUE WHEN ( frame_array( vld_delay - 1 ) = '1' ) ELSE FALSE;
         

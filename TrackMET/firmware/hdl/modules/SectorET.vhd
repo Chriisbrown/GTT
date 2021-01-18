@@ -84,7 +84,7 @@ BEGIN
     PORT MAP(
       clk    => clk, -- clock
       reset  => reset,
-      Factor => MACNormalisation
+      Factor => MACNormalisation,
       Pt     => tempPt,
       Phi    => tempPhix,
       SumPt  => SumPx
@@ -94,7 +94,7 @@ BEGIN
     PORT MAP(
       clk    => clk, -- clock
       reset  => reset,
-      Factor => MACNormalisation.
+      Factor => MACNormalisation,
       Pt     => tempPt,
       Phi    => tempPhiy,
       SumPt  => SumPy

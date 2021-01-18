@@ -39,17 +39,17 @@ ARCHITECTURE rtl OF TrackToVertexAssoc IS
 
     BEGIN
         IF TTTrack.eta >= EtaBins( 0 ) AND TTTrack.eta < EtaBins( 1 )  THEN
-          temp_z := DeltaZ( 0 );
+          temp_z := DeltaZBins( 0 );
         ELSIF TTTrack.eta >= EtaBins( 1 ) AND TTTrack.eta < EtaBins( 2 )  THEN
-          temp_z := DeltaZ( 1 );
+          temp_z := DeltaZBins( 1 );
         ELSIF TTTrack.eta >= EtaBins( 2 )  AND TTTrack.eta < EtaBins( 3 )  THEN
-          temp_z := DeltaZ( 2 );
+          temp_z := DeltaZBins( 2 );
         ELSIF TTTrack.eta >= EtaBins( 3 )  AND TTTrack.eta < EtaBins( 4 )  THEN
-          temp_z := DeltaZ( 3 );
+          temp_z := DeltaZBins( 3 );
         ELSIF TTTrack.eta >= EtaBins( 4 )  AND TTTrack.eta < EtaBins( 5 )  THEN
-          temp_z := DeltaZ( 4 );
+          temp_z := DeltaZBins( 4 );
         ELSIF TTTrack.eta >= EtaBins( 5 )  AND TTTrack.eta <= EtaBins( 6 )  THEN
-          temp_z := DeltaZ( 5 );
+          temp_z := DeltaZBins( 5 );
         ELSE
           temp_z := 0;
         END IF;

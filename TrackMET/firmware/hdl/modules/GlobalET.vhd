@@ -78,8 +78,8 @@ END GlobalET;
                 multiplier => CordicNormalisation )  --Constants TODO constants file
   PORT MAP(
     clk  => clk,
-    Xin  => TO_SIGNED( ExSignal, 16 ) ,
-    Yin  => TO_SIGNED( EySignal, 16 ),
+    Xin  => TO_SIGNED( ExSignal, Output( 0 ).Et'length ) ,
+    Yin  => TO_SIGNED( EySignal, Output( 0 ).Et'length ),
     Root => RootSum
   );
 
@@ -117,7 +117,7 @@ END GlobalET;
 
   resetSignal <= '1' WHEN ( frame_array( frame_delay  - 1 ) = '1' ) AND ( frame_array( frame_delay - 2 ) = '0' ) ELSE '0';
   
-  Output( 0 ) .Et <= TO_UNSIGNED(TO_INTEGER( RootSum / 2**16 ), 16 );   
+  Output( 0 ) .Et <= TO_UNSIGNED(TO_INTEGER( RootSum / EtScale ), Output( 0 ).Et'length );   
   Output( 0 ) .DataValid  <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1' ) AND ( frame_array( frame_delay - 2 ) = '0' ) ELSE FALSE;
   Output( 0 ) .FrameValid <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1' ) AND ( frame_array( frame_delay - 2 ) = '0' ) ELSE FALSE;
 

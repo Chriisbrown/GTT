@@ -12,5 +12,5 @@ CONSTANT CordicSteps : INTEGER := 4;
 CONSTANT CordicNormalisation : INTEGER := 39901;
 
 CONSTANT MACNormalisation : INTEGER := 4096;
-
+EtScale : INTEGER := 65536
 END constants;

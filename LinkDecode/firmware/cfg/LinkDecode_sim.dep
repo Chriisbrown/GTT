@@ -3,4 +3,4 @@ src --vhdl2008 -c LinkDecode: -l LinkDecode modules/TanLROM.vhd
 src --vhdl2008 -c LinkDecode: -l LinkDecode modules/InvRdivider.vhd
 src --vhdl2008 -c LinkDecode: -l LinkDecode modules/TTTrackSaver.vhd
 src --vhdl2008 -c LinkDecode: -l LinkDecode modules/LinksToTTTracks.vhd
-src --vhdl2008 -c LinkDecode: -l LinkDecode common/pkgConstants.vhd
+src --vhdl2008 -c LinkDecode: -l LinkDecode common/PkgConstants.vhd
