@@ -37,7 +37,7 @@ ARCHITECTURE rtl OF SectorET IS
   PROCEDURE GlobalPhiLUT (SIGNAL TTTrack : IN TTTrack.DataType.tData ;  --Procedure for finding cos and sin of phi
                           SIGNAL Phix    : OUT INTEGER ;
                           SIGNAL Phiy    : OUT INTEGER ;
-                          SIGNAL Pt      : OUT INTEGER ) IS
+                          SIGNAL Pt      : OUT INTEGER ) IS  --Pt pass through to maintain synch with Phi
     VARIABLE GlobalPhi : INTEGER := 0;
     VARIABLE TempPt    : INTEGER := 0;
     BEGIN
@@ -60,20 +60,23 @@ ARCHITECTURE rtl OF SectorET IS
         Pt <= TempPt;
   END PROCEDURE GlobalPhiLUT;
 
-  CONSTANT frame_delay : INTEGER := 5; --Constant latency of algorithm steps
+  CONSTANT frame_delay : INTEGER := 6; --Constant latency of algorithm steps
   
 BEGIN
   g1              : FOR i IN 0 TO 17 GENERATE
 
   SIGNAL vldTrack : TTTrack.DataType.tData := TTTrack.DataType.cNull;
   
-  SIGNAl tempPt   : INTEGER := 0;  --Temporaries for procedure outputs
-  SIGNAL tempPhix : INTEGER := 0;
-  SIGNAL tempPhiy : INTEGER := 0;
+  SIGNAl Pt_Buffer   : INTEGER := 0;  --Temporaries for procedure outputs
+  SIGNAL Phix_Buffer : INTEGER := 0;
+  SIGNAL Phiy_Buffer : INTEGER := 0;
 
   SIGNAL reset : STD_LOGIC := '0';  --MAC reset signal
-  SIGNAL SumPx : SIGNED  ( 15 DOWNTO 0 ) := ( OTHERS => '0' );  --MAC outputs
+  SIGNAL SumPx : SIGNED  ( 15 DOWNTO 0 ) := ( OTHERS => '0' );  
   SIGNAL SumPy : SIGNED  ( 15 DOWNTO 0 ) := ( OTHERS => '0' );
+
+  SIGNAL SumPx_Buffer : SIGNED  ( 15 DOWNTO 0 ) := ( OTHERS => '0' );  --MAC outputs
+  SIGNAL SumPy_Buffer : SIGNED  ( 15 DOWNTO 0 ) := ( OTHERS => '0' );
 
   SIGNAL frame_signal : STD_LOGIC := '0';
   SIGNAL frame_array  : STD_LOGIC_VECTOR(0 TO frame_delay - 1) :=  ( OTHERS => '0' );  --Delaying frame valid signals
@@ -85,9 +88,9 @@ BEGIN
       clk    => clk, -- clock
       reset  => reset,
       Factor => MACNormalisation,
-      Pt     => tempPt,
-      Phi    => tempPhix,
-      SumPt  => SumPx
+      Pt     => Pt_Buffer,
+      Phi    => Phix_Buffer,
+      SumPt  => SumPx_Buffer
     );
 
   PyMAC : ENTITY TrackMet.MAC  --Multiplier acumulator, finds cos/sin * py and sums until reset
@@ -95,12 +98,12 @@ BEGIN
       clk    => clk, -- clock
       reset  => reset,
       Factor => MACNormalisation,
-      Pt     => tempPt,
-      Phi    => tempPhiy,
-      SumPt  => SumPy
+      Pt     => Pt_Buffer,
+      Phi    => Phiy_Buffer,
+      SumPt  => SumPy_Buffer
     );
 
-    GlobalPhiLUT( vldTrack, tempPhix, tempPhiy, tempPt);
+    GlobalPhiLUT( vldTrack, Phix_Buffer, Phiy_Buffer, Pt_Buffer);
 
     PROCESS( clk )  --Clocked process for storing frame valids and sending to MACs
     BEGIN
@@ -123,6 +126,8 @@ BEGIN
     END PROCESS;
 
     reset <= '1' WHEN (frame_array( frame_delay -1 ) = '1') AND (frame_array(frame_delay -2) = '0') ELSE '0';  --Reset MACs when end of valid frames
+    SumPx <= SumPx_Buffer;   --Extra overhead to give more timing slack
+    SumPy <= SumPy_Buffer;
 
     Output( i ) .DataValid  <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1') AND ( frame_array( frame_delay - 2 )  = '0') ELSE FALSE;
     Output( i ) .FrameValid <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1') ELSE FALSE;

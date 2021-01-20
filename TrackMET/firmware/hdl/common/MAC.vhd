@@ -43,6 +43,6 @@ BEGIN
         END IF;
     END PROCESS;
 
-    SumPt <= TO_SIGNED( s_sum / Factor, 16) ;
+    SumPt <= TO_SIGNED( s_sum / 4096, 16) ;
     
 END ARCHITECTURE BEHAVIORAL;

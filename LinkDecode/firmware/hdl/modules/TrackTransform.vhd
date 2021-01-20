@@ -47,8 +47,8 @@ ARCHITECTURE rtl OF TrackTransform IS
       IF TTTrack.Z0Int >= ZMax THEN
         tmp_z := Zsaturate( 0 );  -- Saturate at out of range Z
       ELSE   --Approximation of z0 transformation that saves complex division and multiplications
-        tmp_z := (- TO_INTEGER(TTTrack.Z0Int)*ZIntScale( 0 )   - TO_INTEGER(TTTrack.Z0Int)/ZIntScale( 1 )
-                  + TO_INTEGER(TTTrack.Z0Frac)/ZFracScale( 0 ) + TO_INTEGER(TTTrack.Z0Frac)/ZFracScale( 1 ) 
+        tmp_z := (- TO_INTEGER(TTTrack.Z0Int)*8   - TO_INTEGER(TTTrack.Z0Int)/8
+                  + TO_INTEGER(TTTrack.Z0Frac)/8 + TO_INTEGER(TTTrack.Z0Frac)/64
                   + ZConstant );
       END IF;
     ELSE  --positive
@@ -169,7 +169,7 @@ BEGIN
       END IF;
     END PROCESS;
     -- Fill new track word
-    Output( i ).Pt         <= TO_UNSIGNED( TO_INTEGER( IntOut )+TO_INTEGER( FracOut )/FracScale ,Output( i ).Pt'length );
+    Output( i ).Pt         <= TO_UNSIGNED( TO_INTEGER( IntOut )+TO_INTEGER( FracOut )/2**18 ,Output( i ).Pt'length );
     Output( i ).Phi        <= TO_UNSIGNED( phi_array       ( track_delay - 1 ) ,Output( i ).Phi'length );
     Output( i ).Eta        <= TO_UNSIGNED( eta_array       ( track_delay - 1 ) ,Output( i ).Eta'length );
     Output( i ).Z0         <= TO_UNSIGNED( z0_array        ( track_delay - 1 ) ,Output( i ).Z0'length  );
