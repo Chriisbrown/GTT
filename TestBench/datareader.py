@@ -173,12 +173,11 @@ def fw_sim4link_reader(num_events,filename):
                                 
                             a = bs.BitArray(hex=data2)
 
-                            MET = (a[48:64].uint)*2 
-                            if MET != 0:  
-                                sim_MET_array.append(Formats.HWUto("Pt",int(MET)))
+                            MET = (a[48:64].uint)*2   
+                            sim_MET_array.append(Formats.HWUto("Pt",int(MET)))
 
-                        
+    print(len(sim_z0_array),len(sim_weight_array),len(sim_MET_array))     
     ref = pd.DataFrame({"fw_z0" : sim_z0_array[0:num_events], 
-                      "fw_z0_weight" : sim_weight_array[0:num_events], 
-                      "fw_MET" : sim_MET_array[0:num_events]})
+                        "fw_z0_weight" : sim_weight_array[0:num_events], 
+                        "fw_MET" : sim_MET_array[0:num_events]})
     return ref

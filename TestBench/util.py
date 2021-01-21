@@ -150,7 +150,6 @@ def loadVertexInformation(filename,num_events=-1,write_to_file=False):
 
   #TkPrimaryVertex = uproot.open(filename)["Events"].array("l1tTkPrimaryVertexs_L1TkPrimaryVertex_TrkVertex_L1TrackMET.obj.zvertex_")
   TkPrimaryVertex = uproot.open(filename)["L1TrackNtuple"]["eventTree"].arrays("pv_L1reco_z0")
-  print(TkPrimaryVertex)
   TkPrimaryVertex_array = np.zeros(len(TkPrimaryVertex))
   #TkPrimaryweight = uproot.open(filename)["Events"].array("l1tTkPrimaryVertexs_L1TkPrimaryVertex_TrkVertex_L1TrackMET.obj.sum_")
   TkPrimaryWeight = uproot.open(filename)["L1TrackNtuple"]["eventTree"].arrays("pv_L1reco_sum")
@@ -184,10 +183,16 @@ def loadVertexInformation(filename,num_events=-1,write_to_file=False):
 def loadMETInformation(filename,num_events=-1,write_to_file=False):
 
   MCMET = uproot.open(filename)["L1TrackNtuple"]["eventTree"].arrays("trueMET")
+  MCMET_array = np.zeros(len(MCMET))
   TrkMET = uproot.open(filename)["L1TrackNtuple"]["eventTree"].arrays("trkMET")
+  TrkMET_array = np.zeros(len(TrkMET))
 
-  ref = pd.DataFrame({"TrkMET" : TrkMET[0:num_events], 
-                      "MCMET" : MCMET[0:num_events]
+  for i in range(num_events):
+    MCMET_array[i] =  MCMET[i]["trueMET"]
+    TrkMET_array[i] =  TrkMET[i]["trkMET"]
+
+  ref = pd.DataFrame({"TrkMET" : TrkMET_array[0:num_events], 
+                      "MCMET" : MCMET_array[0:num_events]
                       })
 
   if write_to_file:

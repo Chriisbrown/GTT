@@ -29,6 +29,7 @@ ARCHITECTURE behavioral OF CordicSqrt IS
   SIGNAL CordicSteps  : tCordicSteps := ( OTHERS => cEmptyCordic );
 
   SIGNAL NormedRoot : SIGNED (15 DOWNTO 0) := ( OTHERS => '0' );
+  SIGNAL TempRoot : INTEGER := 0;
 
 BEGIN
 
@@ -84,7 +85,9 @@ END GENERATE steps;
 
 CordicSteps( n_steps + 1 ) <= CordicSteps( n_steps ) WHEN RISING_EDGE( clk );
 
-NormedRoot <= TO_SIGNED((CordicSteps( n_steps + 1 ).x*(TO_SIGNED(multiplier,6)))/2**6,16)WHEN RISING_EDGE( clk );
+TempRoot <= TO_INTEGER(CordicSteps( n_steps + 1 ).x) WHEN RISING_EDGE( clk );  --Buffer for clock constraint on DSP
+
+NormedRoot <= TO_SIGNED(TempRoot*multiplier/2**6,16) WHEN RISING_EDGE( clk );
 
 Root <= NormedRoot  WHEN RISING_EDGE( clk );
 

@@ -10,6 +10,10 @@ LIBRARY TTTrack;
 USE TTTrack.DataType;
 USE TTTrack.ArrayTypes;
 
+LIBRARY InTTTrack;
+USE InTTTrack.DataType;
+USE InTTTrack.ArrayTypes;
+
 library Vertex;
 use Vertex.DataType.all;
 use Vertex.ArrayTypes;
@@ -27,7 +31,7 @@ port(
   VertexPipeIn : in Vertex.ArrayTypes.VectorPipe;
   METPipeIn : in Et.ArrayTypes.VectorPipe;
   SectorMETPipeIn : in Et.ArrayTypes.VectorPipe;
-  TTTrackIn : in TTTrack.ArrayTypes.VectorPipe;
+  TTTrackIn : in InTTTrack.ArrayTypes.VectorPipe;
   TTTrackDelayed : in TTTrack.ArrayTypes.VectorPipe;
   linksOut : out ldata  
 );
@@ -96,7 +100,7 @@ begin
     end if;
 
     if TTTrackIn(0)(0).DataValid then 
-      linksOut(3).data(15 downto 0) <= std_logic_vector(TTTrackIn(0)(0).Pt);
+      linksOut(3).data(14 downto 0) <= std_logic_vector(TTTrackIn(0)(0).InvR);
       linksOut(3).valid <= '1';
       linksOut(3).start <= '0';
       linksOut(3).strobe <= '1';
