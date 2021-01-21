@@ -54,7 +54,7 @@ PACKAGE DataType IS
 END RECORD;
 
 ATTRIBUTE SIZE : NATURAL;
-ATTRIBUTE SIZE of tData : TYPE IS 96; -- Actual is 104, roundup to 108 for 3*36 for BRAM boundary
+ATTRIBUTE SIZE of tData : TYPE IS 96;
 
 -- -------------------------------------------------------------------------       
 

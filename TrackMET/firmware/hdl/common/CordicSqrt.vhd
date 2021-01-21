@@ -84,7 +84,7 @@ END GENERATE steps;
 
 CordicSteps( n_steps + 1 ) <= CordicSteps( n_steps ) WHEN RISING_EDGE( clk );
 
-NormedRoot <= CordicSteps( n_steps + 1 ).x*TO_UNSIGNED(multiplier,6)/2**6 WHEN RISING_EDGE( clk );
+NormedRoot <= TO_SIGNED((CordicSteps( n_steps + 1 ).x*(TO_SIGNED(multiplier,6)))/2**6,16)WHEN RISING_EDGE( clk );
 
 Root <= NormedRoot  WHEN RISING_EDGE( clk );
 

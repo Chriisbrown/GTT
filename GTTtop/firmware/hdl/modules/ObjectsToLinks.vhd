@@ -28,7 +28,7 @@ port(
   METPipeIn : in Et.ArrayTypes.VectorPipe;
   SectorMETPipeIn : in Et.ArrayTypes.VectorPipe;
   TTTrackIn : in TTTrack.ArrayTypes.VectorPipe;
-  SelectedTTTrackIn : in TTTrack.ArrayTypes.VectorPipe;
+  TTTrackDelayed : in TTTrack.ArrayTypes.VectorPipe;
   linksOut : out ldata  
 );
 end ObjectsToLinks;
@@ -107,8 +107,8 @@ begin
       linksOut(3).valid <= '0';
     end if;
 
-    if SelectedTTTrackIn(0)(0).DataValid then 
-      linksOut(4).data(15 downto 0) <= std_logic_vector(SelectedTTTrackIn(0)(0).Pt);
+    if TTTrackDelayed(0)(0).DataValid then 
+      linksOut(4).data(15 downto 0) <= std_logic_vector(TTTrackDelayed(0)(0).Pt);
       linksOut(4).valid <= '1';
       linksOut(4).start <= '0';
       linksOut(4).strobe <= '1';

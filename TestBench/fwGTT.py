@@ -181,8 +181,8 @@ def fwCordicSqrt(x,y,n_steps=4):
     x = new_x
     y = new_y
     phi = new_phi
-
-  return(int(phi),int(x * mag_renormalization(n_steps=n_steps)) >> mag_bits)
+  print(mag_renormalization(n_steps=n_steps) )
+  return(int(phi),int(x * 39936) >> mag_bits)
 
 def fwTrackMET(event,fwpt=True,Cordic=True):
   shiftLUTf = open("ShiftLUT.txt")
@@ -237,7 +237,7 @@ def fwTrackMET(event,fwpt=True,Cordic=True):
   if Cordic:
     MET_phi,MET = fwCordicSqrt(int(sumpx),int(sumpy),4)
     MET_phi = MET_phi*2*np.pi/2304
-    MET = MET/2**5
+    MET = MET#/2**5
 
     print(MET)
 
@@ -325,5 +325,5 @@ def emulation(num_events,file_name,readfromfile=True,specific_event=False,specif
 if __name__=="__main__":
   import sys
 
-  #emulation(int(sys.argv[1])+1,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object.root",True,int(sys.argv[1]))
-  emulation(10,"",False,True,0,"input_files/SpecialEvents/Debug/Emu/")
+  emulation(int(sys.argv[1])+1,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object.root",True,int(sys.argv[1]))
+  #emulation(10,"",False,True,0,"input_files/SpecialEvents/Debug/Emu/")

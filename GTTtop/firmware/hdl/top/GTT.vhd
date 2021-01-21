@@ -153,8 +153,8 @@ PORT MAP(
   VertexPipeIn => PrimaryVertexPipe,
   METPipeIn => GlobalEtPipe,
   SectorMETPipeIn => EtPipe,
-  TTTrackIn => DelayedTracks,
-  SelectedTTTrackIn => CutTracks,
+  TTTrackIn => InputPipe,
+  TTTrackDelayed => DelayedTracks,
   linksOut => LinksOut
 );
 

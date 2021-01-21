@@ -44,13 +44,12 @@ PACKAGE DataType IS
 
   PV           : UNSIGNED( 7 DOWNTO 0 );
 -- --------------------------------------------
-  PrimaryTrack : BOOLEAN;
   DataValid    : BOOLEAN;
   FrameValid   : BOOLEAN;
 END RECORD;
 
 ATTRIBUTE SIZE : NATURAL;
-ATTRIBUTE SIZE of tData : TYPE IS 82; 
+ATTRIBUTE SIZE of tData : TYPE IS 108; -- Round up to BRAM boundary 
 -- -------------------------------------------------------------------------       
 
 -- A record to encode the bit location of each field of the tData record
@@ -77,7 +76,6 @@ ATTRIBUTE SIZE of tData : TYPE IS 82;
     PVl           : INTEGER;
     PVh           : INTEGER;
 
-    Ptrk          : INTEGER;
     Dvld          : INTEGER;
     Fvld          : INTEGER;
 -- -----------------------------------------
@@ -93,9 +91,8 @@ ATTRIBUTE SIZE of tData : TYPE IS 82;
                                                               61 , 63 ,   --BendChi
                                                               64 , 70 ,   --HitPattern
                                                               71 , 78 ,   --PV
-                                                              79,         --Primary Track?
-                                                              80,         --Data Valid
-                                                              81          --Frame Valid
+                                                              79,         --Data Valid
+                                                              80          --Frame Valid
  
                                                               );
   -- split across 2 different links!
@@ -108,7 +105,6 @@ ATTRIBUTE SIZE of tData : TYPE IS 82;
                                                               ( OTHERS => '0' ) ,  --BendChi
                                                               ( OTHERS => '0' ) ,  --HitPattern
                                                               ( OTHERS => '0' ) ,  --PV
-                                                               false ,             --PrimaryTrack
                                                                false ,             --DataValid
                                                                false               --FrameValid
                                                                );  
@@ -127,7 +123,7 @@ END DataType;
 PACKAGE BODY DataType IS
 
   FUNCTION ToStdLogicVector( aData : tData ) RETURN STD_LOGIC_VECTOR IS
-    VARIABLE lRet                  : STD_LOGIC_VECTOR( 81 DOWNTO 0 ) := ( OTHERS => '0' );
+    VARIABLE lRet                  : STD_LOGIC_VECTOR( 107 DOWNTO 0 ) := ( OTHERS => '0' );
   BEGIN
 
     lRet( bitloc.Pth         DOWNTO bitloc.Ptl         )         := STD_LOGIC_VECTOR( aData.Pt         );
@@ -140,7 +136,6 @@ PACKAGE BODY DataType IS
     lRet( bitloc.Hitpatternh DOWNTO bitloc.Hitpatternl )         := STD_LOGIC_VECTOR( aData.Hitpattern );
     lRet( bitloc.PVh         DOWNTO bitloc.PVl         )         := STD_LOGIC_VECTOR( aData.PV         );  
 
-    lRet( bitloc.Ptrk         )         := '1' WHEN aData.PrimaryTrack ELSE '0'; 
     lRet( bitloc.Dvld         )         := '1' WHEN aData.DataValid    ELSE '0'; 
     lRet( bitloc.Fvld         )         := '1' WHEN aData.FrameValid   ELSE '0'; 
 
@@ -161,8 +156,7 @@ PACKAGE BODY DataType IS
     lRet.BendChi2   := UNSIGNED ( aStdLogicVector( bitloc.BendChi2h   DOWNTO bitloc.BendChi2l   ) );        
     lRet.Hitpattern := UNSIGNED ( aStdLogicVector( bitloc.Hitpatternh DOWNTO bitloc.Hitpatternl ) );        
     lRet.PV         := UNSIGNED ( aStdLogicVector( bitloc.PVh         DOWNTO bitloc.PVl         ) );   
-
-    lRet.PrimaryTrack      := TRUE WHEN ( aStdLogicVector( bitloc.Ptrk ) ) ELSE FALSE; 
+ 
     lRet.DataValid         := TRUE WHEN ( aStdLogicVector( bitloc.Dvld ) ) ELSE FALSE;
     lRet.FrameValid        := TRUE WHEN ( aStdLogicVector( bitloc.Fvld ) ) ELSE FALSE; 
       
@@ -183,7 +177,6 @@ PACKAGE BODY DataType IS
     WRITE( aLine , STRING' ( "Hitpattern" ) , RIGHT , 15 );
     WRITE( aLine , STRING' ( "PrimaryVertex" ) , RIGHT , 15 );
 
-    WRITE( aLine , STRING' ( "PrimaryTrack" ) , RIGHT , 15 );
     WRITE( aLine , STRING' ( "FrameValid" ) , RIGHT , 15 );
     WRITE( aLine , STRING' ( "DataValid" ) , RIGHT , 15 );
     RETURN aLine.ALL;
@@ -202,7 +195,7 @@ PACKAGE BODY DataType IS
     WRITE( aLine , TO_INTEGER( aData.Hitpattern ) , RIGHT , 15 );
     WRITE( aLine , TO_INTEGER( aData.PV ) , RIGHT , 15 );
 
-    WRITE( aLine , aData.PrimaryTrack , RIGHT , 15 );
+
     WRITE( aLine , aData.FrameValid , RIGHT , 15 );
     WRITE( aLine , aData.DataValid , RIGHT , 15 );
     RETURN aLine.ALL;

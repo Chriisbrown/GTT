@@ -67,7 +67,7 @@ END GlobalET;
   SIGNAL resetSignal : STD_LOGIC := '0';
 
   SIGNAL   frame_signal : STD_LOGIC                              := '0';
-  CONSTANT frame_delay  : INTEGER                                := 11;
+  CONSTANT frame_delay  : INTEGER                                := 10;
   SIGNAL   frame_array  : STD_LOGIC_VECTOR(0 TO frame_delay - 1) := ( OTHERS => '0' );
 
   SIGNAL RootSum : SIGNED( 15 DOWNTO 0 ) := ( OTHERS => '0' );
@@ -116,7 +116,7 @@ END GlobalET;
   END PROCESS;
 
   --resetSignal <= '1' WHEN ( frame_array( frame_delay  - 1 ) = '1' ) AND ( frame_array( frame_delay - 2 ) = '0' ) ELSE '0'; -- Reset at end of event
-  resetSignal <= '1' WHEN ( frame_array( frame_delay  - 1 ) = '0' ) AND ( frame_array( frame_delay - 2 ) = '1' ) ELSE '0'; -- Reset at start of event
+  resetSignal <= '1' WHEN ( frame_array( 0 ) = '0' ) AND ( frame_array( 1 ) = '1' ) ELSE '0'; -- Reset at start of event
   
   Output( 0 ) .Et <= TO_UNSIGNED(TO_INTEGER( RootSum ), Output( 0 ).Et'length );   
   Output( 0 ) .DataValid  <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1' ) AND ( frame_array( frame_delay - 2 ) = '0' ) ELSE FALSE;

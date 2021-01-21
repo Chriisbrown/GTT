@@ -1,0 +1,6 @@
+uproot
+maplotlib
+pandas
+joblib
+statsmodels
+bitstring

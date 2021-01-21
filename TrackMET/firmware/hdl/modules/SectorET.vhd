@@ -45,22 +45,22 @@ ARCHITECTURE rtl OF SectorET IS
         TempPt    := TO_INTEGER( TTTrack.pt );
 
         IF GlobalPhi >= PhiBins( 0 ) AND GlobalPhi < PhiBins( 1 ) THEN
-          Phix <= TrigArray( GlobalPhi )( 0 )/2**6;  
-          Phiy <= TrigArray( GlobalPhi )( 1 )/2**6; 
+          Phix <= TrigArray( GlobalPhi )( 0 );  
+          Phiy <= TrigArray( GlobalPhi )( 1 ); 
         ELSIF GlobalPhi >= PhiBins( 1 ) AND GlobalPhi < PhiBins( 2 ) THEN
-          Phix <= -TrigArray( GlobalPhi - PhiBins( 1 ) )( 1 )/2**6; 
-          Phiy <= TrigArray(  GlobalPhi - PhiBins( 1 ) )( 0 )/2**6; 
+          Phix <= -TrigArray( GlobalPhi - PhiBins( 1 ) )( 1 ); 
+          Phiy <= TrigArray(  GlobalPhi - PhiBins( 1 ) )( 0 ); 
         ELSIF GlobalPhi >= PhiBins( 2 ) AND GlobalPhi < PhiBins( 3 ) THEN
-          Phix <= -TrigArray( GlobalPhi - PhiBins( 2 ) )( 0 )/2**6;  
-          Phiy <= -TrigArray( GlobalPhi - PhiBins( 2 ) )( 1 )/2**6; 
+          Phix <= -TrigArray( GlobalPhi - PhiBins( 2 ) )( 0 );  
+          Phiy <= -TrigArray( GlobalPhi - PhiBins( 2 ) )( 1 ); 
         ELSIF GlobalPhi >= PhiBins( 3 ) AND GlobalPhi < PhiBins( 4 ) THEN
-          Phix <= TrigArray(  GlobalPhi - PhiBins( 3 ) )( 1 )/2**6; 
-          Phiy <= -TrigArray( GlobalPhi - PhiBins( 3 ) )( 0 )/2**6; 
+          Phix <= TrigArray(  GlobalPhi - PhiBins( 3 ) )( 1 ); 
+          Phiy <= -TrigArray( GlobalPhi - PhiBins( 3 ) )( 0 ); 
         END IF;
-        Pt <= TempPt/2**6;
+        Pt <= TempPt;
   END PROCEDURE GlobalPhiLUT;
 
-  CONSTANT frame_delay : INTEGER := 6; --Constant latency of algorithm steps
+  CONSTANT frame_delay : INTEGER := 2; --Constant latency of algorithm steps
   
 BEGIN
   g1              : FOR i IN 0 TO 17 GENERATE
@@ -87,7 +87,6 @@ BEGIN
     PORT MAP(
       clk    => clk, -- clock
       reset  => reset,
-      Factor => MACNormalisation,
       Pt     => Pt_Buffer,
       Phi    => Phix_Buffer,
       SumPt  => SumPx_Buffer
@@ -97,7 +96,6 @@ BEGIN
     PORT MAP(
       clk    => clk, -- clock
       reset  => reset,
-      Factor => MACNormalisation,
       Pt     => Pt_Buffer,
       Phi    => Phiy_Buffer,
       SumPt  => SumPy_Buffer
@@ -126,12 +124,12 @@ BEGIN
     END PROCESS;
 
     --reset <= '1' WHEN (frame_array( frame_delay -1 ) = '1') AND (frame_array(frame_delay -2) = '0') ELSE '0';  --Reset MACs when end of valid frames
-    reset <= '1' WHEN (frame_array( frame_delay -1 ) = '0') AND (frame_array(frame_delay -2) = '1') ELSE '0';  --Reset MACs when start of valid frames
+    reset <= '1' WHEN (frame_array( 0 ) = '0') AND (frame_array( 1 ) = '1') ELSE '0';  --Reset MACs when start of valid frames
     SumPx <= SumPx_Buffer;   --Extra overhead to give more timing slack
     SumPy <= SumPy_Buffer;
 
-    Output( i ) .DataValid  <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1') AND ( frame_array( frame_delay - 2 )  = '0') ELSE FALSE;
-    Output( i ) .FrameValid <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1') ELSE FALSE;
+    Output( i ) .DataValid  <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1') AND ( frame_array( frame_delay - 2 )  = '0') ELSE FALSE; -- DataValid when all tracks read
+    Output( i ) .FrameValid <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1') ELSE FALSE; -- FrameValid when track frame valid
     Output( i ) .Px <= SumPx;
     Output( i ) .Py <= SumPy;
     Output( i ) .Sector <= TO_UNSIGNED( i / 2, 4 );

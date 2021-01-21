@@ -42,6 +42,6 @@ BEGIN
         END IF;
     END PROCESS;
 
-    SumPt <= TO_SIGNED( s_sum , 16) ;
+    SumPt <= TO_SIGNED( s_sum/2**12 , 16) ;
     
 END ARCHITECTURE BEHAVIORAL;
