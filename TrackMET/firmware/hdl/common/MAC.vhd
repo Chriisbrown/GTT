@@ -5,7 +5,6 @@ use IEEE.numeric_std.all;
 
 ENTITY MAC is
     PORT (clk, reset : IN std_logic := '0';
-          Factor     : IN INTEGER := 4096;
           Pt         : IN INTEGER   := 0;
           Phi        : IN INTEGER   := 0;
           SumPt      : OUT SIGNED ( 15 DOWNTO 0 ) := (OTHERS => '0')
@@ -43,6 +42,6 @@ BEGIN
         END IF;
     END PROCESS;
 
-    SumPt <= TO_SIGNED( s_sum / 4096, 16) ;
+    SumPt <= TO_SIGNED( s_sum , 16) ;
     
 END ARCHITECTURE BEHAVIORAL;

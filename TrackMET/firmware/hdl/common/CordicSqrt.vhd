@@ -11,7 +11,7 @@ ENTITY CordicSqrt IS
         clk  : IN STD_LOGIC := '0';
         Xin  : IN SIGNED ( 15 DOWNTO 0 )  := (OTHERS => '0');
         Yin  : IN SIGNED ( 15 DOWNTO 0 )  := (OTHERS => '0');
-        Root : OUT SIGNED ( 39 DOWNTO 0 ) := (OTHERS => '0')
+        Root : OUT SIGNED ( 15 DOWNTO 0 ) := (OTHERS => '0')
     );
 END CordicSqrt;
 
@@ -28,7 +28,7 @@ ARCHITECTURE behavioral OF CordicSqrt IS
   TYPE tCordicSteps IS ARRAY( n_steps + 1 DOWNTO 0 ) OF tCordic; -- Number of steps used by the CORDIC
   SIGNAL CordicSteps  : tCordicSteps := ( OTHERS => cEmptyCordic );
 
-  SIGNAL NormedRoot : SIGNED (39 DOWNTO 0) := ( OTHERS => '0' );
+  SIGNAL NormedRoot : SIGNED (15 DOWNTO 0) := ( OTHERS => '0' );
 
 BEGIN
 
@@ -84,7 +84,7 @@ END GENERATE steps;
 
 CordicSteps( n_steps + 1 ) <= CordicSteps( n_steps ) WHEN RISING_EDGE( clk );
 
-NormedRoot <= CordicSteps( n_steps + 1 ).x*TO_SIGNED(multiplier,24) WHEN RISING_EDGE( clk );
+NormedRoot <= CordicSteps( n_steps + 1 ).x*TO_UNSIGNED(multiplier,6)/2**6 WHEN RISING_EDGE( clk );
 
 Root <= NormedRoot  WHEN RISING_EDGE( clk );
 

@@ -45,19 +45,19 @@ ARCHITECTURE rtl OF SectorET IS
         TempPt    := TO_INTEGER( TTTrack.pt );
 
         IF GlobalPhi >= PhiBins( 0 ) AND GlobalPhi < PhiBins( 1 ) THEN
-          Phix <= TrigArray( GlobalPhi )( 0 );  
-          Phiy <= TrigArray( GlobalPhi )( 1 ); 
+          Phix <= TrigArray( GlobalPhi )( 0 )/2**6;  
+          Phiy <= TrigArray( GlobalPhi )( 1 )/2**6; 
         ELSIF GlobalPhi >= PhiBins( 1 ) AND GlobalPhi < PhiBins( 2 ) THEN
-          Phix <= -TrigArray( GlobalPhi - PhiBins( 1 ) )( 1 ); 
-          Phiy <= TrigArray(  GlobalPhi - PhiBins( 1 ) )( 0 ); 
+          Phix <= -TrigArray( GlobalPhi - PhiBins( 1 ) )( 1 )/2**6; 
+          Phiy <= TrigArray(  GlobalPhi - PhiBins( 1 ) )( 0 )/2**6; 
         ELSIF GlobalPhi >= PhiBins( 2 ) AND GlobalPhi < PhiBins( 3 ) THEN
-          Phix <= -TrigArray( GlobalPhi - PhiBins( 2 ) )( 0 );  
-          Phiy <= -TrigArray( GlobalPhi - PhiBins( 2 ) )( 1 ); 
+          Phix <= -TrigArray( GlobalPhi - PhiBins( 2 ) )( 0 )/2**6;  
+          Phiy <= -TrigArray( GlobalPhi - PhiBins( 2 ) )( 1 )/2**6; 
         ELSIF GlobalPhi >= PhiBins( 3 ) AND GlobalPhi < PhiBins( 4 ) THEN
-          Phix <= TrigArray(  GlobalPhi - PhiBins( 3 ) )( 1 ); 
-          Phiy <= -TrigArray( GlobalPhi - PhiBins( 3 ) )( 0 ); 
+          Phix <= TrigArray(  GlobalPhi - PhiBins( 3 ) )( 1 )/2**6; 
+          Phiy <= -TrigArray( GlobalPhi - PhiBins( 3 ) )( 0 )/2**6; 
         END IF;
-        Pt <= TempPt;
+        Pt <= TempPt/2**6;
   END PROCEDURE GlobalPhiLUT;
 
   CONSTANT frame_delay : INTEGER := 6; --Constant latency of algorithm steps
@@ -125,7 +125,8 @@ BEGIN
       END IF;
     END PROCESS;
 
-    reset <= '1' WHEN (frame_array( frame_delay -1 ) = '1') AND (frame_array(frame_delay -2) = '0') ELSE '0';  --Reset MACs when end of valid frames
+    --reset <= '1' WHEN (frame_array( frame_delay -1 ) = '1') AND (frame_array(frame_delay -2) = '0') ELSE '0';  --Reset MACs when end of valid frames
+    reset <= '1' WHEN (frame_array( frame_delay -1 ) = '0') AND (frame_array(frame_delay -2) = '1') ELSE '0';  --Reset MACs when start of valid frames
     SumPx <= SumPx_Buffer;   --Extra overhead to give more timing slack
     SumPy <= SumPy_Buffer;
 

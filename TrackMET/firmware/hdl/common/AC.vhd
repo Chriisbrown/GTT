@@ -8,7 +8,7 @@ USE ET.ArrayTypes.ALL;
 
 ENTITY AC IS
     PORT (clk, reset : IN std_logic := '0';
-          Et  : IN Vector( 0 TO 17 ) :=  ET.ArrayTypes.NullVector( 18 );
+          Et  : IN Vector( 0 TO 17 ) :=  NullVector( 18 );
           SumEx : OUT INTEGER := 0;
           SumEy : OUT INTEGER := 0
     );
@@ -44,16 +44,16 @@ ARCHITECTURE behavioral OF AC IS
     RETURN temp_py;
     END FUNCTION SumPy;
     
-    SIGNAL signal_px,signal_py,s_sumx,s_sumy : INTEGER := 0;
-    SIGNAL Et_Buffer : Vector( 0 TO 17 ) := ET.ArrayTypes.NullVector( 18 );
+    SIGNAL signal_px,signal_py,signal_sumx,signal_sumy : INTEGER := 0;
+    SIGNAL Et_Buffer : Vector( 0 TO 17 ) := NullVector( 18 );
     
     
     BEGIN
 
         Et_Buffer <= Et;  --Buffer to give more slack for timing
 
-        s_px <= SumPx(Et_Buffer);
-        s_py <= SumPy(Et_Buffer);
+        signal_px <= SumPx(Et_Buffer);
+        signal_py <= SumPy(Et_Buffer);
 
     PROCESS( clk ) IS
 
@@ -66,15 +66,15 @@ ARCHITECTURE behavioral OF AC IS
                 temp_sumx := 0;
                 temp_sumy := 0;
             ELSE
-                temp_sumx := input_px + sumx;
-                temp_sumy := input_py + sumy;
+                temp_sumx := input_px + temp_sumx;
+                temp_sumy := input_py + temp_sumy;
             END IF;
 
             signal_sumx <= temp_sumx;
             signal_sumy <= temp_sumy;
 
-            input_px := signal_sumx;
-            input_py := signal_sumy;
+            input_px := signal_px;
+            input_py := signal_py;
 
         END IF;
     END PROCESS;

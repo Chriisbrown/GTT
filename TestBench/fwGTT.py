@@ -4,12 +4,13 @@ from Formats import TrackWord_config
 from Formats import toHWU,HWUto,printTracks
 import math
 from cosineLUT import lut_precision,hwu_binsize
+import specificlinkfile
 
 from swGTT import swTrackToVertex, swTrackSelection, swTrackMET
 
 def fwInvR(event):
   pt_array = []
-  for i in range(len(event["pt"])):
+  for i in range(len(event["InvR"])):
     pt_array.append(2*math.modf(350286/toHWU("InvR",event["InvR"].iloc[i]))[1])
   event["fwPt"] = pt_array
 
@@ -21,7 +22,7 @@ def fwInvRLUT(event):
 
     new_IntOut = np.load(f)
     new_FracOut = np.load(f)
-    for i in range(len(event["pt"])):
+    for i in range(len(event["InvR"])):
       invr = toHWU("InvR",event["InvR"].iloc[i])
       idx = (np.abs(new_InvR - invr)).argmin()
       pt_array.append(int((new_IntOut[idx]*2**18 + new_FracOut[idx])/2**18))
@@ -193,7 +194,7 @@ def fwTrackMET(event,fwpt=True,Cordic=True):
   sumpx_sectors = np.zeros([9])
   sumpy_sectors = np.zeros([9])
 
-  for i in range(len(event["phi"])):
+  for i in range(len(event["phiSector"])):
     for sector in range(0,9):
       if event["phiSector"][i] == sector:
         if fwpt:
@@ -227,8 +228,8 @@ def fwTrackMET(event,fwpt=True,Cordic=True):
             sumpx_sectors[sector] += int(pt*int(TrigLUT[1][:-1])/(lut_precision*2))
             sumpy_sectors[sector] -= int(pt*int(TrigLUT[0][1:])/(lut_precision*2))
 
-  #print(sumpx_sectors)
-  #print(sumpy_sectors)
+  print(sumpx_sectors)
+  print(sumpy_sectors)
 
   sumpx = np.sum(sumpx_sectors)
   sumpy = np.sum(sumpy_sectors)
@@ -237,6 +238,8 @@ def fwTrackMET(event,fwpt=True,Cordic=True):
     MET_phi,MET = fwCordicSqrt(int(sumpx),int(sumpy),4)
     MET_phi = MET_phi*2*np.pi/2304
     MET = MET/2**5
+
+    print(MET)
 
   else:
     MET = int(np.sqrt(sumpx*sumpx+sumpy*sumpy))/2**5
@@ -249,21 +252,26 @@ def fwTrackMET(event,fwpt=True,Cordic=True):
 
   return MET,MET_phi
   
-def emulation(num_events,file_name,specific_event=False,specific_id=0):
+def emulation(num_events,file_name,readfromfile=True,specific_event=False,specific_id=0,debugfile="Debug/emulation/"):
     num_events = num_events
     print("==== Events ====")
-    events = util.loadDataSingleFile(file_name,[0,num_events])
-    print(".... loaded  ....")
-    print("==== Vertex ====")
-    cmssw_v = util.loadVertexInformation(file_name,num_events=num_events)
-    print(".... loaded  ....")
-    print("===== MET ======")
-    cmssw_met = util.loadMETInformation(file_name,num_events=num_events)
-    print(".... loaded  ....")
-    vertex=np.zeros(len(cmssw_met))
-    weight=np.zeros(len(cmssw_met))
-    MET=np.zeros(len(cmssw_met))
-    MET_phi=np.zeros(len(cmssw_met))
+    if readfromfile:
+      events = util.loadDataSingleFile(file_name,[0,num_events])
+      print(".... loaded  ....")
+      print("==== Vertex ====")
+      cmssw_v = util.loadVertexInformation(file_name,num_events=num_events)
+      print(".... loaded  ....")
+      print("===== MET ======")
+      cmssw_met = util.loadMETInformation(file_name,num_events=num_events)
+      print(".... loaded  ....")
+      vertex=np.zeros(len(cmssw_met))
+      weight=np.zeros(len(cmssw_met))
+      MET=np.zeros(len(cmssw_met))
+      MET_phi=np.zeros(len(cmssw_met))
+
+    else:
+      events = specificlinkfile.writeSpecificEvents(num_events)
+
 
 
     if not specific_event:
@@ -271,16 +279,16 @@ def emulation(num_events,file_name,specific_event=False,specific_id=0):
         if i % 100 == 0:
           print(i,"out of ",num_events)
         fwInvRLUT(event)
-        printTracks(event,"Debug/emulation/hwuLinksToTTTrack.txt",fwpt=True)
-        printTracks(event,"Debug/emulation/natLinksToTTTrack.txt",hwu=False)
+        printTracks(event,debugfile+"hwuLinksToTTTrack.txt",fwpt=True)
+        printTracks(event,debugfile+"natLinksToTTTrack.txt",hwu=False)
         vertex[i],weight[i] = fwFastHisto(event,fwpt=True)
 
         vertex[i] = HWUto("HWUz0",vertex[i])
         weight[i] = HWUto("Pt",weight[i])
         fw_associate_tracks = fwTrackToVertex(event,vertex[i])
-        printTracks(fw_associate_tracks,"Debug/emulation/hwuTrackToVertex.txt")
+        printTracks(fw_associate_tracks,debugfile+"/hwuTrackToVertex.txt")
         fw_selected_tracks = fwTrackSelection(fw_associate_tracks,fwpt=True)
-        printTracks(fw_selected_tracks,"Debug/emulation/hwuTrackSelection.txt")
+        printTracks(fw_selected_tracks,debugfile+"/hwuTrackSelection.txt")
         MET[i],MET_phi[i] = fwTrackMET(fw_selected_tracks,fwpt=True)
 
       cmssw_met = cmssw_met.join(cmssw_v)
@@ -293,31 +301,29 @@ def emulation(num_events,file_name,specific_event=False,specific_id=0):
     else:
         event = events[specific_id]
         fwInvRLUT(event)
-        printTracks(event,"Debug/emulation/hwuLinksToTTTrack.txt",fwpt=True)
-        printTracks(event,"Debug/emulation/natLinksToTTTrack.txt",hwu=False)
+        printTracks(event,debugfile+"hwuLinksToTTTrack.txt",fwpt=True)
+        printTracks(event,debugfile+"natLinksToTTTrack.txt",hwu=False)
         vertex,weight = fwFastHisto(event,fwpt=True)
 
         vertex = HWUto("HWUz0",vertex)
         weight = HWUto("Pt",weight)
         fw_associate_tracks = fwTrackToVertex(event,vertex)
-        printTracks(fw_associate_tracks,"Debug/emulation/hwuTrackToVertex.txt")
+        printTracks(fw_associate_tracks,debugfile+"hwuTrackToVertex.txt")
         fw_selected_tracks = fwTrackSelection(fw_associate_tracks,fwpt=True)
-        printTracks(fw_selected_tracks,"Debug/emulation/hwuTrackSelection.txt")
+        printTracks(fw_selected_tracks,debugfile+"hwuTrackSelection.txt")
         MET,MET_phi = fwTrackMET(fw_selected_tracks,fwpt=True)
 
-        print("Vertex: ",vertex, "[cm] Vertex Weight: ",weight,"[GeV]")
-        print("SW FH: ",cmssw_v["Pv_z0"].iloc[specific_id]," [cm] SW FH Weight: ",cmssw_v["Pv_weight"].iloc[specific_id]," [cm] MC Vertex: ",cmssw_v["MCVertex"].iloc[specific_id]," [cm]")
-        print("MET: ",MET, 
-              " [GeV] MET Phi: ",MET_phi,
-              " [rad] SW MET: ",cmssw_met["TrkMET"].iloc[specific_id],
-              " [GeV] SW MET MC: ",cmssw_met["MCMET"].iloc[specific_id], "[GeV]")
-        print("=====================================================")
+        if readfromfile:
+          print("Vertex: ",vertex, "[cm] Vertex Weight: ",weight,"[GeV]")
+          print("SW FH: ",cmssw_v["Pv_z0"].iloc[specific_id]," [cm] SW FH Weight: ",cmssw_v["Pv_weight"].iloc[specific_id]," [cm] MC Vertex: ",cmssw_v["MCVertex"].iloc[specific_id]," [cm]")
+          print("MET: ",MET, 
+                " [GeV] MET Phi: ",MET_phi,
+                " [rad] SW MET: ",cmssw_met["TrkMET"].iloc[specific_id],
+                " [GeV] SW MET MC: ",cmssw_met["MCMET"].iloc[specific_id], "[GeV]")
+          print("=====================================================")
 
 if __name__=="__main__":
   import sys
 
-  #cmssw_met = emulation(2,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object.root")
-  #print(cmssw_met[["EM_MET","EM_MET_phi","TrkMET","MCMET"]].head())
-  #print(cmssw_met[["EM_Vertex","EM_Vtx_Weight","Pv_z0","Pv_weight","MCVertex"]].head())
-
-  emulation(int(sys.argv[1])+1,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object.root",True,int(sys.argv[1]))
+  #emulation(int(sys.argv[1])+1,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object.root",True,int(sys.argv[1]))
+  emulation(10,"",False,True,0,"input_files/SpecialEvents/Debug/Emu/")

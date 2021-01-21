@@ -70,7 +70,7 @@ END GlobalET;
   CONSTANT frame_delay  : INTEGER                                := 11;
   SIGNAL   frame_array  : STD_LOGIC_VECTOR(0 TO frame_delay - 1) := ( OTHERS => '0' );
 
-  SIGNAL RootSum : SIGNED( 39 DOWNTO 0 ) := ( OTHERS => '0' );
+  SIGNAL RootSum : SIGNED( 15 DOWNTO 0 ) := ( OTHERS => '0' );
 
   BEGIN
   Sqrt : ENTITY TrackMET.CordicSqrt
@@ -115,9 +115,10 @@ END GlobalET;
     END IF;
   END PROCESS;
 
-  resetSignal <= '1' WHEN ( frame_array( frame_delay  - 1 ) = '1' ) AND ( frame_array( frame_delay - 2 ) = '0' ) ELSE '0';
+  --resetSignal <= '1' WHEN ( frame_array( frame_delay  - 1 ) = '1' ) AND ( frame_array( frame_delay - 2 ) = '0' ) ELSE '0'; -- Reset at end of event
+  resetSignal <= '1' WHEN ( frame_array( frame_delay  - 1 ) = '0' ) AND ( frame_array( frame_delay - 2 ) = '1' ) ELSE '0'; -- Reset at start of event
   
-  Output( 0 ) .Et <= TO_UNSIGNED(TO_INTEGER( RootSum / 2**16 ), Output( 0 ).Et'length );   
+  Output( 0 ) .Et <= TO_UNSIGNED(TO_INTEGER( RootSum ), Output( 0 ).Et'length );   
   Output( 0 ) .DataValid  <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1' ) AND ( frame_array( frame_delay - 2 ) = '0' ) ELSE FALSE;
   Output( 0 ) .FrameValid <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1' ) AND ( frame_array( frame_delay - 2 ) = '0' ) ELSE FALSE;
 
