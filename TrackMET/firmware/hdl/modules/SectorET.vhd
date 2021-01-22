@@ -25,8 +25,8 @@ ENTITY SectorET IS
 
   PORT(
     clk                 : IN  STD_LOGIC; -- The algorithm clock
-    TTTrackPipeIn       : IN TTTrack.ArrayTypes.VectorPipe :=  TTTrack.ArrayTypes.NullVectorPipe( 10 , 18 );
-    EtOut              : OUT ET.ArrayTypes.VectorPipe := Et.ArrayTypes.NullVectorPipe( 10 , 18 )
+    TTTrackPipeIn       : IN TTTrack.ArrayTypes.VectorPipe;
+    EtOut              : OUT ET.ArrayTypes.VectorPipe
   );
 END SectorET;
 
@@ -120,7 +120,7 @@ BEGIN
       END IF;
     END PROCESS;
 
-    reset <= '0' WHEN ( frame_array( 1 ) = '1' )  ELSE '1'; -- Only accumulate if frame is valid + one clock for Phi LUT, else set accumulator to 0
+    reset <= '0' WHEN ( frame_array( 0 ) = '1' )  ELSE '1'; -- Only accumulate if frame is valid + one clock for Phi LUT, else set accumulator to 0
 
     Output( i ) .DataValid  <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1') AND ( frame_array( frame_delay - 2 )  = '0') ELSE FALSE; -- DataValid when all tracks read
     Output( i ) .FrameValid <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1') ELSE FALSE; -- FrameValid when track frame valid

@@ -29,9 +29,9 @@ use Utilities.Utilities.all;
 Entity ObjectsToLinks is
 port(
   clk : in std_logic;
-  VertexPipeIn : in Vertex.ArrayTypes.VectorPipe  := Vertex.ArrayTypes.NullVectorPipe( 10 , 1 );
-  METPipeIn : in Et.ArrayTypes.VectorPipe         := Et.ArrayTypes.NullVectorPipe( 10 , 1 );
-  SectorMETPipeIn : in Et.ArrayTypes.VectorPipe   := Et.ArrayTypes.NullVectorPipe( 10 , 18 );
+  VertexPipeIn : in Vertex.ArrayTypes.VectorPipe;
+  METPipeIn : in Et.ArrayTypes.VectorPipe;
+  SectorMETPipeIn : in Et.ArrayTypes.VectorPipe;
   ReadAddrs : in INTEGER_VECTOR( 0 TO 17) := (OTHERS => 0);
   WriteAddrs : in INTEGER_VECTOR( 0 TO 17) := (OTHERS => 0);
   linksOut : out ldata

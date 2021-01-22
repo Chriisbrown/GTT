@@ -20,8 +20,8 @@ ENTITY TrackSelection IS
 
   PORT(
     clk                 : IN  STD_LOGIC; -- The algorithm clock
-    TTTrackPipeIn       : IN  TTTrack.ArrayTypes.VectorPipe := TTTrack.ArrayTypes.NullVectorPipe( 10 , 18 );
-    TTTrackPipeOut      : OUT TTTrack.ArrayTypes.VectorPipe := TTTrack.ArrayTypes.NullVectorPipe( 10 , 18 )
+    TTTrackPipeIn       : IN  TTTrack.ArrayTypes.VectorPipe;
+    TTTrackPipeOut      : OUT TTTrack.ArrayTypes.VectorPipe
   );
 END TrackSelection;
 

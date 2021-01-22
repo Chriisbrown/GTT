@@ -23,8 +23,8 @@ ENTITY GlobalET IS
 
   PORT(
     clk                  : IN  STD_LOGIC;-- The algorithm clock
-    SectorEtPipeIn       : IN  VectorPipe := NullVectorPipe( 10 , 18 );
-    EtOut                : OUT VectorPipe := NullVectorPipe( 10 , 1 )
+    SectorEtPipeIn       : IN  VectorPipe;
+    EtOut                : OUT VectorPipe
   );
 END GlobalET;
 
