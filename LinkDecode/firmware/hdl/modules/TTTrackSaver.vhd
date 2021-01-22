@@ -24,6 +24,8 @@ ENTITY TTTrackSaver IS
     TTTrackPipeIn       : IN TTTrack.ArrayTypes.VectorPipe;
     PrimaryVertexPipeIn : IN  Vertex.ArrayTypes.VectorPipe;
     TTTrackPipeOut      : OUT TTTrack.ArrayTypes.VectorPipe
+    ReadAddrOut         : OUT INTEGER_VECTOR(0 TO 17);
+    WriteAddrOut        : OUT INTEGER_VECTOR(0 TO 17);
   );
 END TTTrackSaver;
 
@@ -130,6 +132,9 @@ BEGIN
       Output( i ).PV         <= PrimaryVertex;
       Output( i ).DataValid  <= Track_vld;
       Output( i ).FrameValid <= Track_vld;
+
+      ReadAddrOut( i ) <= ReadAddr;
+      WriteAddrOut( i ) <= WriteAddr;
     
     END IF;
   END PROCESS;

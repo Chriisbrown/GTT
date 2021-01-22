@@ -69,6 +69,9 @@ ARCHITECTURE rtl OF GTTTop IS
   SIGNAL PrimaryVertexPipe     : tPrimaryVertexPipe    := NullPrimaryVertexPipe; -- Primary Vertex 
   SIGNAL EtPipe                : tEtPipe               := NullEtPipe;            -- Sector Et
   SIGNAL GlobalEtPipe          : tGlobEtPipe           := NullGlobEtPipe;        -- Global Et
+
+  SIGNAL WriteAddrs : INTEGER_VECTOR( 0 TO 17 ) := (OTHERS => 0);
+  SIGNAL ReadAddrs  : INTEGER_VECTOR( 0 TO 17 ) := (OTHERS => 0);
  
 BEGIN
 
@@ -94,7 +97,10 @@ PORT MAP(
   clk    => clk ,
   TTTrackPipeIn  => TrackPipe ,
   PrimaryVertexPipeIn => PrimaryVertexPipe,
-  TTTrackPipeOut => DelayedTracks
+  TTTrackPipeOut => DelayedTracks,
+  ReadAddrOut => ReadAddrs,
+  WriteAddrOut => WriteAddrs
+
 );
 -- -------------------------------------------------------------------------
 -- -------------------------------------------------------------------------
@@ -153,8 +159,8 @@ PORT MAP(
   VertexPipeIn => PrimaryVertexPipe,
   METPipeIn => GlobalEtPipe,
   SectorMETPipeIn => EtPipe,
-  TTTrackIn => InputPipe,
-  TTTrackDelayed => DelayedTracks,
+  ReadAddrs => ReadAddrs,
+  WriteAddrs => WriteAddrs,
   linksOut => LinksOut
 );
 

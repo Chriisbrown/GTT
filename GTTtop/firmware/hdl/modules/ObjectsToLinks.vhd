@@ -31,8 +31,8 @@ port(
   VertexPipeIn : in Vertex.ArrayTypes.VectorPipe;
   METPipeIn : in Et.ArrayTypes.VectorPipe;
   SectorMETPipeIn : in Et.ArrayTypes.VectorPipe;
-  TTTrackIn : in InTTTrack.ArrayTypes.VectorPipe;
-  TTTrackDelayed : in TTTrack.ArrayTypes.VectorPipe;
+  ReadAddrs : in INTEGER_VECTOR;
+  WriteAddrs : in INTEGER_VECTOR;
   linksOut : out ldata  
 );
 end ObjectsToLinks;
@@ -99,28 +99,17 @@ begin
       linksOut(2).valid <= '0';
     end if;
 
-    if TTTrackIn(0)(0).DataValid then 
-      linksOut(3).data(14 downto 0) <= std_logic_vector(TTTrackIn(0)(0).InvR);
-      linksOut(3).valid <= '1';
-      linksOut(3).start <= '0';
-      linksOut(3).strobe <= '1';
-    else
-      linksOut(3).data <= (others => '0');
-      linksOut(3).start <= '0';
-      linksOut(3).strobe <= '1';
-      linksOut(3).valid <= '0';
-    end if;
+    linksOut(3).data(15 downto 0) <= std_logic_vector(ReadAddrs);
+    linksOut(3).valid <= '1';
+    linksOut(3).start <= '0';
+    linksOut(3).strobe <= '1';
 
-    if TTTrackDelayed(0)(0).DataValid then 
-      linksOut(4).data(15 downto 0) <= std_logic_vector(TTTrackDelayed(0)(0).Pt);
-      linksOut(4).valid <= '1';
-      linksOut(4).start <= '0';
-      linksOut(4).strobe <= '1';
-    else
-      linksOut(4).data <= (others => '0');
-      linksOut(4).start <= '0';
-      linksOut(4).strobe <= '1';
-      linksOut(4).valid <= '0';
+
+    linksOut(4).data(15 downto 0) <= std_logic_vector(WriteAddrs);
+    linksOut(4).valid <= '1';
+    linksOut(4).start <= '0';
+    linksOut(4).strobe <= '1';
+
     end if;
 
   end if;
