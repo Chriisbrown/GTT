@@ -211,7 +211,7 @@ def fwTrackMET(event,fwpt=True,Cordic=True):
         elif phi > 2*np.pi/hwu_binsize:
             phi = phi - 2*np.pi/hwu_binsize  
 
-        print(pt,phi)
+        #print(pt,phi)
 
         if (phi >= 0  and phi < int(np.pi/(2*hwu_binsize))):
             TrigLUT = TrigLUTlines[int(phi)].split(',')
@@ -240,7 +240,7 @@ def fwTrackMET(event,fwpt=True,Cordic=True):
     MET_phi,MET = fwCordicSqrt(int(sumpx),int(sumpy),4)
     MET_phi = MET_phi*2*np.pi/2304
     MET = int(MET/2**6)
-    #MET = MET/2**5
+    MET = MET/2**5
 
     print(MET)
 

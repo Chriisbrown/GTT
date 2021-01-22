@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import mplhep as hep
 plt.style.use(hep.cms.style.ROOT)
 
-event_num = 70
+event_num = 900
 
 emulation_df = emulation(event_num,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object_300k.root")
 print(".........Emulated...........")
@@ -26,8 +26,8 @@ vtx_df = fw_sim_df[["fw_z0","fw_z0_weight"]].join(fw_hw_df[["fpga_z0","fpga_z0_w
 
 
 print(vtx_df.head())
-for i in range(len(MET_df_old)):
-  print(MET_df_old[["EM_MET","fw_MET"]].iloc[i])
+#for i in range(len(MET_df_old)):
+#  print(MET_df_old[["EM_MET","fw_MET"]].iloc[i])
   #print(vtx_df.iloc[i])
 MET_df_old2 = MET_df_old[MET_df_old["TrkMET"] < 1000]#375]
 MET_df = MET_df_old2[MET_df_old2["fw_MET"] < 1000]#600]

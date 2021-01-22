@@ -115,7 +115,7 @@ END GlobalET;
     END IF;
   END PROCESS;
 
-  --resetSignal <= '1' WHEN ( frame_array( frame_delay  - 1 ) = '1' ) AND ( frame_array( frame_delay - 2 ) = '0' ) ELSE '0'; -- Reset at end of event
+  resetSignal <= '1' WHEN ( frame_array( frame_delay  - 1 ) = '1' ) AND ( frame_array( frame_delay - 2 ) = '0' ) ELSE '0'; -- Reset at end of event
   resetSignal <= '1' WHEN ( frame_array( 0 ) = '0' ) AND ( frame_array( 1 ) = '1' ) ELSE '0'; -- Reset at start of event
   
   Output( 0 ) .Et <= TO_UNSIGNED(TO_INTEGER( RootSum ), Output( 0 ).Et'length );   

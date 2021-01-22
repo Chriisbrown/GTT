@@ -60,7 +60,7 @@ ARCHITECTURE rtl OF SectorET IS
         Pt <= TempPt;
   END PROCEDURE GlobalPhiLUT;
 
-  CONSTANT frame_delay : INTEGER := 2; --Constant latency of algorithm steps
+  CONSTANT frame_delay : INTEGER := 3; --Constant latency of algorithm steps
   
 BEGIN
   g1              : FOR i IN 0 TO 17 GENERATE
@@ -72,11 +72,8 @@ BEGIN
   SIGNAL Phiy_Buffer : INTEGER := 0;
 
   SIGNAL reset : STD_LOGIC := '0';  --MAC reset signal
-  SIGNAL SumPx : SIGNED  ( 15 DOWNTO 0 ) := ( OTHERS => '0' );  
+  SIGNAL SumPx : SIGNED  ( 15 DOWNTO 0 ) := ( OTHERS => '0' );  --MAC outputs
   SIGNAL SumPy : SIGNED  ( 15 DOWNTO 0 ) := ( OTHERS => '0' );
-
-  SIGNAL SumPx_Buffer : SIGNED  ( 15 DOWNTO 0 ) := ( OTHERS => '0' );  --MAC outputs
-  SIGNAL SumPy_Buffer : SIGNED  ( 15 DOWNTO 0 ) := ( OTHERS => '0' );
 
   SIGNAL frame_signal : STD_LOGIC := '0';
   SIGNAL frame_array  : STD_LOGIC_VECTOR(0 TO frame_delay - 1) :=  ( OTHERS => '0' );  --Delaying frame valid signals
@@ -89,7 +86,7 @@ BEGIN
       reset  => reset,
       Pt     => Pt_Buffer,
       Phi    => Phix_Buffer,
-      SumPt  => SumPx_Buffer
+      SumPt  => SumPx,
     );
 
   PyMAC : ENTITY TrackMet.MAC  --Multiplier acumulator, finds cos/sin * py and sums until reset
@@ -98,7 +95,7 @@ BEGIN
       reset  => reset,
       Pt     => Pt_Buffer,
       Phi    => Phiy_Buffer,
-      SumPt  => SumPy_Buffer
+      SumPt  => SumPy,
     );
 
     GlobalPhiLUT( vldTrack, Phix_Buffer, Phiy_Buffer, Pt_Buffer);
@@ -123,10 +120,9 @@ BEGIN
       END IF;
     END PROCESS;
 
-    --reset <= '1' WHEN (frame_array( frame_delay -1 ) = '1') AND (frame_array(frame_delay -2) = '0') ELSE '0';  --Reset MACs when end of valid frames
+    reset <= '1' WHEN (frame_array( frame_delay -1 ) = '1') AND (frame_array(frame_delay -2) = '0') ELSE '0';  --Reset MACs when end of valid frames
     reset <= '1' WHEN (frame_array( 0 ) = '0') AND (frame_array( 1 ) = '1') ELSE '0';  --Reset MACs when start of valid frames
-    SumPx <= SumPx_Buffer;   --Extra overhead to give more timing slack
-    SumPy <= SumPy_Buffer;
+
 
     Output( i ) .DataValid  <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1') AND ( frame_array( frame_delay - 2 )  = '0') ELSE FALSE; -- DataValid when all tracks read
     Output( i ) .FrameValid <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1') ELSE FALSE; -- FrameValid when track frame valid

@@ -14,6 +14,7 @@ END ENTITY MAC;
 ARCHITECTURE BEHAVIORAL OF MAC IS
     
     SIGNAL s_pt,s_phi,s_sum : INTEGER := 0;
+    SIGNAL SumPt_Buffer : INTEGER := 0;
     
 BEGIN
 
@@ -41,7 +42,7 @@ BEGIN
             input_phi := s_phi;
         END IF;
     END PROCESS;
-
-    SumPt <= TO_SIGNED( s_sum/2**12 , 16) ;
+    SumPt_Buffer <= s_sum/2**12;
+    SumPt <= TO_SIGNED( SumPt_Buffer , 16) ;
     
 END ARCHITECTURE BEHAVIORAL;
