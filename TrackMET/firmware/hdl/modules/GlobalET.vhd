@@ -22,7 +22,7 @@ USE TrackMET.Constants.all;
 ENTITY GlobalET IS
 
   PORT(
-    clk                  : IN  STD_LOGIC -- The algorithm clock
+    clk                  : IN  STD_LOGIC;-- The algorithm clock
     SectorEtPipeIn       : IN  VectorPipe := NullVectorPipe( 10 , 18 );
     EtOut                : OUT VectorPipe := NullVectorPipe( 10 , 1 )
   );
@@ -67,7 +67,7 @@ END GlobalET;
   SIGNAL resetSignal : STD_LOGIC := '0';
 
   SIGNAL   frame_signal : STD_LOGIC                              := '0';
-  CONSTANT frame_delay  : INTEGER                                := 10;
+  CONSTANT frame_delay  : INTEGER                                := 11;
   SIGNAL   frame_array  : STD_LOGIC_VECTOR(0 TO frame_delay - 1) := ( OTHERS => '0' );
 
   SIGNAL RootSum : SIGNED( 15 DOWNTO 0 ) := ( OTHERS => '0' );

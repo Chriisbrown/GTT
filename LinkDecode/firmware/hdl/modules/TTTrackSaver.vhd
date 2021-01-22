@@ -21,7 +21,7 @@ ENTITY TTTrackSaver IS
 
   PORT(
     clk                 : IN STD_LOGIC; -- The algorithm clock
-    TTTrackPipeIn       : IN TTTrack.ArrayTypes.VectorPipe  := TTTrack.ArrayTypes.NullVectorPipe( 10 , 18 )
+    TTTrackPipeIn       : IN TTTrack.ArrayTypes.VectorPipe  := TTTrack.ArrayTypes.NullVectorPipe( 10 , 18 );
     PrimaryVertexPipeIn : IN  Vertex.ArrayTypes.VectorPipe  := Vertex.ArrayTypes.NullVectorPipe( 10 , 1 );
     TTTrackPipeOut      : OUT TTTrack.ArrayTypes.VectorPipe := TTTrack.ArrayTypes.NullVectorPipe( 10 , 18 );
     ReadAddrOut         : OUT INTEGER_VECTOR(0 TO 17) := (OTHERS => 0);

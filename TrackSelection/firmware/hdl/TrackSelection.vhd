@@ -20,8 +20,8 @@ ENTITY TrackSelection IS
 
   PORT(
     clk                 : IN  STD_LOGIC; -- The algorithm clock
-    TTTrackPipeIn       : IN  VectorPipe NullVectorPipe( 10 , 18 );
-    TTTrackPipeOut      : OUT VectorPipe NullVectorPipe( 10 , 18 );
+    TTTrackPipeIn       : IN  TTTrack.ArrayTypes.VectorPipe := TTTrack.ArrayTypes.NullVectorPipe( 10 , 18 );
+    TTTrackPipeOut      : OUT TTTrack.ArrayTypes.VectorPipe := TTTrack.ArrayTypes.NullVectorPipe( 10 , 18 )
   );
 END TrackSelection;
 
@@ -37,12 +37,12 @@ ARCHITECTURE rtl OF TrackSelection IS
   RETURN temp_count >= MaxNstub; 
   END FUNCTION Nstub;
 
-  SIGNAL Output : Vector( 0 TO 17 ) := NullVector( 18 );
+  SIGNAL Output : TTTrack.ArrayTypes.Vector( 0 TO 17 ) := TTTrack.ArrayTypes.NullVector( 18 );
   
 BEGIN
   g1              : FOR i IN 0 TO 17 GENERATE
 
-    SIGNAL l1TTTrack      : tData := cNull;
+    SIGNAL l1TTTrack      : TTTrack.DataType.tData := TTTrack.DataType.cNull;
 
   BEGIN
     l1TTTrack <= TTTrackPipeIn( 0 )( i );
@@ -53,7 +53,7 @@ BEGIN
       IF RISING_EDGE( clk ) THEN
         Track_vld := FALSE; -- Default track to false
         IF NOT l1TTTrack.FrameValid THEN
-          Output( i ) <= cNull;
+          Output( i ) <= TTTrack.DataType.cNull;
 
         ELSIF l1TTTrack.DataValid THEN
           IF    ( Nstub( STD_LOGIC_VECTOR( l1TTTrack.Hitpattern ) ) ) 

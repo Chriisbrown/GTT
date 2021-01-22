@@ -34,8 +34,8 @@ LIBRARY GTT;
 ENTITY GTTTop IS
   PORT(
     clk             : IN STD_LOGIC; -- The algorithm clock
-    LinksIn         : IN ldata := ( others => LWORD_NULL );
-    LinksOut        : OUT ldata := ( others => LWORD_NULL );
+    LinksIn         : IN ldata;
+    LinksOut        : OUT ldata;
 -- Prevent all the logic being synthesized away when running standalone
     DebuggingOutput : OUT Vertex.ArrayTypes.Vector( 0 TO 0 ) := Vertex.ArrayTypes.NullVector( 1 )
   );

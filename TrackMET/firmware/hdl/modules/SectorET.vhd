@@ -60,7 +60,7 @@ ARCHITECTURE rtl OF SectorET IS
         Pt <= TempPt;
   END PROCEDURE GlobalPhiLUT;
 
-  CONSTANT frame_delay : INTEGER := 2; --Constant latency of algorithm steps
+  CONSTANT frame_delay : INTEGER := 3; --Constant latency of algorithm steps
   
 BEGIN
   g1              : FOR i IN 0 TO 17 GENERATE

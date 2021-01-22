@@ -34,7 +34,7 @@ port(
   SectorMETPipeIn : in Et.ArrayTypes.VectorPipe   := Et.ArrayTypes.NullVectorPipe( 10 , 18 );
   ReadAddrs : in INTEGER_VECTOR( 0 TO 17) := (OTHERS => 0);
   WriteAddrs : in INTEGER_VECTOR( 0 TO 17) := (OTHERS => 0);
-  linksOut : out ldata := ( others => LWORD_NULL ) 
+  linksOut : out ldata
 );
 end ObjectsToLinks;
 

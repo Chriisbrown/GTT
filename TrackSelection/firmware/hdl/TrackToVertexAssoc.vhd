@@ -20,16 +20,16 @@ ENTITY TrackToVertexAssoc IS
 
   PORT(
     clk                 : IN  STD_LOGIC;-- The algorithm clock
-    TTTrackPipeIn       : IN  VectorPipe :=  NullVectorPipe( 10 , 18 );
-    TTTrackPipeOut      : OUT  VectorPipe :=  NullVectorPipe( 10 , 18 );
+    TTTrackPipeIn       : IN  TTTrack.ArrayTypes.VectorPipe := TTTrack.ArrayTypes. NullVectorPipe( 10 , 18 );
+    TTTrackPipeOut      : OUT  TTTrack.ArrayTypes.VectorPipe :=  TTTrack.ArrayTypes.NullVectorPipe( 10 , 18 )
   );
 END TrackToVertexAssoc;
 
 ARCHITECTURE rtl OF TrackToVertexAssoc IS
 
-  SIGNAL Output :  Vector( 0 TO 17 ) :=  NullVector( 18 );
+  SIGNAL Output :  TTTrack.ArrayTypes.Vector( 0 TO 17 ) :=  TTTrack.ArrayTypes.NullVector( 18 );
 
-  PROCEDURE DeltaZ ( SIGNAL TTTrack : IN tData;   --Procedure for selecting z window based on eta
+  PROCEDURE DeltaZ ( SIGNAL TTTrack : IN TTTrack.DataType.tData;   --Procedure for selecting z window based on eta
                      SIGNAL delta_z : OUT INTEGER) IS
     VARIABLE temp_z : INTEGER := 0;
 
@@ -55,8 +55,8 @@ ARCHITECTURE rtl OF TrackToVertexAssoc IS
   
 BEGIN
   g1              : FOR i IN 0 TO 17 GENERATE
-    SIGNAL l1TTTrack      : tData := cNull;
-    SIGNAL delayed_Track  : tData := cNull;  -- Delay the track to allow window choosing
+    SIGNAL l1TTTrack      : TTTrack.DataType.tData := TTTrack.DataType.cNull;
+    SIGNAL delayed_Track  : TTTrack.DataType.tData := TTTrack.DataType.cNull;  -- Delay the track to allow window choosing
     SIGNAL delta_z_vld    : BOOLEAN := FALSE; --track within dz window flag
     SIGNAL dz             : INTEGER := 0;
 
