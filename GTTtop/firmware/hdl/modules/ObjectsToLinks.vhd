@@ -1,7 +1,8 @@
-
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+USE IEEE.STD_LOGIC_MISC.ALL;
 USE IEEE.NUMERIC_STD.ALL;
+
 
 library xil_defaultlib;
 use xil_defaultlib.emp_data_types.all;
@@ -27,13 +28,13 @@ use Utilities.Utilities.all;
 
 Entity ObjectsToLinks is
 port(
-  clk : in std_logic := '0';
-  VertexPipeIn : in Vertex.ArrayTypes.VectorPipe;
-  METPipeIn : in Et.ArrayTypes.VectorPipe;
-  SectorMETPipeIn : in Et.ArrayTypes.VectorPipe;
-  ReadAddrs : in INTEGER_VECTOR;
-  WriteAddrs : in INTEGER_VECTOR;
-  linksOut : out ldata  
+  clk : in std_logic;
+  VertexPipeIn : in Vertex.ArrayTypes.VectorPipe  := Vertex.ArrayTypes.NullVectorPipe( 10 , 1 );
+  METPipeIn : in Et.ArrayTypes.VectorPipe         := Et.ArrayTypes.NullVectorPipe( 10 , 1 );
+  SectorMETPipeIn : in Et.ArrayTypes.VectorPipe   := Et.ArrayTypes.NullVectorPipe( 10 , 18 );
+  ReadAddrs : in INTEGER_VECTOR( 0 TO 17) := (OTHERS => 0);
+  WriteAddrs : in INTEGER_VECTOR( 0 TO 17) := (OTHERS => 0);
+  linksOut : out ldata := ( others => LWORD_NULL ) 
 );
 end ObjectsToLinks;
 
@@ -99,18 +100,13 @@ begin
       linksOut(2).valid <= '0';
     end if;
 
-    linksOut(3).data(15 downto 0) <= std_logic_vector(ReadAddrs);
+    linksOut(3).data(7 downto 0) <= std_logic_vector(TO_UNSIGNED(ReadAddrs( 0 ),8));
+    linksOut(3).data(15 downto 8) <= std_logic_vector(TO_UNSIGNED(WriteAddrs( 0 ),8));
     linksOut(3).valid <= '1';
     linksOut(3).start <= '0';
     linksOut(3).strobe <= '1';
 
 
-    linksOut(4).data(15 downto 0) <= std_logic_vector(WriteAddrs);
-    linksOut(4).valid <= '1';
-    linksOut(4).start <= '0';
-    linksOut(4).strobe <= '1';
-
-    end if;
 
   end if;
 end process;

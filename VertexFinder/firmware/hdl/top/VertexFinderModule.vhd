@@ -51,8 +51,8 @@ LIBRARY VertexFinder;
 ENTITY VertexFinderModule IS
   PORT(
     clk             : IN STD_LOGIC; -- The algorithm clock
-    TrackPipe   : IN TTTrack.ArrayTypes.VectorPipe;
-    PrimaryVertexPipeOut  : OUT Vertex.ArrayTypes.VectorPipe;
+    TrackPipe   : IN TTTrack.ArrayTypes.VectorPipe := TTTrack.ArrayTypes.NullVectorPipe( 10 , 18 );
+    PrimaryVertexPipeOut : OUT Vertex.ArrayTypes.VectorPipe := TTTrack.ArrayTypes.NullVectorPipe( 1 , 18 );
 -- Prevent all the logic being synthesized away when running standalone
     DebuggingOutput : OUT Vertex.ArrayTypes.Vector( 0 TO 0 ) := Vertex.ArrayTypes.NullVector( 1 )
   );

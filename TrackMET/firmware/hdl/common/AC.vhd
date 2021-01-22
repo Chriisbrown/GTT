@@ -46,11 +46,13 @@ ARCHITECTURE behavioral OF AC IS
     
     SIGNAL signal_px,signal_py,signal_sumx,signal_sumy : INTEGER := 0;
     SIGNAL Et_Buffer : Vector( 0 TO 17 ) := NullVector( 18 );
+    SIGNAL Reset_Buffer : std_logic := '0';
     
     
     BEGIN
 
         Et_Buffer <= Et;  --Buffer to give more slack for timing
+        Reset_Buffer <= reset; --Buffer Reset so reset signal makes sense
 
         signal_px <= SumPx(Et_Buffer);
         signal_py <= SumPy(Et_Buffer);
@@ -62,9 +64,11 @@ ARCHITECTURE behavioral OF AC IS
 
     BEGIN
         IF RISING_EDGE(clk) THEN
-            IF reset THEN
+            IF Reset_Buffer THEN
                 temp_sumx := 0;
                 temp_sumy := 0;
+                input_px := 0;
+                input_py := 0;
             ELSE
                 temp_sumx := input_px + temp_sumx;
                 temp_sumy := input_py + temp_sumy;

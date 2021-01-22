@@ -23,7 +23,7 @@ ENTITY InvRdivider IS
     NumeratorIn   : IN UNSIGNED( 19 DOWNTO 0);
     DenominatorIn : IN UNSIGNED( 17 DOWNTO 0 );
     IntegerOut    : OUT UNSIGNED( 19 DOWNTO 0 ) := ( OTHERS => '0' );
-    FractionOut   : OUT UNSIGNED( 17 DOWNTO 0 )       := ( OTHERS => '0' )
+    FractionOut   : OUT UNSIGNED( 17 DOWNTO 0 ) := ( OTHERS => '0' )
   );
 END InvRdivider;
 

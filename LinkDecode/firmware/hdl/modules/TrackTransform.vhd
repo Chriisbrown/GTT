@@ -27,9 +27,9 @@ ENTITY TrackTransform IS
     PipeOffset : INTEGER := 0
   );
   PORT(
-    clk              : IN STD_LOGIC := '0'; -- The algorithm clock
-    TTTrackPipeIn    : IN InTTTrack.ArrayTypes.VectorPipe; --In Tracks of type LinkIn tracks
-    TTTrackPipeOut   : OUT TTTrack.ArrayTypes.VectorPipe   --Out Tracks of type transformed tracks
+    clk              : IN STD_LOGIC; -- The algorithm clock
+    TTTrackPipeIn    : IN InTTTrack.ArrayTypes.VectorPipe := InTTTrack.ArrayTypes.NullVectorPipe( 10 , 18 ); --In Tracks of type LinkIn tracks
+    TTTrackPipeOut   : OUT TTTrack.ArrayTypes.VectorPipe := TTTrack.ArrayTypes.NullVectorPipe( 10 , 18 )  --Out Tracks of type transformed tracks
   );
 END TrackTransform;
 -- -------------------------------------------------------------------------

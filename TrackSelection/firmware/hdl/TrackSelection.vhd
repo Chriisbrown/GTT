@@ -4,10 +4,6 @@ USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.STD_LOGIC_MISC.ALL;
 USE IEEE.NUMERIC_STD.ALL;
 
-LIBRARY Vertex;
-USE Vertex.DataType;
-USE Vertex.ArrayTypes;
-
 LIBRARY TTTrack;
 USE TTTrack.DataType;
 USE TTTrack.ArrayTypes;
@@ -23,9 +19,9 @@ USE TrackSelection.constants.ALL;
 ENTITY TrackSelection IS
 
   PORT(
-    clk                 : IN  STD_LOGIC := '0'; -- The algorithm clock
-    TTTrackPipeIn       : IN  TTTrack.ArrayTypes.VectorPipe;
-    TTTrackPipeOut      : OUT TTTrack.ArrayTypes.VectorPipe
+    clk                 : IN  STD_LOGIC; -- The algorithm clock
+    TTTrackPipeIn       : IN  VectorPipe NullVectorPipe( 10 , 18 );
+    TTTrackPipeOut      : OUT VectorPipe NullVectorPipe( 10 , 18 );
   );
 END TrackSelection;
 
@@ -41,12 +37,12 @@ ARCHITECTURE rtl OF TrackSelection IS
   RETURN temp_count >= MaxNstub; 
   END FUNCTION Nstub;
 
-  SIGNAL Output : TTTrack.ArrayTypes.Vector( 0 TO 17 ) := TTTrack.ArrayTypes.NullVector( 18 );
+  SIGNAL Output : Vector( 0 TO 17 ) := NullVector( 18 );
   
 BEGIN
   g1              : FOR i IN 0 TO 17 GENERATE
 
-    SIGNAL l1TTTrack      : TTTrack.DataType.tData := TTTrack.DataType.cNull;
+    SIGNAL l1TTTrack      : tData := cNull;
 
   BEGIN
     l1TTTrack <= TTTrackPipeIn( 0 )( i );
@@ -57,7 +53,7 @@ BEGIN
       IF RISING_EDGE( clk ) THEN
         Track_vld := FALSE; -- Default track to false
         IF NOT l1TTTrack.FrameValid THEN
-          Output( i ) <= TTTrack.DataType.cNull;
+          Output( i ) <= cNull;
 
         ELSIF l1TTTrack.DataValid THEN
           IF    ( Nstub( STD_LOGIC_VECTOR( l1TTTrack.Hitpattern ) ) ) 

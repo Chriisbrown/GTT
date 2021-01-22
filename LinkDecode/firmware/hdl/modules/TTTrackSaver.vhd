@@ -20,12 +20,12 @@ USE LinkDecode.Constants.all;
 ENTITY TTTrackSaver IS
 
   PORT(
-    clk                 : IN STD_LOGIC := '0'; -- The algorithm clock
-    TTTrackPipeIn       : IN TTTrack.ArrayTypes.VectorPipe;
-    PrimaryVertexPipeIn : IN  Vertex.ArrayTypes.VectorPipe;
-    TTTrackPipeOut      : OUT TTTrack.ArrayTypes.VectorPipe
-    ReadAddrOut         : OUT INTEGER_VECTOR(0 TO 17);
-    WriteAddrOut        : OUT INTEGER_VECTOR(0 TO 17);
+    clk                 : IN STD_LOGIC; -- The algorithm clock
+    TTTrackPipeIn       : IN TTTrack.ArrayTypes.VectorPipe  := TTTrack.ArrayTypes.NullVectorPipe( 10 , 18 )
+    PrimaryVertexPipeIn : IN  Vertex.ArrayTypes.VectorPipe  := Vertex.ArrayTypes.NullVectorPipe( 10 , 1 );
+    TTTrackPipeOut      : OUT TTTrack.ArrayTypes.VectorPipe := TTTrack.ArrayTypes.NullVectorPipe( 10 , 18 );
+    ReadAddrOut         : OUT INTEGER_VECTOR(0 TO 17) := (OTHERS => 0);
+    WriteAddrOut        : OUT INTEGER_VECTOR(0 TO 17) := (OTHERS => 0)
   );
 END TTTrackSaver;
 
@@ -91,12 +91,12 @@ BEGIN
         ReadTotal := WriteTotal;     -- Copy Track totals to number of tracks to be read
         WriteTotal <= 0;             -- Reset Track Totals
         WriteAddr <= WriteAddr;
-        frame_signal <= '0';
+        frame_signal <= FALSE;
       ELSE
         ReadTotal := ReadTotal;
         WriteTotal <= WriteTotal;
         WriteAddr <= WriteAddr;
-        frame_signal <= '0';
+        frame_signal <= FALSE;
       END IF;
         
       IF ( PrimaryVertexPipeIn( 0 )( 0 ).DataValid ) THEN   -- Wait for Primary Vertex valid
@@ -125,7 +125,7 @@ BEGIN
         Track_vld     <= FALSE;   -- Not valid track
         ReadTotal     := 0;       -- Reset track totals
         NumReadTracks <= 0;
-        PrimaryVertex <= 0;
+        PrimaryVertex <= TO_UNSIGNED(0,8);
       END IF;
 
       Output( i )            <= OutTrack;

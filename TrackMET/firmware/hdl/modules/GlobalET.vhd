@@ -22,9 +22,9 @@ USE TrackMET.Constants.all;
 ENTITY GlobalET IS
 
   PORT(
-    clk                  : IN  STD_LOGIC := '0'; -- The algorithm clock
-    SectorEtPipeIn       : IN  VectorPipe;
-    EtOut                : OUT VectorPipe
+    clk                  : IN  STD_LOGIC -- The algorithm clock
+    SectorEtPipeIn       : IN  VectorPipe := NullVectorPipe( 10 , 18 );
+    EtOut                : OUT VectorPipe := NullVectorPipe( 10 , 1 )
   );
 END GlobalET;
 
@@ -115,8 +115,8 @@ END GlobalET;
     END IF;
   END PROCESS;
 
-  resetSignal <= '1' WHEN ( frame_array( frame_delay  - 1 ) = '1' ) AND ( frame_array( frame_delay - 2 ) = '0' ) ELSE '0'; -- Reset at end of event
-  resetSignal <= '1' WHEN ( frame_array( 0 ) = '0' ) AND ( frame_array( 1 ) = '1' ) ELSE '0'; -- Reset at start of event
+  resetSignal <= '0' WHEN ( frame_array( 0 ) = '1' )  ELSE '1'; -- Only accumulate if frame is valid, else set accumulator to 0
+
   
   Output( 0 ) .Et <= TO_UNSIGNED(TO_INTEGER( RootSum ), Output( 0 ).Et'length );   
   Output( 0 ) .DataValid  <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1' ) AND ( frame_array( frame_delay - 2 ) = '0' ) ELSE FALSE;

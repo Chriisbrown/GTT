@@ -24,9 +24,9 @@ USE TrackMET.constants.all;
 ENTITY SectorET IS
 
   PORT(
-    clk                 : IN  STD_LOGIC := '0'; -- The algorithm clock
-    TTTrackPipeIn       : IN TTTrack.ArrayTypes.VectorPipe;
-    EtOut              : OUT ET.ArrayTypes.VectorPipe
+    clk                 : IN  STD_LOGIC; -- The algorithm clock
+    TTTrackPipeIn       : IN TTTrack.ArrayTypes.VectorPipe :=  TTTrack.ArrayTypes.NullVectorPipe( 10 , 18 );
+    EtOut              : OUT ET.ArrayTypes.VectorPipe := Et.ArrayTypes.NullVectorPipe( 10 , 18 )
   );
 END SectorET;
 
@@ -60,7 +60,7 @@ ARCHITECTURE rtl OF SectorET IS
         Pt <= TempPt;
   END PROCEDURE GlobalPhiLUT;
 
-  CONSTANT frame_delay : INTEGER := 3; --Constant latency of algorithm steps
+  CONSTANT frame_delay : INTEGER := 2; --Constant latency of algorithm steps
   
 BEGIN
   g1              : FOR i IN 0 TO 17 GENERATE
@@ -86,7 +86,7 @@ BEGIN
       reset  => reset,
       Pt     => Pt_Buffer,
       Phi    => Phix_Buffer,
-      SumPt  => SumPx,
+      SumPt  => SumPx
     );
 
   PyMAC : ENTITY TrackMet.MAC  --Multiplier acumulator, finds cos/sin * py and sums until reset
@@ -95,7 +95,7 @@ BEGIN
       reset  => reset,
       Pt     => Pt_Buffer,
       Phi    => Phiy_Buffer,
-      SumPt  => SumPy,
+      SumPt  => SumPy
     );
 
     GlobalPhiLUT( vldTrack, Phix_Buffer, Phiy_Buffer, Pt_Buffer);
@@ -120,9 +120,7 @@ BEGIN
       END IF;
     END PROCESS;
 
-    reset <= '1' WHEN (frame_array( frame_delay -1 ) = '1') AND (frame_array(frame_delay -2) = '0') ELSE '0';  --Reset MACs when end of valid frames
-    reset <= '1' WHEN (frame_array( 0 ) = '0') AND (frame_array( 1 ) = '1') ELSE '0';  --Reset MACs when start of valid frames
-
+    reset <= '0' WHEN ( frame_array( 1 ) = '1' )  ELSE '1'; -- Only accumulate if frame is valid + one clock for Phi LUT, else set accumulator to 0
 
     Output( i ) .DataValid  <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1') AND ( frame_array( frame_delay - 2 )  = '0') ELSE FALSE; -- DataValid when all tracks read
     Output( i ) .FrameValid <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1') ELSE FALSE; -- FrameValid when track frame valid

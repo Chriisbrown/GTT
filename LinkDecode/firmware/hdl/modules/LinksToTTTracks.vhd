@@ -22,9 +22,9 @@ USE Utilities.Utilities.ALL;
 -- -------------------------------------------------------------------------
 ENTITY LinksToTTTracks IS
   PORT(
-    clk          : IN STD_LOGIC            := '0'; -- The algorithm clock
-    linksIn      : IN ldata;
-    WordTrackPipeOut : OUT VectorPipe
+    clk          : IN STD_LOGIC; -- The algorithm clock
+    linksIn      : IN ldata                := ( others => LWORD_NULL );
+    WordTrackPipeOut : OUT VectorPipe      := NullVectorPipe( 10 , 18 );
   );
 END LinksToTTTracks;
 -- -------------------------------------------------------------------------
