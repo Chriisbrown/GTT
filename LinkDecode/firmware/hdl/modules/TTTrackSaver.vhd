@@ -75,6 +75,7 @@ BEGIN
   PROCESS( clk )
 
   VARIABLE ReadTotal : INTEGER := 0;
+  VARIABLE FIFOFull  : INTEGER := 0;
   
   BEGIN
     IF ( RISING_EDGE( clk ) ) THEN
@@ -83,6 +84,7 @@ BEGIN
         IF ( TTTrackPipeIn( 0 )( i ).DataValid ) THEN
           WriteAddr  <= ( WriteAddr + 1 ) MOD ram_depth;  --Increment Write Pointer If Track is Valid. wrap if > ram_depth
           WriteTotal <=  WriteTotal + 1;      -- Update Track Totals
+          FIFOFull := FIFOFull + 1;
         ELSE
           WriteTotal <= WriteTotal;
           WriteAddr <= WriteAddr;
@@ -98,6 +100,9 @@ BEGIN
         WriteAddr <= WriteAddr;
         frame_signal <= FALSE;
       END IF;
+
+      IF FIFOFull = 0 AND WriteAddr /= ReadAddr THEN
+        ReadAddr <= WriteAddr; 
         
       IF ( PrimaryVertexPipeIn( 0 )( 0 ).DataValid ) THEN   -- Wait for Primary Vertex valid
         PrimaryVertex <= PrimaryVertexPipeIn( 0 )( 0 ).Z0; -- Store PV
@@ -109,6 +114,7 @@ BEGIN
       ELSIF NumReadTracks < ReadTotal THEN  -- If Number of read tracks < total number stored tracks
         IF Read_Reset THEN  
           ReadAddr      <= ( ReadAddr + 1 ) MOD ram_depth; -- Increment Read pointer if reading wrap if > ram_depth
+          FIFOFull      := FIFOFull - 1;
           NumReadTracks <= NumReadTracks + 1;              -- Update read totals
           Track_vld     <= True;                           -- Track is Valid
           PrimaryVertex <= PrimaryVertex;
