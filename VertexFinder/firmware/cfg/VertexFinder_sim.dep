@@ -1,7 +1,7 @@
-src --vhdl2008 -c VertexFinder: -l VertexFinder top/VertexFinderModule.vhd
-src --vhdl2008 -c VertexFinder: -l VertexFinder modules/MaximaFinder.vhd
-src --vhdl2008 -c VertexFinder: -l VertexFinder modules/Histogram.vhd
-src --vhdl2008 -c VertexFinder: -l VertexFinder modules/Fanout.vhd
-src --vhdl2008 -c VertexFinder: -l VertexFinder modules/VertexDistribution.vhd
-src --vhdl2008 -c VertexFinder: -l VertexFinder modules/TTTracksToVertices.vhd
-src --vhdl2008 -c RuflCore: -l Vertex ReuseableElements/DistributionServer.vhd
+src --vhdl2008 -l VertexFinder top/VertexFinderModule.vhd
+src --vhdl2008 -l VertexFinder modules/MaximaFinder.vhd
+src --vhdl2008 -l VertexFinder modules/Histogram.vhd
+src --vhdl2008 -l VertexFinder modules/Fanout.vhd
+src --vhdl2008 -l VertexFinder modules/VertexDistribution.vhd
+src --vhdl2008 -l VertexFinder modules/TTTracksToVertices.vhd
+src --vhdl2008 -c GTT:RuflCore -l Vertex ReuseableElements/DistributionServer.vhd

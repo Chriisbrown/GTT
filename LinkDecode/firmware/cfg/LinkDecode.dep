@@ -1,7 +1,7 @@
-src --vhdl2008 -c LinkDecode: -l LinkDecode common/PkgConstants.vhd
-src --vhdl2008 -c LinkDecode: -l LinkDecode modules/LinksToTTTracks.vhd
-src --vhdl2008 -c LinkDecode: -l LinkDecode modules/TTTrackSaver.vhd
-src --vhdl2008 -c LinkDecode: -l LinkDecode modules/InvRdivider.vhd
-src --vhdl2008 -c LinkDecode: -l LinkDecode modules/TanLROM.vhd
-src --vhdl2008 -c LinkDecode: -l LinkDecode modules/TrackTransform.vhd
+src --vhdl2008 -l LinkDecode common/PkgConstants.vhd
+src --vhdl2008 -l LinkDecode modules/LinksToTTTracks.vhd
+src --vhdl2008 -l LinkDecode modules/TTTrackSaver.vhd
+src --vhdl2008 -l LinkDecode modules/InvRdivider.vhd
+src --vhdl2008 -l LinkDecode modules/TanLROM.vhd
+src --vhdl2008 -l LinkDecode modules/TrackTransform.vhd
 

@@ -6,6 +6,9 @@ USE IEEE.NUMERIC_STD.ALL;
 library xil_defaultlib;
 use xil_defaultlib.emp_data_types.all;
 
+--library work;
+--use work.emp_data_types.all;
+
 library Vertex;
 use Vertex.DataType.all;
 use Vertex.ArrayTypes;

@@ -5,6 +5,9 @@ USE IEEE.NUMERIC_STD.ALL;
 library xil_defaultlib;
 use xil_defaultlib.emp_data_types.all;
 
+--library work;
+--use work.emp_data_types.all;
+
 
 LIBRARY Vertex;
 USE Vertex.DataType;
@@ -33,7 +36,7 @@ LIBRARY GTT;
 -- -------------------------------------------------------------------------
 ENTITY GTTTop IS
   PORT(
-    clk             : IN STD_LOGIC; -- The algorithm clock
+    clk       : IN STD_LOGIC; -- The algorithm clock
     LinksIn         : IN ldata;
     LinksOut        : OUT ldata;
 -- Prevent all the logic being synthesized away when running standalone
@@ -72,6 +75,7 @@ ARCHITECTURE rtl OF GTTTop IS
 
   SIGNAL WriteAddrs : INTEGER_VECTOR( 0 TO 17 ) := (OTHERS => 0);
   SIGNAL ReadAddrs  : INTEGER_VECTOR( 0 TO 17 ) := (OTHERS => 0);
+  SIGNAL FIFOout    : INTEGER_VECTOR( 0 TO 17 ) := (OTHERS => 0);
  
 BEGIN
 
@@ -100,7 +104,6 @@ PORT MAP(
   TTTrackPipeOut => DelayedTracks,
   ReadAddrOut => ReadAddrs,
   WriteAddrOut => WriteAddrs
-
 );
 -- -------------------------------------------------------------------------
 -- -------------------------------------------------------------------------

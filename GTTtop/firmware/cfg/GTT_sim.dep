@@ -3,14 +3,14 @@ src --vhdl2008 top/payload.vhd
 src --vhdl2008 -l GTT top/GTT.vhd
 src --vhdl2008 -l GTT modules/ObjectsToLinks.vhd
 
-include -c TrackMET: TrackMET_sim.dep
-include -c TrackSelection: TrackSelection_sim.dep
-include -c VertexFinder: VertexFinder_sim.dep
-include -c LinkDecode: LinkDecode_sim.dep
+include -c GTT:TrackMET TrackMET_sim.dep
+include -c GTT:TrackSelection TrackSelection_sim.dep
+include -c GTT:VertexFinder VertexFinder_sim.dep
+include -c GTT:LinkDecode LinkDecode_sim.dep
 
 include Types_sim.dep
 
-src --vhdl2008 -c RuflCore: -l Utilities ReuseableElements/PkgUtilities.vhd
-src --vhdl2008 -c RuflCore: -l Utilities ReuseableElements/PkgDebug.vhd
+src --vhdl2008 -c GTT:RuflCore -l Utilities ReuseableElements/PkgUtilities.vhd
+src --vhdl2008 -c GTT:RuflCore -l Utilities ReuseableElements/PkgDebug.vhd
 
 

@@ -6,6 +6,9 @@ USE IEEE.NUMERIC_STD.ALL;
 library xil_defaultlib;
 use xil_defaultlib.emp_data_types.all;
 
+--library work;
+--use work.emp_data_types.all;
+
 LIBRARY InTTTrack;
 USE InTTTrack.DataType.ALL;
 USE InTTTrack.ArrayTypes.ALL;
