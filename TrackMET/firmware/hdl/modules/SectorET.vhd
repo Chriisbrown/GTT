@@ -35,41 +35,41 @@ ARCHITECTURE rtl OF SectorET IS
   SIGNAL Output : ET.ArrayTypes.Vector( 0 TO 17 ) := ET.ArrayTypes.NullVector( 18 );
 
   PROCEDURE GlobalPhiLUT (SIGNAL TTTrack : IN TTTrack.DataType.tData ;  --Procedure for finding cos and sin of phi
-                          SIGNAL Phix    : OUT INTEGER ;
-                          SIGNAL Phiy    : OUT INTEGER ;
-                          SIGNAL Pt      : OUT INTEGER ) IS  --Pt pass through to maintain synch with Phi
+                          SIGNAL Phix    : OUT SIGNED(12 DOWNTO 0) ;
+                          SIGNAL Phiy    : OUT SIGNED(12 DOWNTO 0) ;
+                          SIGNAL Pt      : OUT UNSIGNED( 15 DOWNTO 0 ) ) IS  --Pt pass through to maintain synch with Phi
     VARIABLE GlobalPhi : INTEGER := 0;
-    VARIABLE TempPt    : INTEGER := 0;
+    VARIABLE TempPt    : UNSIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
     BEGIN
         GlobalPhi := TO_INTEGER( TTTrack.phi );
-        TempPt    := TO_INTEGER( TTTrack.pt );
+        TempPt    := TTTrack.pt;
 
         IF GlobalPhi >= PhiBins( 0 ) AND GlobalPhi < PhiBins( 1 ) THEN
-          Phix <= TrigArray( GlobalPhi )( 0 );  
-          Phiy <= TrigArray( GlobalPhi )( 1 ); 
+          Phix <= TO_SIGNED(TrigArray( GlobalPhi )( 0 ),13);  
+          Phiy <= TO_SIGNED(TrigArray( GlobalPhi )( 1 ),13); 
         ELSIF GlobalPhi >= PhiBins( 1 ) AND GlobalPhi < PhiBins( 2 ) THEN
-          Phix <= -TrigArray( GlobalPhi - PhiBins( 1 ) )( 1 ); 
-          Phiy <= TrigArray(  GlobalPhi - PhiBins( 1 ) )( 0 ); 
+          Phix <= TO_SIGNED(-TrigArray( GlobalPhi - PhiBins( 1 ) )( 1 ),13); 
+          Phiy <= TO_SIGNED(TrigArray(  GlobalPhi - PhiBins( 1 ) )( 0 ),13); 
         ELSIF GlobalPhi >= PhiBins( 2 ) AND GlobalPhi < PhiBins( 3 ) THEN
-          Phix <= -TrigArray( GlobalPhi - PhiBins( 2 ) )( 0 );  
-          Phiy <= -TrigArray( GlobalPhi - PhiBins( 2 ) )( 1 ); 
+          Phix <= TO_SIGNED(-TrigArray( GlobalPhi - PhiBins( 2 ) )( 0 ),13);  
+          Phiy <= TO_SIGNED(-TrigArray( GlobalPhi - PhiBins( 2 ) )( 1 ),13); 
         ELSIF GlobalPhi >= PhiBins( 3 ) AND GlobalPhi < PhiBins( 4 ) THEN
-          Phix <= TrigArray(  GlobalPhi - PhiBins( 3 ) )( 1 ); 
-          Phiy <= -TrigArray( GlobalPhi - PhiBins( 3 ) )( 0 ); 
+          Phix <= TO_SIGNED(TrigArray(  GlobalPhi - PhiBins( 3 ) )( 1 ),13); 
+          Phiy <= TO_SIGNED(-TrigArray( GlobalPhi - PhiBins( 3 ) )( 0 ),13); 
         END IF;
         Pt <= TempPt;
   END PROCEDURE GlobalPhiLUT;
 
-  CONSTANT frame_delay : INTEGER := 3; --Constant latency of algorithm steps
+  CONSTANT frame_delay : INTEGER := 5; --Constant latency of algorithm steps
   
 BEGIN
   g1              : FOR i IN 0 TO 17 GENERATE
 
   SIGNAL vldTrack : TTTrack.DataType.tData := TTTrack.DataType.cNull;
   
-  SIGNAl Pt_Buffer   : INTEGER := 0;  --Temporaries for procedure outputs
-  SIGNAL Phix_Buffer : INTEGER := 0;
-  SIGNAL Phiy_Buffer : INTEGER := 0;
+  SIGNAl Pt_Buffer   : UNSIGNED( 15 DOWNTO 0 ) := ( OTHERS => '0' );  --Temporaries for procedure outputs
+  SIGNAL Phix_Buffer : SIGNED  ( 12 DOWNTO 0 ) := ( OTHERS => '0' );
+  SIGNAL Phiy_Buffer : SIGNED  ( 12 DOWNTO 0 ) := ( OTHERS => '0' );
 
   SIGNAL reset : STD_LOGIC := '0';  --MAC reset signal
   SIGNAL SumPx : SIGNED  ( 15 DOWNTO 0 ) := ( OTHERS => '0' );  --MAC outputs
@@ -98,11 +98,12 @@ BEGIN
       SumPt  => SumPy
     );
 
-    GlobalPhiLUT( vldTrack, Phix_Buffer, Phiy_Buffer, Pt_Buffer);
+    
 
     PROCESS( clk )  --Clocked process for storing frame valids and sending to MACs
     BEGIN
       IF RISING_EDGE( clk ) THEN
+        
         IF TTTrackPipeIn( 0 )( i ).FrameValid THEN
           frame_signal <= '1';
           IF TTTrackPipeIn( 0 )( i ).DataValid THEN
@@ -115,12 +116,14 @@ BEGIN
           vldTrack <= TTTrack.DataType.cNull;
         END IF;
 
+
+        GlobalPhiLUT( vldTrack, Phix_Buffer, Phiy_Buffer, Pt_Buffer);
         frame_array <= frame_signal & frame_array( 0 TO frame_delay - 2 );
 
       END IF;
     END PROCESS;
 
-    reset <= '0' WHEN ( frame_array( 1 ) = '1' )  ELSE '1'; -- Only accumulate if frame is valid + one clock for Phi LUT, else set accumulator to 0
+    reset <= '0' WHEN ( frame_array( frame_delay - 3 ) = '1' )  ELSE '1'; -- Only accumulate if frame is valid + one clock for Phi LUT, else set accumulator to 0
 
     Output( i ) .DataValid  <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1') AND ( frame_array( frame_delay - 2 )  = '0') ELSE FALSE; -- DataValid when all tracks read
     Output( i ) .FrameValid <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1') ELSE FALSE; -- FrameValid when track frame valid

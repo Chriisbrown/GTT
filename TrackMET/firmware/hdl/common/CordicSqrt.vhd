@@ -11,7 +11,7 @@ ENTITY CordicSqrt IS
         clk  : IN STD_LOGIC := '0';
         Xin  : IN SIGNED ( 15 DOWNTO 0 )  := (OTHERS => '0');
         Yin  : IN SIGNED ( 15 DOWNTO 0 )  := (OTHERS => '0');
-        Root : OUT SIGNED ( 15 DOWNTO 0 ) := (OTHERS => '0')
+        Root : OUT UNSIGNED ( 15 DOWNTO 0 ) := (OTHERS => '0')
     );
 END CordicSqrt;
 
@@ -28,8 +28,8 @@ ARCHITECTURE behavioral OF CordicSqrt IS
   TYPE tCordicSteps IS ARRAY( n_steps + 1 DOWNTO 0 ) OF tCordic; -- Number of steps used by the CORDIC
   SIGNAL CordicSteps  : tCordicSteps := ( OTHERS => cEmptyCordic );
 
-  SIGNAL NormedRoot : INTEGER := 0;
-  SIGNAL TempRoot : INTEGER := 0;
+  SIGNAL NormedRoot : UNSIGNED( 21 DOWNTO 0 ) := (OTHERS => '0');
+  SIGNAL TempRoot   : UNSIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
 
 BEGIN
 
@@ -83,12 +83,16 @@ steps : FOR i IN 1 TO n_steps GENERATE
   END PROCESS;
 END GENERATE steps;
 
-CordicSteps( n_steps + 1 ) <= CordicSteps( n_steps ) WHEN RISING_EDGE( clk );
+PROCESS( clk )
+  VARIABLE unsigned_multiplier: UNSIGNED (5 DOWNTO 0) := TO_UNSIGNED(multiplier,6);
+BEGIN
+  IF ( RISING_EDGE( clk ) ) THEN
+    CordicSteps( n_steps + 1 ) <= CordicSteps( n_steps );
+    TempRoot                   <= UNSIGNED(CordicSteps( n_steps + 1 ).x);  --Buffer for clock constraint on DSP
+    NormedRoot                 <= TempRoot*unsigned_multiplier;
+    Root                       <= NormedRoot(21 DOWNTO 6);  --Divide by 2**6
+  END IF;
+END PROCESS;
 
-TempRoot <= TO_INTEGER(CordicSteps( n_steps + 1 ).x) WHEN RISING_EDGE( clk );  --Buffer for clock constraint on DSP
-
-NormedRoot <= TempRoot*multiplier WHEN RISING_EDGE( clk );
-
-Root <= TO_SIGNED(NormedRoot/2**6,16)  WHEN RISING_EDGE( clk );
 
 END ARCHITECTURE behavioral;

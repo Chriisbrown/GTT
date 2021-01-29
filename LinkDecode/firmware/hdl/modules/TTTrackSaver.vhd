@@ -23,10 +23,9 @@ ENTITY TTTrackSaver IS
     clk                : IN STD_LOGIC; -- The algorithm clock
     TTTrackPipeIn       : IN TTTrack.ArrayTypes.VectorPipe;
     PrimaryVertexPipeIn : IN  Vertex.ArrayTypes.VectorPipe;
-    TTTrackPipeOut      : OUT TTTrack.ArrayTypes.VectorPipe;
-    ReadAddrOut         : OUT INTEGER_VECTOR(0 TO 17) := (OTHERS => 0);
-    WriteAddrOut        : OUT INTEGER_VECTOR(0 TO 17) := (OTHERS => 0);
-    FIFOOut             : OUT INTEGER_VECTOR(0 TO 17) := (OTHERS => 0)
+    TTTrackPipeOut      : OUT TTTrack.ArrayTypes.VectorPipe
+    --ReadAddrOut         : OUT INTEGER_VECTOR(0 TO 17) := (OTHERS => 0);
+    --WriteAddrOut        : OUT INTEGER_VECTOR(0 TO 17) := (OTHERS => 0)
   );
 END TTTrackSaver;
 
@@ -57,9 +56,7 @@ g1 : FOR i IN 0 TO 17 GENERATE
   -- Counters and reset for FIFO input and output
 
   SIGNAL WriteTotal    : INTEGER_VECTOR(0 TO 1) := (OTHERS => 0);  --Total Tracks Written into FIFO
-  SIGNAL NumReadTracks : INTEGER := 0;  --Total Track read out of FIFO
   SIGNAL Read_Reset    : BOOLEAN := FALSE; --Flag to initiate reading
-  SIGNAL FIFOFull      : INTEGER := 0;
   
 
 BEGIN 
@@ -97,16 +94,15 @@ BEGIN
         
       IF ( PrimaryVertexPipeIn( 0 )( 0 ).DataValid ) THEN   -- Wait for Primary Vertex valid
         PrimaryVertex <= PrimaryVertexPipeIn( 0 )( 0 ).Z0; -- Store PV
-        NumReadTracks <= 0;     -- Reset Number of read tracks
         Read_Reset <= TRUE;     -- Start Reading
         Track_vld <= FALSE;
 
-      ELSIF NumReadTracks < WriteTotal( 1 ) THEN  -- If Number of read tracks < total number stored tracks
+      ELSIF WriteTotal( 1 ) > 0 THEN  -- If Number of read tracks < total number stored tracks
         IF Read_Reset THEN  
-          ReadAddr      <= ( ReadAddr + 1 ) MOD ram_depth; -- Increment Read pointer if reading wrap if > ram_depth
-          NumReadTracks <= NumReadTracks + 1;              -- Update read totals
-          Track_vld     <= True;                           -- Track is Valid
-          PrimaryVertex <= PrimaryVertex;
+          ReadAddr        <= ( ReadAddr + 1 ) MOD ram_depth; -- Increment Read pointer if reading wrap if > ram_depth
+          WriteTotal( 1 ) <= WriteTotal( 1 ) - 1;              -- Update read totals
+          Track_vld       <= True;                           -- Track is Valid
+          PrimaryVertex   <= PrimaryVertex;
         ELSE     
           Track_vld <= False;                   
         END IF;
@@ -116,30 +112,19 @@ BEGIN
         Track_vld     <= FALSE;   -- Not valid track
       END IF;
 
+      IF WriteTotal( 0 ) = 0 and WriteTotal( 1 ) = 0 THEN
+        ReadAddr <= WriteAddr;
+      END IF;
+
       Output( i )            <= OutTrack;
       Output( i ).PV         <= PrimaryVertex;
       Output( i ).DataValid  <= Track_vld;
       Output( i ).FrameValid <= Track_vld;
 
-      ReadAddrOut( i ) <= ReadAddr;
-      WriteAddrOut( i ) <= WriteAddr;
-      FIFOOut( i ) <= FIFOFull;
+      --ReadAddrOut( i ) <= ReadAddr;
+      --WriteAddrOut( i ) <= WriteAddr;
 
-      --IF FIFOFull = 0 AND WriteAddr /= ReadAddr THEN
-      --  ReadAddr <= WriteAddr; 
-      --END IF;
 
-      --IF reset='1' THEN
-      --  ReadAddr <= 0;
-      --  WriteAddr <= 0;
-      --  FIFOFull <= 0;
-      -- ReadTotal := 0;
-      --  WriteTotal <= 0;
-      --  NumReadTracks <= 0;
-      --  Read_Reset <= FALSE;
-      --  PrimaryVertex <= TO_UNSIGNED(0,8);
-      --  frame_signal <= FALSE;
-      --END IF;
     
     END IF;
   END PROCESS;

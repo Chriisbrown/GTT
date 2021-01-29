@@ -101,9 +101,9 @@ PORT MAP(
   clk    => clk ,
   TTTrackPipeIn  => TrackPipe ,
   PrimaryVertexPipeIn => PrimaryVertexPipe,
-  TTTrackPipeOut => DelayedTracks,
-  ReadAddrOut => ReadAddrs,
-  WriteAddrOut => WriteAddrs
+  TTTrackPipeOut => DelayedTracks
+  --ReadAddrOut => ReadAddrs,
+  --WriteAddrOut => WriteAddrs
 );
 -- -------------------------------------------------------------------------
 -- -------------------------------------------------------------------------
@@ -162,8 +162,8 @@ PORT MAP(
   VertexPipeIn => PrimaryVertexPipe,
   METPipeIn => GlobalEtPipe,
   SectorMETPipeIn => EtPipe,
-  ReadAddrs => ReadAddrs,
-  WriteAddrs => WriteAddrs,
+  --ReadAddrs => ReadAddrs,
+  --WriteAddrs => WriteAddrs,
   linksOut => LinksOut
 );
 

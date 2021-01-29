@@ -1,0 +1,30 @@
+Latency total:
+From first track to Internal Track (LinksIn->InTTTrack): 3
+From InTTTrack to Transformed TTTrack:  6 
+From TTTrack to Internal Vertex: 1
+From Initial Internal Vertex to Vertex Into TTTrackSaver: 100 Clocks
+From Final TTTrack to vertex out: 28 Clock Cycles
+
+From vertex to Track association 5 clocks
+From vertex to read out track 3 clocks
+From first read out track to Track association 2 clock cycles
+From track association to track selection 2 cycles
+From track selection to MET 1 cycle
+Sector MET MAC for as many cycles as there are tracks -> depends on number of tracks in each stream
+Global MET AC for as many cycles as there are streams but depends on their Sector MET MAC latency
+
+Global AC reset to MET out: 11 clocks
+Global MET out to link: 1 clock
+
+From first track to Vertex Out: 136 Clock Cycles
+From first track recieved to MET out: 171 Clock Cycles
+
+From final track to received MET 62 cycles varies
+From final track to Vertex 28 cycles no variation
+From vertex to MET 33 cycles varies
+
+
+
+
+
+

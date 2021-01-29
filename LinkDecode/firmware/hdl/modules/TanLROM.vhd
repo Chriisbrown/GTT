@@ -6,6 +6,7 @@ use ieee.numeric_std.all;
 package TanLROM is
     type intArray is array(natural range <>) of integer;
     type intArray2D is array(natural range <>) of intArray;
+    ATTRIBUTE ROM_BLOCK                : STRING;
 
     constant Phi_shift : intArray(0 TO 17) := (
         (0),(0),
@@ -17,6 +18,8 @@ package TanLROM is
      (4176),(4176),
      (4872),(4872),
      (5568),(5568));
+
+    attribute ROM_BLOCK of Phi_shift : constant is "ROM_SYNCH";
      
     constant TanLLUT : intArray2D(0 to 4095)(0 to 7) := (
         (32769,43691,50658,55303,58727,61425,63647,65535),
@@ -4116,4 +4119,6 @@ package TanLROM is
         (43688,50657,55302,58726,61424,63647,65535,0),
         (43690,50658,55303,58726,61424,63647,65535,0)          
 );
+
+attribute ROM_BLOCK of TanLLUT : constant is "ROM_SYNCH";
 end TanLROM; 

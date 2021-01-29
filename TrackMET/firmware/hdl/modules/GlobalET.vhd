@@ -57,20 +57,32 @@ END GlobalET;
   RETURN valid_count > 0;
   END FUNCTION AnyDataValid;
 
+  FUNCTION PtUnpacker (EtVector : Vector := NullVector( 18 ) ) return EtArray IS
+  VARIABLE temp_pt : EtArray := ( OTHERS => ( OTHERS => '0' ) );
+  BEGIN
+    FOR i IN EtVector'RANGE LOOP
+      IF EtVector( i ).DataValid THEN
+        temp_pt( i ) := EtVector( i ).px;
+        temp_pt( i + 18 ) := EtVector( i ).py;
+      END IF;
+    END LOOP;
+  RETURN temp_pt;
+  END FUNCTION PtUnpacker;
+
 
   SIGNAL Output  : Vector( 0 TO 0 )  := NullVector( 1 );
   SIGNAL InputEt : Vector( 0 TO 17 ) := NullVector( 18 );
-  SIGNAL vldEt   : Vector( 0 TO 17 ) := NullVector( 18 );
+  SIGNAL vldEt   : EtArray := ( OTHERS => ( OTHERS => '0' ) );
 
-  SIGNAL ExSignal    : INTEGER   := 0;
-  SIGNAL EYSignal    : INTEGER   := 0;
+  SIGNAL ExSignal    : SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
+  SIGNAL EYSignal    : SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
   SIGNAL resetSignal : STD_LOGIC := '0';
 
   SIGNAL   frame_signal : STD_LOGIC                              := '0';
-  CONSTANT frame_delay  : INTEGER                                := 11;
+  CONSTANT frame_delay  : INTEGER                                := 12;
   SIGNAL   frame_array  : STD_LOGIC_VECTOR(0 TO frame_delay - 1) := ( OTHERS => '0' );
 
-  SIGNAL RootSum : SIGNED( 15 DOWNTO 0 ) := ( OTHERS => '0' );
+  SIGNAL RootSum : UNSIGNED( 15 DOWNTO 0 ) := ( OTHERS => '0' );
 
   BEGIN
   Sqrt : ENTITY TrackMET.CordicSqrt
@@ -78,8 +90,8 @@ END GlobalET;
                 multiplier => CordicNormalisation ) 
   PORT MAP(
     clk  => clk,
-    Xin  => TO_SIGNED( ExSignal, Output( 0 ).Et'length ) ,
-    Yin  => TO_SIGNED( EySignal, Output( 0 ).Et'length ),
+    Xin  => ExSignal,
+    Yin  => EySignal,
     Root => RootSum
   );
 
@@ -101,13 +113,13 @@ END GlobalET;
       IF AnyFrameValid( InputEt ) THEN
         frame_signal <= '1';
         IF AnyDataValid( InputEt ) THEN
-          vldEt <= InputEt;
+          vldEt <= PtUnpacker(InputEt);
         ELSE
-          vldEt <= NullVector( 18 );
+          vldEt <= ( OTHERS => ( OTHERS => '0' ) );
         END IF;
       ELSE 
         frame_signal <= '0';
-        vldEt <= NullVector( 18 );
+        vldEt <= ( OTHERS => ( OTHERS => '0' ) );
       END IF;
 
       frame_array <= frame_signal & frame_array( 0 TO frame_delay - 2 );
@@ -118,7 +130,9 @@ END GlobalET;
   resetSignal <= '0' WHEN ( frame_array( 0 ) = '1' )  ELSE '1'; -- Only accumulate if frame is valid, else set accumulator to 0
 
   
-  Output( 0 ) .Et <= TO_UNSIGNED(TO_INTEGER( RootSum ), Output( 0 ).Et'length );   
+  Output( 0 ) .Et <= RootSum;
+  Output( 0 ) .Px <= ExSignal;
+  Output( 0 ) .Py <= EySignal;
   Output( 0 ) .DataValid  <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1' ) AND ( frame_array( frame_delay - 2 ) = '0' ) ELSE FALSE;
   Output( 0 ) .FrameValid <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1' ) AND ( frame_array( frame_delay - 2 ) = '0' ) ELSE FALSE;
 

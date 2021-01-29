@@ -6,7 +6,7 @@ include Types.dep
 include -c GTT:TrackMET TrackMET.dep
 include -c GTT:TrackSelection TrackSelection.dep
 include -c GTT:VertexFinder VertexFinder.dep
-include -c GTT:LinkDecode: LinkDecode.dep
+include -c GTT:LinkDecode LinkDecode.dep
 
 
 src --vhdl2008 -l GTT modules/ObjectsToLinks.vhd

@@ -7,6 +7,8 @@ USE IEEE.NUMERIC_STD.ALL;
 -- -------------------------------------------------------------------------
 PACKAGE constants IS
 
+TYPE   EtArray   IS ARRAY (0 to 35) OF SIGNED( 15 DOWNTO 0 );
+
 CONSTANT PhiBins : INTEGER_VECTOR := (0,1567,3134,4701,6268);
 CONSTANT CordicSteps : INTEGER := 4;
 CONSTANT CordicNormalisation : INTEGER := 39;

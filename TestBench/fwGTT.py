@@ -328,5 +328,5 @@ def emulation(num_events,file_name,readfromfile=True,specific_event=False,specif
 if __name__=="__main__":
   import sys
 
-  emulation(int(sys.argv[1])+1,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object.root",True,False,int(sys.argv[1]))
+  emulation(int(sys.argv[1])+1,"/home/cb719/Documents/L1Trigger/GTT/EMP/fw-work/src/GTT/DataFiles/TT_object.root",True,False,int(sys.argv[1]))
   #emulation(10,"",False,True,0,"input_files/SpecialEvents/Debug/Emu/")

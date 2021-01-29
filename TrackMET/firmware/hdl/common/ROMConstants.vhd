@@ -7,6 +7,7 @@ use ieee.numeric_std.all;
 package ROMConstants is
   type intArray is array(natural range <>) of integer;
   type intArray2D is array(natural range <>) of intArray;
+  ATTRIBUTE ROM_BLOCK                : STRING;
 
   constant TrigArray : intArray2D(0 TO 1566)(0 TO 1) := (
     (2048,0),
@@ -1577,6 +1578,7 @@ package ROMConstants is
     (2,2048),
     (0,2048)
   );
+  attribute ROM_BLOCK of TrigArray : constant is "ROM_SYNCH";
 
 end ROMConstants;
   

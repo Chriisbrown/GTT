@@ -2,10 +2,11 @@ import numpy as np
 from Formats import TrackWord_config
 from Formats import toHWU,HWUto
 
+precision = 2**11
 
-hwu_binsize = 2*1.026/(2**11-1)
+hwu_binsize = 2*1.026/(precision-1)
 phi_iterator = np.linspace(0,np.pi/2,round(np.pi/(2*hwu_binsize)))
-lut_precision = 2**11
+lut_precision = precision
 
 
 

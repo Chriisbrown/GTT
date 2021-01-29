@@ -8,7 +8,7 @@ invR_min = 0
 invR_max = 32767
 
 
-events = util.loadDataSingleFile("/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object_300k.root",[0,1000])
+events = util.loadDataSingleFile("/home/cb719/Documents/L1Trigger/GTT/EMP/fw-work/src/GTT/DataFiles/TT_object_300k.root",[0,10])
 #print(events)
 #events = []
 
@@ -35,7 +35,7 @@ for i in range(0,227):
     events.append(event)
 '''
 #Formats.writepfile("input_files/input.txt", events, weight='InvR')
-Formats.writemultipfile("input_files/FullGTT/inputfile_", events, weight='InvR')
+Formats.writemultipfile("input_files/FullGTT/inputfile_with1frames_", events,ninitialframes=1, weight='InvR')
 #Formats.writeSWReference("output_files/python_predictions.txt",events=events,weight='InvR')
 
 

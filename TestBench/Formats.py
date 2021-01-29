@@ -227,7 +227,7 @@ def HWUto(name,t):
   x = t*(((tmax - tmin))/(TrackWord_config[name]['nbins'] - 1)) + tmin  
   return x
 
-def eventDataFrameToPatternFile(event, nlinks=18, nframes=108, doheader=True, startframe=0, weight='pt2'):
+def eventDataFrameToPatternFile(event, nlinks=18, nframes=108, ninitialframes=17, doheader=True, startframe=0, weight='pt2'):
   '''Write a pattern file for an event dataframe.
   Tracks are assigned to links randomly
   '''
@@ -328,27 +328,27 @@ def eventDataFrameToPatternFile(event, nlinks=18, nframes=108, doheader=True, st
 
   links = np.array(links)
   frames = links.transpose()
-  frames = [frame(f, i+startframe+9, 72) for i, f in enumerate(frames)] # +8 because there will be 8 frames of header
+  frames = [frame(f, i+startframe+ninitialframes, 72) for i, f in enumerate(frames)] # +8 because there will be 8 frames of header
 
   ret = []
   if doheader:
     ret = [header(72)]
   
-  return ret + empty_frames(9, startframe, 72) + frames# + empty_frames(16, 8 + nframes, 72)
+  return ret + empty_frames(ninitialframes, startframe, 72) + frames# + empty_frames(16, 8 + nframes, 72)
 
-def writepfile(filename, events, weight='pt2'):
+def writepfile(filename, events, ninitialframes, weight='pt2'):
   doheader = True
   startframe = 0
   with open(filename, 'w') as pfile:
     for i,event in enumerate(events):
       if i > 0:
         doheader = False
-        startframe += 108 + 9 # The data and inter-event gap
-      for frame in eventDataFrameToPatternFile(event, doheader=doheader, startframe=startframe, weight=weight):
+        startframe += 108 + ninitialframes # The data and inter-event gap
+      for frame in eventDataFrameToPatternFile(event, doheader=doheader, startframe=startframe,ninitialframes=ninitialframes,weight=weight):
         pfile.write(frame)
     pfile.close()
 
-def writemultipfile(filename, events, weight='pt2'):
+def writemultipfile(filename, events, ninitialframes,weight='pt2'):
   doheader = True
   startframe = 0
   batches = int(len(events)/7)
@@ -362,8 +362,8 @@ def writemultipfile(filename, events, weight='pt2'):
 
         if i > 0:
           doheader = False
-          startframe += 108 + 9 # The data and inter-event gap
-        for frame in eventDataFrameToPatternFile(event, doheader=doheader, startframe=startframe, weight=weight):
+          startframe += 108 + ninitialframes # The data and inter-event gap
+        for frame in eventDataFrameToPatternFile(event, doheader=doheader, startframe=startframe,ninitialframes=ninitialframes, weight=weight):
           pfile.write(frame)
       pfile.close()
 

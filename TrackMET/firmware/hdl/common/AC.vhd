@@ -6,48 +6,49 @@ LIBRARY ET;
 USE ET.DataType.ALL;
 USE ET.ArrayTypes.ALL;
 
+LIBRARY TrackMET;
+USE TrackMET.constants.all;
+
 ENTITY AC IS
     PORT (clk, reset : IN std_logic := '0';
-          Et  : IN Vector( 0 TO 17 ) :=  NullVector( 18 );
-          SumEx : OUT INTEGER := 0;
-          SumEy : OUT INTEGER := 0
+          Et    : IN EtArray := ( OTHERS => ( OTHERS => '0' ) );
+          SumEx : OUT SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
+          SumEy : OUT SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0')
     );
 END ENTITY AC;
 
 ARCHITECTURE behavioral OF AC IS
 
-    FUNCTION SumPx (EtVector : Vector) RETURN Integer IS
-    VARIABLE temp_px : INTEGER := 0;
+    FUNCTION SumPx (EtVector : EtArray) RETURN SIGNED IS
+    VARIABLE temp_px : SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
     BEGIN
-      FOR i IN EtVector'RANGE LOOP
-        IF EtVector( i ).DataValid THEN
-          temp_px := temp_px + TO_INTEGER(EtVector( i ).Px);
-        ELSE
-          temp_px := temp_px;
-        END IF;
+      FOR i IN 0 TO 17 LOOP
+        temp_px := temp_px + EtVector( i );
       END LOOP;
   
     RETURN temp_px; 
     END FUNCTION SumPx;
   
-    FUNCTION SumPy (EtVector : Vector) RETURN Integer IS
-    VARIABLE temp_py : INTEGER := 0;
+    FUNCTION SumPy (EtVector : EtArray) RETURN SIGNED IS
+    VARIABLE temp_py : SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
     BEGIN
-      FOR i IN EtVector'RANGE LOOP
-        IF EtVector( i ).DataValid THEN
-          temp_py := temp_py + TO_INTEGER(EtVector( i ).Py);
-        ELSE
-          temp_py := temp_py;
-        END IF;
+      FOR i IN 18 TO 35 LOOP
+        temp_py := temp_py + EtVector( i );
       END LOOP;
   
     RETURN temp_py;
     END FUNCTION SumPy;
     
-    SIGNAL signal_px,signal_py,signal_sumx,signal_sumy : INTEGER := 0;
-    SIGNAL Et_Buffer : Vector( 0 TO 17 ) := NullVector( 18 );
-    SIGNAL Reset_Buffer : std_logic := '0';
-    
+    SIGNAL signal_px   : SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
+    SIGNAL signal_py   : SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
+    SIGNAL signal_sumx : SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
+    SIGNAL signal_sumy : SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
+    SIGNAL Et_Buffer   : EtArray := ( OTHERS => ( OTHERS => '0' ) );
+
+    SIGNAL temp_sumx : SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
+    SIGNAL temp_sumy : SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
+    SIGNAL input_px  : SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
+    SIGNAL input_py  : SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
     
     BEGIN
 
@@ -58,26 +59,24 @@ ARCHITECTURE behavioral OF AC IS
 
     PROCESS( clk ) IS
 
-      VARIABLE temp_sumx,temp_sumy : INTEGER := 0;
-      VARIABLE input_px,input_py : INTEGER := 0;
 
     BEGIN
         IF RISING_EDGE(clk) THEN
             IF reset THEN
-                temp_sumx := 0;
-                temp_sumy := 0;
-                input_px := 0;
-                input_py := 0;
+                temp_sumx <= (OTHERS => '0');
+                temp_sumy <= (OTHERS => '0');
+                input_px  <= (OTHERS => '0');
+                input_py  <= (OTHERS => '0');
             ELSE
-                temp_sumx := input_px + temp_sumx;
-                temp_sumy := input_py + temp_sumy;
+                temp_sumx <= input_px + temp_sumx;
+                temp_sumy <= input_py + temp_sumy;
             END IF;
 
             signal_sumx <= temp_sumx;
             signal_sumy <= temp_sumy;
 
-            input_px := signal_px;
-            input_py := signal_py;
+            input_px <= signal_px;
+            input_py <= signal_py;
 
         END IF;
     END PROCESS;
