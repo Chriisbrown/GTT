@@ -23,8 +23,17 @@ From final track to received MET 62 cycles varies
 From final track to Vertex 28 cycles no variation
 From vertex to MET 33 cycles varies
 
-
-
-
+ +-------------------------------------
+ |Module              |Latency(Cycles)|
+ |--------------------+---------------+
+ |LinksToTracks       |       3       |
+ |TrackTransformation |       6       |
+ |TrackSaver          |       3       |
+ |VertexFinder        |      19       |
+ |TrackAssociation    |       5       |
+ |TrackSelection      |       3       |
+ |TrackMET            |      21       | 
+ |ObjectsToLinks      |       1       |
+ +--------------------+---------------+
 
 

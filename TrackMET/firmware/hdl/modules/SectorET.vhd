@@ -35,8 +35,8 @@ ARCHITECTURE rtl OF SectorET IS
   SIGNAL Output : ET.ArrayTypes.Vector( 0 TO 17 ) := ET.ArrayTypes.NullVector( 18 );
 
   PROCEDURE GlobalPhiLUT (SIGNAL TTTrack : IN TTTrack.DataType.tData ;  --Procedure for finding cos and sin of phi
-                          SIGNAL Phix    : OUT SIGNED(12 DOWNTO 0) ;
-                          SIGNAL Phiy    : OUT SIGNED(12 DOWNTO 0) ;
+                          SIGNAL Phix    : OUT SIGNED(9 DOWNTO 0) ; --(2**13 for 2**11 assuming 2**8 -> 2**10 phi LUT))
+                          SIGNAL Phiy    : OUT SIGNED(9 DOWNTO 0) ; --(2**13 for 2**11 assuming 2**8 -> 2**10 phi LUT))
                           SIGNAL Pt      : OUT UNSIGNED( 15 DOWNTO 0 ) ) IS  --Pt pass through to maintain synch with Phi
     VARIABLE GlobalPhi : INTEGER := 0;
     VARIABLE TempPt    : UNSIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
@@ -45,17 +45,17 @@ ARCHITECTURE rtl OF SectorET IS
         TempPt    := TTTrack.pt;
 
         IF GlobalPhi >= PhiBins( 0 ) AND GlobalPhi < PhiBins( 1 ) THEN
-          Phix <= TO_SIGNED(TrigArray( GlobalPhi )( 0 ),13);  
-          Phiy <= TO_SIGNED(TrigArray( GlobalPhi )( 1 ),13); 
+          Phix <= TO_SIGNED(TrigArray( GlobalPhi ),10);   --(2**13 for 2**11 assuming 2**8 -> 2**10 phi LUT))
+          Phiy <= TO_SIGNED(TrigArray( PhiBins( 1 ) - 1 - GlobalPhi ),10); 
         ELSIF GlobalPhi >= PhiBins( 1 ) AND GlobalPhi < PhiBins( 2 ) THEN
-          Phix <= TO_SIGNED(-TrigArray( GlobalPhi - PhiBins( 1 ) )( 1 ),13); 
-          Phiy <= TO_SIGNED(TrigArray(  GlobalPhi - PhiBins( 1 ) )( 0 ),13); 
+          Phix <= TO_SIGNED(-TrigArray( PhiBins( 2 ) - 1 - GlobalPhi  ),10); 
+          Phiy <= TO_SIGNED(TrigArray(  GlobalPhi - PhiBins( 1 ) ),10); 
         ELSIF GlobalPhi >= PhiBins( 2 ) AND GlobalPhi < PhiBins( 3 ) THEN
-          Phix <= TO_SIGNED(-TrigArray( GlobalPhi - PhiBins( 2 ) )( 0 ),13);  
-          Phiy <= TO_SIGNED(-TrigArray( GlobalPhi - PhiBins( 2 ) )( 1 ),13); 
+          Phix <= TO_SIGNED(-TrigArray( GlobalPhi - PhiBins( 2 ) ),10);  
+          Phiy <= TO_SIGNED(-TrigArray( PhiBins( 3 ) - 1 -GlobalPhi  ),10); 
         ELSIF GlobalPhi >= PhiBins( 3 ) AND GlobalPhi < PhiBins( 4 ) THEN
-          Phix <= TO_SIGNED(TrigArray(  GlobalPhi - PhiBins( 3 ) )( 1 ),13); 
-          Phiy <= TO_SIGNED(-TrigArray( GlobalPhi - PhiBins( 3 ) )( 0 ),13); 
+          Phix <= TO_SIGNED(TrigArray( PhiBins( 4 ) - 1 - GlobalPhi ),10); 
+          Phiy <= TO_SIGNED(-TrigArray( GlobalPhi - PhiBins( 3 )  ),10); 
         END IF;
         Pt <= TempPt;
   END PROCEDURE GlobalPhiLUT;
@@ -68,8 +68,8 @@ BEGIN
   SIGNAL vldTrack : TTTrack.DataType.tData := TTTrack.DataType.cNull;
   
   SIGNAl Pt_Buffer   : UNSIGNED( 15 DOWNTO 0 ) := ( OTHERS => '0' );  --Temporaries for procedure outputs
-  SIGNAL Phix_Buffer : SIGNED  ( 12 DOWNTO 0 ) := ( OTHERS => '0' );
-  SIGNAL Phiy_Buffer : SIGNED  ( 12 DOWNTO 0 ) := ( OTHERS => '0' );
+  SIGNAL Phix_Buffer : SIGNED  ( 9 DOWNTO 0 ) := ( OTHERS => '0' );  --(2**13 for 2**11 assuming 2**8 -> 2**10 phi LUT))
+  SIGNAL Phiy_Buffer : SIGNED  ( 9 DOWNTO 0 ) := ( OTHERS => '0' );
 
   SIGNAL reset : STD_LOGIC := '0';  --MAC reset signal
   SIGNAL SumPx : SIGNED  ( 15 DOWNTO 0 ) := ( OTHERS => '0' );  --MAC outputs

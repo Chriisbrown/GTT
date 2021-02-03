@@ -161,9 +161,6 @@ PORT MAP(
   clk => clk ,
   VertexPipeIn => PrimaryVertexPipe,
   METPipeIn => GlobalEtPipe,
-  SectorMETPipeIn => EtPipe,
-  --ReadAddrs => ReadAddrs,
-  --WriteAddrs => WriteAddrs,
   linksOut => LinksOut
 );
 

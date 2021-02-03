@@ -1,20 +1,20 @@
 from fwGTT import emulation
 from swGTT import simulation
-from datareader import fw_sim_reader,fw_hw_reader,fw_sim4link_reader
+from datareader import fw_sim_reader,fw_hw_reader
 from scipy import stats
 import matplotlib.pyplot as plt
 import mplhep as hep
 plt.style.use(hep.cms.style.ROOT)
 
-event_num = 900
-
-emulation_df = emulation(event_num,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object_300k.root")
+event_num = 1000
+name = "performance_plots/finalGTT/"
+emulation_df = emulation(event_num,"/home/cb719/Documents/L1Trigger/GTT/EMP/fw-work/src/GTT/DataFiles/TT_object_300k.root")
 print(".........Emulated...........")
-simulation_df = simulation(event_num,"/home/cb719/Documents/L1Trigger/GTT/EMP/DataFiles/TT_object_300k.root")
+simulation_df = simulation(event_num,"/home/cb719/Documents/L1Trigger/GTT/EMP/fw-work/src/GTT/DataFiles/TT_object_300k.root")
 print("........Simulated...........")
-fw_sim_df = fw_sim4link_reader(event_num,"/home/cb719/Documents/L1Trigger/GTT/EMP/TestBench/output_files/sim/FullGTT")
+fw_sim_df = fw_sim_reader(event_num,"/home/cb719/Documents/L1Trigger/GTT/EMP/fw-work/src/GTT/TestBench/output_files/sim/FullGTT")
 print(".....FPGA Sim file read.........")
-fw_hw_df = fw_hw_reader(event_num,"/home/cb719/Documents/L1Trigger/GTT/EMP/TestBench/output_files/fpga")
+fw_hw_df = fw_hw_reader(event_num,"/home/cb719/Documents/L1Trigger/GTT/EMP/fw-work/src/GTT/TestBench/output_files/fpga")
 print(".....FPGA  file read.........")
 
 
@@ -24,10 +24,8 @@ MET_df_old.insert(0,"fpga_MET",fw_hw_df["fpga_MET"],True)
 
 vtx_df = fw_sim_df[["fw_z0","fw_z0_weight"]].join(fw_hw_df[["fpga_z0","fpga_z0_weight"]].join(emulation_df[["EM_Vertex","EM_Vtx_Weight"]].join(simulation_df[["SW_Vertex","SW_Vtx_Weight","Pv_z0","Pv_weight","MCVertex"]])))
 
-
-print(vtx_df.head())
 #for i in range(len(MET_df_old)):
-#  print(MET_df_old[["EM_MET","fw_MET"]].iloc[i])
+  #print(MET_df_old[["EM_MET","fw_MET","fpga_MET"]].iloc[i])
   #print(vtx_df.iloc[i])
 MET_df_old2 = MET_df_old[MET_df_old["TrkMET"] < 1000]#375]
 MET_df = MET_df_old2[MET_df_old2["fw_MET"] < 1000]#600]
@@ -41,10 +39,10 @@ vtx_df["VTX_SW_error"] = abs(vtx_df["fw_z0"] - vtx_df["SW_Vertex"])
 MET_df["MET_fpga_error"] = abs(MET_df["fw_MET"] - MET_df["fpga_MET"])
 vtx_df["VTX_fpga_error"] = abs(vtx_df["fw_z0"] - vtx_df["fpga_z0"])
 
-print(MET_df.nlargest(10,'MET_EM_error'))
-print(vtx_df.nlargest(10,'VTX_EM_error'))
+print(MET_df.nlargest(10,'MET_fpga_error'))
+print(vtx_df.nlargest(10,'VTX_fpga_error'))
 
-name = "performance_plots/newMET/"
+
 
 #=========================================Emulation Vertex========================================================#
 fig,ax = plt.subplots(1,2,figsize=(18,9))
@@ -118,6 +116,7 @@ ax[1].hist((vtx_df["fpga_z0"]-vtx_df["fw_z0"]),histtype="step",bins=17,range=(-1
 ax[1].grid()
 plt.tight_layout()
 plt.savefig(name+"vertexfpgasimvsfpga.png")
+
 
 
 

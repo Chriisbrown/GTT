@@ -1,42 +1,62 @@
 import numpy as np
-from Formats import TrackWord_config
-from Formats import toHWU,HWUto
 import util
+import math
 
-tanl = np.linspace(0,7,2**16)
-#eta = np.linspace(-2.5,2.5,2**20)
-etagrid = np.zeros([2**3,2**12],dtype=np.int32)
+int_precision = 2**3
+frac_precision = 2**7
+eta_precision = int_precision*frac_precision
 
-eta=[]
-
+etagrid = np.zeros([int_precision,frac_precision],dtype=np.int32)
+newtanl_intbins  = 7/(int_precision-1)
+newtanl_fracbins = 1/(frac_precision -1) 
+neweta_bins      = 2.644120761058629/(eta_precision-1)
+tanl = np.linspace(0,7,eta_precision)
+    #### POPULATE LUT ########
 for tanl_i in tanl:
     eta_i = -np.log(np.tan(0.5*np.arctan(1/abs(tanl_i))))
+    tanl_int = math.modf(tanl_i)[1]
+    tanl_frac = math.modf(tanl_i)[0]
 
-    tanl_int,tanl_frac = toHWU("TanL",tanl_i)
+    hwu_tanl_int  = int(tanl_int/newtanl_intbins)
+    hwu_tanl_frac = int(tanl_frac/newtanl_fracbins)
 
     try:
-        eta_i = int(toHWU("HWUeta",eta_i) )
+        hwu_eta = int(eta_i/neweta_bins)
     except ValueError:
         eta_i = 0
-    eta.append(eta_i)
-    etagrid[int(tanl_int)][tanl_frac] = eta_i
+
+
+
+    etagrid[hwu_tanl_int][hwu_tanl_frac] = hwu_eta
     
 
-f = open("TanLUT.txt", "w")
-for i in range((2**12)):
+f = open("LUTS/TanLUT.txt", "w")
+for i in range(frac_precision):
   f.write("(")
-  line = [(str(etagrid[j][i])+",") for j in range(2**3)]
+  line = [(str(etagrid[j][i])+",") for j in range(2**3-1)]
   line[-1] = line[-1][:-1]
   [f.write(l) for l in line]
   f.write("),\n")
 
 f.close()
 
+f = open("LUTS/etabins.txt", "w")
+f.write(str(int(0/neweta_bins))+"\n"
+           +str(int(0.7/neweta_bins))+"\n"
+           +str(int(1.0/neweta_bins))+"\n"
+           +str(int(1.2/neweta_bins))+"\n"
+           +str(int(1.6/neweta_bins))+"\n"
+           +str(int(2.0/neweta_bins))+"\n"
+           +str(int(2.4/neweta_bins)))
+  
+f.close()
+
+
 #import matplotlib.pyplot as plt
 #plt.scatter(tanl,eta)
 #plt.show() 
 
-
+'''
 eta_test = np.linspace(-2.5,2.5,2**16)
 tanl_test = util.tanL(eta_test)
 TanLUTf = open("TanLUT.txt")
@@ -70,3 +90,4 @@ for i,tanl in enumerate(tanl_test):
 import matplotlib.pyplot as plt
 plt.scatter(eta_test,LUTeta)
 plt.show() 
+'''

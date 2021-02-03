@@ -2,6 +2,7 @@ import bitstring as bs
 import random
 import pandas
 import numpy as np
+from TanLUT import frac_precision
 
 TrackWord_config = {'InvR':      {'nbins':2**15,'min':-0.00855,'max':0.00855,"Signed":True ,'split':(15,0)},
                     'Phi':       {'nbins':2**12,'min':-1.026,  'max':1.026,  "Signed":False,'split':(11,0)},
@@ -399,7 +400,7 @@ def printTracks(event,filename,hwu=True,fwpt=True,LUTeta=True):
         repr('Pt').rjust(15)+repr('Eta').rjust(15)+"\n"))
 
   if LUTeta:
-    TanLUTf = open("TanLUT.txt")
+    TanLUTf = open("LUTS/TanLUT.txt")
     TanLUTlines = TanLUTf.readlines()
 
   total_tracks = 0
@@ -428,6 +429,7 @@ def printTracks(event,filename,hwu=True,fwpt=True,LUTeta=True):
               
           if LUTeta:
             tanl_int,tanl_frac = toHWU("TanL",event["TanL"][trk_i])
+            tanl_frac = tanl_frac*frac_precision/2**12
             temp_str = TanLUTlines[int(tanl_frac)].split(",")[int(tanl_int)]
             if temp_str[0] == '(':
               int_eta = int(temp_str[1:])

@@ -67,10 +67,10 @@ ARCHITECTURE rtl OF TrackTransform IS
 -- -------------------------------------------------------------------------
   PROCEDURE GlobalPhi (SIGNAL TTTrack : IN InTTTrack.DataType.tData;  --Procedure for chaning sector phi to global phi using LUT
                        SIGNAL Sector  : IN INTEGER;
-                       SIGNAL Phi     : OUT UNSIGNED( 12 DOWNTO 0 )) IS
+                       SIGNAL Phi     : OUT UNSIGNED( 9 DOWNTO 0 )) IS --(2**13 for 2**11 assuming 2**8 -> 2**10 phi LUT)
   VARIABLE TempPhi : INTEGER := 0;
   BEGIN
-    TempPhi   := TO_INTEGER(TTTrack.phi) + Phi_shift(Sector) - PhiShift;  --CONSTANTS TODO place in constants file
+    TempPhi   := TO_INTEGER(TTTrack.phi)/8 + Phi_shift(Sector) - PhiShift;  --CONSTANTS TODO place in constants file (assuming 2**8 phi LUT 2**11/2**8)
     IF TempPhi < PhiMin THEN
       TempPhi := TempPhi + PhiMax;
     ELSIF TempPhi > PhiMax THEN
@@ -79,18 +79,18 @@ ARCHITECTURE rtl OF TrackTransform IS
       TempPhi := TempPhi;
     END IF;
 
-  Phi <= TO_UNSIGNED(TempPhi,13);
+  Phi <= TO_UNSIGNED(TempPhi,10); --(2**13 for 2**11 assuming 2**8 -> 2**10 phi LUT)
 
   END PROCEDURE GlobalPhi;
 -- -------------------------------------------------------------------------
   PROCEDURE TanLookup (SIGNAL TTTrack : IN InTTTrack.DataType.tData;  --Procedure for chaning TanL to eta based on a LUT
-                       SIGNAL eta : OUT UNSIGNED( 15 DOWNTO 0 )) IS
+                       SIGNAL eta : OUT UNSIGNED( 9 DOWNTO 0 )) IS  --(2**16 full eta using 2**10 eta LUT)
     VARIABLE tanL_lut_0 : INTEGER := 0;
     VARIABLE tanL_lut_1 : INTEGER := 0;
     BEGIN
-        tanL_lut_0   := TO_INTEGER( TTTrack.tanlfrac );
+        tanL_lut_0   := TO_INTEGER( TTTrack.tanlfrac )/32; --(2**16 full eta using 2**11 2**15/2**10 eta LUT)
         tanL_lut_1  := abs( TO_INTEGER( TTTrack.tanlint ) );
-        eta  <= TO_UNSIGNED(TanLLUT( tanL_lut_0 )( tanL_lut_1 ),16);
+        eta  <= TO_UNSIGNED(TanLLUT( tanL_lut_0 )( tanL_lut_1 ),10);
 
   END PROCEDURE TanLookup;
 -- -------------------------------------------------------------------------
@@ -103,8 +103,8 @@ ARCHITECTURE rtl OF TrackTransform IS
   TYPE   BendChi2Array   IS ARRAY (0 to track_delay - 1) OF UNSIGNED( 2 DOWNTO 0 );
   TYPE   HitpatternArray IS ARRAY (0 to track_delay - 1) OF UNSIGNED( 6 DOWNTO 0 );
   TYPE   Z0Array         IS ARRAY (0 to track_delay - 1) OF UNSIGNED( 7 DOWNTO 0 );
-  TYPE   phiArray        IS ARRAY (0 to track_delay - 1) OF UNSIGNED( 12 DOWNTO 0 ); 
-  TYPE   etaArray        IS ARRAY (0 to track_delay - 1) OF UNSIGNED( 15 DOWNTO 0 );  
+  TYPE   phiArray        IS ARRAY (0 to track_delay - 1) OF UNSIGNED( 9 DOWNTO 0 );  --(2**13 for 2**11 assuming 2**8 -> 2**10 phi LUT)
+  TYPE   etaArray        IS ARRAY (0 to track_delay - 1) OF UNSIGNED( 9 DOWNTO 0 ); --(2**16 full eta using 2**11 eta LUT) 
 
 BEGIN
   g1              : FOR i IN 0 TO 17 GENERATE
@@ -126,10 +126,10 @@ BEGIN
     SIGNAL rescaledZ0       : UNSIGNED( 7 DOWNTO 0 ) := (OTHERS => '0' );               
     SIGNAL z0_array         : Z0Array                := ( OTHERS => (OTHERS => '0' ) );
 
-    SIGNAL rescaledPhi      : UNSIGNED( 12 DOWNTO 0 ) := (OTHERS => '0' );  
+    SIGNAL rescaledPhi      : UNSIGNED( 9 DOWNTO 0 ) := (OTHERS => '0' );  --(2**13 for 2**11 assuming 2**8 -> 2**10 phi LUT)
     SIGNAL phi_array        : phiArray                := ( OTHERS => (OTHERS => '0' ) );
 
-    SIGNAL eta              : UNSIGNED( 15 DOWNTO 0 ) := (OTHERS => '0' );                            
+    SIGNAL eta              : UNSIGNED( 9 DOWNTO 0 ) := (OTHERS => '0' );   --(2**16 full eta using 2**11 eta LUT)                         
     SIGNAL eta_array        : etaArray                := ( OTHERS => (OTHERS => '0' ) );
 
     SIGNAL Chi2rphi_array   : Chi2rphiArray   := ( OTHERS => (OTHERS => '0' ) );

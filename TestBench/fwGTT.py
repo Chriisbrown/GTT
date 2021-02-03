@@ -5,6 +5,7 @@ from Formats import toHWU,HWUto,printTracks
 import math
 from cosineLUT import lut_precision,hwu_binsize
 import specificlinkfile
+from TanLUT import frac_precision
 
 from swGTT import swTrackToVertex, swTrackSelection, swTrackMET
 
@@ -55,12 +56,19 @@ def fwFastHisto(event, ret_all=False, weight='pt',fwpt=True):
 
 def fwTrackToVertex(event,vertex):
     in_window = []
-    TanLUTf = open("TanLUT.txt")
+    TanLUTf = open("LUTS/TanLUT.txt")
     TanLUTlines = TanLUTf.readlines()
+    TanLUTf.close()
+
+    etabinsf = open("LUTS/etabins.txt")
+    etabinsflines = etabinsf.readlines()
+    etabinsf.close()
+
     bin_width = 30/(2**8-1)
     
     for i in range(len(event["eta"])):
         tanl_int,tanl_frac = toHWU("TanL",event["TanL"][i])
+        tanl_frac = tanl_frac*frac_precision/2**12
         temp_str = TanLUTlines[int(tanl_frac)].split(",")[int(tanl_int)]
 
         if temp_str[0] == '(':
@@ -79,21 +87,21 @@ def fwTrackToVertex(event,vertex):
         #HWUz = round(sign*(abs(z0[0]*255/(30)) + z0[1]*255/(63*30)) + 255/2)  #true fw
         bin_width = 30/(2**8-1)
         
-        if ( eta>= toHWU("HWUeta",0)  and eta< toHWU("HWUeta",0.7) ): 
+        if ( eta>= int(etabinsflines[0])  and eta< int(etabinsflines[1]) ): 
           DeltaZ = int(0.4/bin_width)
-        elif (  eta >= toHWU("HWUeta",0.7)  and eta< toHWU("HWUeta",1.0) ):  
+        elif (  eta >= int(etabinsflines[1])  and eta< int(etabinsflines[2]) ):  
           DeltaZ = int(0.6/bin_width)
 
-        elif ( eta >= toHWU("HWUeta",1.0)  and eta< toHWU("HWUeta",1.2) ):  
+        elif ( eta >= int(etabinsflines[2])  and eta< int(etabinsflines[3]) ):  
           DeltaZ = int(0.76/bin_width)
 
-        elif ( eta >= toHWU("HWUeta",1.2) and eta< toHWU("HWUeta",1.6) ): 
+        elif ( eta >= int(etabinsflines[3]) and eta< int(etabinsflines[4]) ): 
           DeltaZ = int(1.0/bin_width)
 
-        elif ( eta >= toHWU("HWUeta",1.6)  and eta < toHWU("HWUeta",2.0)  ):  
+        elif ( eta >= int(etabinsflines[4])  and eta < int(etabinsflines[5])  ):  
           DeltaZ = int(1.7/bin_width)
 
-        elif ( eta >= toHWU("HWUeta",2.0)  and eta <= toHWU("HWUeta",2.4)  ):
+        elif ( eta >= int(etabinsflines[5])  and eta <= int(etabinsflines[6])  ):
           DeltaZ = int(2.2/bin_width)
         if ( abs(HWUz - toHWU('HWUz0',vertex)) <= DeltaZ):
             in_window.append(i)
@@ -185,11 +193,21 @@ def fwCordicSqrt(x,y,n_steps=4):
   return(int(phi),int(x * 39))
 
 def fwTrackMET(event,fwpt=True,Cordic=True):
-  shiftLUTf = open("ShiftLUT.txt")
+  shiftLUTf = open("LUTS/ShiftLUT.txt")
   shiftLUTlines = shiftLUTf.readlines()
+  shiftLUTf.close()
 
-  TrigLUTf = open("TrigLUT.txt")
+  TrigLUTf = open("LUTS/TrigLUT.txt")
   TrigLUTlines = TrigLUTf.readlines()
+  TrigLUTf.close()
+
+  PhiBinsf = open("LUTS/PhiBins.txt")
+  PhiBinslines = PhiBinsf.readlines()
+  PhiBinsf.close()
+
+  PhiParamsf = open("LUTS/PhiParams.txt")
+  PhiParamslines = PhiParamsf.readlines()
+  PhiParamsf.close()
 
   sumpx_sectors = np.zeros([9])
   sumpy_sectors = np.zeros([9])
@@ -203,38 +221,45 @@ def fwTrackMET(event,fwpt=True,Cordic=True):
           pt = toHWU("Pt",event["pt"][i])/2**6
         
         shift = int(shiftLUTlines[event["phiSector"][i]][1:-3])
-        phi = toHWU("Phi",event["Sector_Phi"][i]) + shift
-        phi = phi -(2**11)/2
+        
+        phi = toHWU("Phi",event["Sector_Phi"][i])
+        phi = phi*lut_precision/2**11 + shift
+        phi = int(phi - int(PhiParamslines[0]))
 
-        if phi < 0:
-            phi = phi + 2*np.pi/hwu_binsize
-        elif phi > 2*np.pi/hwu_binsize:
-            phi = phi - 2*np.pi/hwu_binsize  
+        if (phi < int(PhiParamslines[1])):
+            phi = int(phi + int(PhiParamslines[2]))
+        elif phi > int(PhiParamslines[2]):
+            phi = int(phi - int(PhiParamslines[2] ))
 
-        #print(pt,phi)
+        if (phi >= int(PhiBinslines[0])  and phi < int(PhiBinslines[1]) ):
+            CosTrigLUT = TrigLUTlines[phi].split(',')
+            SinTrigLUT = TrigLUTlines[int(PhiBinslines[1])-1 - phi].split(',')
+            sumpx_sectors[sector] += int(pt*int(CosTrigLUT[0]))
+            sumpy_sectors[sector] += int(pt*int(SinTrigLUT[0]))
 
-        if (phi >= 0  and phi < int(np.pi/(2*hwu_binsize))):
-            TrigLUT = TrigLUTlines[int(phi)].split(',')
-            sumpx_sectors[sector] += int(pt*int(TrigLUT[0][1:]))#/(lut_precision*2))
-            sumpy_sectors[sector] += int(pt*int(TrigLUT[1][:-1]))#/(lut_precision*2))
-        elif (phi >= int(np.pi/(2*hwu_binsize))  and phi < int(np.pi/(hwu_binsize))):
-            TrigLUT = TrigLUTlines[int(phi-np.pi/(2*hwu_binsize))].split(',')
-            sumpx_sectors[sector] -= int(pt*int(TrigLUT[1][:-1]))#/(lut_precision*2))
-            sumpy_sectors[sector] += int(pt*int(TrigLUT[0][1:]))#/(lut_precision*2))
-        elif (phi >= int(np.pi/(hwu_binsize) )  and phi < int(3*np.pi/(2*hwu_binsize))):
-            TrigLUT = TrigLUTlines[int(phi-np.pi/(hwu_binsize))].split(',')
-            sumpx_sectors[sector] -= int(pt*int(TrigLUT[0][1:]))#/(lut_precision*2))
-            sumpy_sectors[sector] -= int(pt*int(TrigLUT[1][:-1]))#/(lut_precision*2))
-        elif (phi >= int(3*np.pi/(2*hwu_binsize) )  and phi < int(2*np.pi/(hwu_binsize))):
-            TrigLUT = TrigLUTlines[int(phi-3*np.pi/(2*hwu_binsize) )].split(',')
-            sumpx_sectors[sector] += int(pt*int(TrigLUT[1][:-1]))#/(lut_precision*2))
-            sumpy_sectors[sector] -= int(pt*int(TrigLUT[0][1:]))#/(lut_precision*2))
+        elif (phi >= int(PhiBinslines[1])  and phi < int(PhiBinslines[2])):
+            CosTrigLUT = TrigLUTlines[phi-int(PhiBinslines[1])].split(',')
+            SinTrigLUT = TrigLUTlines[int(PhiBinslines[2])-1 - phi].split(',')
+            sumpx_sectors[sector] -= int(pt*int(SinTrigLUT[0]))
+            sumpy_sectors[sector] += int(pt*int(CosTrigLUT[0]))
 
-  print([int(s/2**12) for s in (sumpx_sectors)])
-  print([int(s/2**12) for s in (sumpy_sectors)])
+        elif (phi >= int(PhiBinslines[2])  and phi < int(PhiBinslines[3])):
+            CosTrigLUT = TrigLUTlines[phi-int(PhiBinslines[2])].split(',')
+            SinTrigLUT = TrigLUTlines[int(PhiBinslines[3])-1 - phi].split(',')
+            sumpx_sectors[sector] -= int(pt*int(CosTrigLUT[0]))
+            sumpy_sectors[sector] -= int(pt*int(SinTrigLUT[0]))
 
-  sumpx = int(np.sum(sumpx_sectors)/2**12)
-  sumpy = int(np.sum(sumpy_sectors)/2**12)
+        elif (phi >= int(PhiBinslines[3])  and phi < int(PhiBinslines[4])):
+            CosTrigLUT = TrigLUTlines[phi-int(PhiBinslines[3]) ].split(',')
+            SinTrigLUT = TrigLUTlines[int(PhiBinslines[4])-1 - phi ].split(',')
+            sumpx_sectors[sector] += int(pt*int(SinTrigLUT[0]))
+            sumpy_sectors[sector] -= int(pt*int(CosTrigLUT[0]))
+
+  #print([int(s/(lut_precision*2)) for s in (sumpx_sectors)])
+  #print([int(s/(lut_precision*2)) for s in (sumpy_sectors)])
+
+  sumpx = int(np.sum(sumpx_sectors)/(lut_precision*2))
+  sumpy = int(np.sum(sumpy_sectors)/(lut_precision*2))
 
   if Cordic:
     MET_phi,MET = fwCordicSqrt(int(sumpx),int(sumpy),4)
@@ -242,7 +267,7 @@ def fwTrackMET(event,fwpt=True,Cordic=True):
     MET = int(MET/2**6)
     MET = MET/2**5
 
-    print(MET)
+    #print(MET)
 
   else:
     MET = int(np.sqrt(sumpx*sumpx+sumpy*sumpy))/2**5

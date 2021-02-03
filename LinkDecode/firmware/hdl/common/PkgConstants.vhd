@@ -33,9 +33,9 @@ PACKAGE constants IS
   CONSTANT ZFracScale : INTEGER_VECTOR := (8,64);
   CONSTANT ZConstant : INTEGER := 128;
 
-  CONSTANT PhiShift : INTEGER := 1024;
+  CONSTANT PhiShift : INTEGER := 128;
   CONSTANT PhiMin : INTEGER := 0;
-  CONSTANT PhiMax : INTEGER := 6268;
+  CONSTANT PhiMax : INTEGER := 780;
 
   CONSTANT InvRtoPtNormalisation : INTEGER := 700573;
   CONSTANT FracScale : INTEGER := 262144;
