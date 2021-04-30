@@ -1,3 +1,2 @@
-src --vhdl2008 -l TrackSelection PkgConstants.vhd
 src --vhdl2008 -l TrackSelection TrackSelection.vhd
 src --vhdl2008 -l TrackSelection TrackToVertexAssoc.vhd

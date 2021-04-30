@@ -91,3 +91,32 @@ import matplotlib.pyplot as plt
 plt.scatter(eta_test,LUTeta)
 plt.show() 
 '''
+
+eta_precision = 2**10
+
+etagrid = np.zeros([eta_precision],dtype=np.int32)
+newtanl_intbins  = 8/(eta_precision-1)
+neweta_bins      = 2.644120761058629/(eta_precision-1)
+tanl = np.linspace(0,8,eta_precision)
+    #### POPULATE LUT ########
+for tanl_i in tanl:
+    eta_i = -np.log(np.tan(0.5*np.arctan(1/abs(tanl_i))))
+
+    hwu_tanl = int(tanl_i/newtanl_intbins)
+
+    try:
+        hwu_eta = int(eta_i/neweta_bins)
+    except ValueError:
+        eta_i = 0
+
+
+
+    etagrid[hwu_tanl] = hwu_eta
+    
+
+f = open("LUTS/TanLUT.txt", "w")
+for i in range(eta_precision):
+  f.write(str(etagrid[i]))
+  f.write(",\n")
+
+f.close()

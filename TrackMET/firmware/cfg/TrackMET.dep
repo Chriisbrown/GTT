@@ -1,6 +1,6 @@
 src --vhdl2008 -l TrackMET common/PkgConstants.vhd
-src --vhdl2008 -l TrackMET common/CordicSqrt.vhd
 src --vhdl2008 -l TrackMET common/ROMConstants.vhd
+src --vhdl2008 -l TrackMET common/CordicSqrt.vhd
 src --vhdl2008 -l TrackMET common/AC.vhd
 src --vhdl2008 -l TrackMET common/MAC.vhd
 src --vhdl2008 -l TrackMET modules/SectorET.vhd

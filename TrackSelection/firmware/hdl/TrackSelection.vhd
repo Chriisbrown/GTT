@@ -8,12 +8,13 @@ LIBRARY TTTrack;
 USE TTTrack.DataType;
 USE TTTrack.ArrayTypes;
 
+LIBRARY GTT;
+USE GTT.GTTconfig.ALL;
+
 LIBRARY Utilities;
 USE Utilities.debugging.ALL;
 USE Utilities.Utilities.ALL;
 
-LIBRARY TrackSelection;
-USE TrackSelection.constants.ALL;
 
 -- -------------------------------------------------------------------------
 ENTITY TrackSelection IS
@@ -37,10 +38,10 @@ ARCHITECTURE rtl OF TrackSelection IS
   RETURN temp_count >= MaxNstub; 
   END FUNCTION Nstub;
 
-  SIGNAL Output : TTTrack.ArrayTypes.Vector( 0 TO 17 ) := TTTrack.ArrayTypes.NullVector( 18 );
+  SIGNAL Output : TTTrack.ArrayTypes.Vector( 0 TO NumInputLinks - 1 ) := TTTrack.ArrayTypes.NullVector( NumInputLinks );
   
 BEGIN
-  g1              : FOR i IN 0 TO 17 GENERATE
+  g1 : FOR i IN 0 TO NumInputLinks - 1 GENERATE
 
     SIGNAL l1TTTrack      : TTTrack.DataType.tData := TTTrack.DataType.cNull;
 
@@ -58,9 +59,9 @@ BEGIN
         ELSIF l1TTTrack.DataValid THEN
           IF    ( Nstub( STD_LOGIC_VECTOR( l1TTTrack.Hitpattern ) ) ) 
             AND ( TO_INTEGER( l1TTTrack.BendChi2 ) < MaxBendChi2  ) 
-            AND ( TO_INTEGER( l1TTTrack.Chi2rphi ) + TO_INTEGER( l1TTTrack.Chi2rz ) <= MaxChi2Sum ) 
-            AND ( TO_INTEGER( l1TTTrack.Chi2rphi ) <= MaxSplitChi2 ) 
-            AND ( TO_INTEGER( l1TTTrack.Chi2rz   ) <= MaxSplitChi2 ) 
+            --AND ( TO_INTEGER( l1TTTrack.Chi2rphi ) + TO_INTEGER( l1TTTrack.Chi2rz ) <= MaxChi2Sum ) 
+            AND ( TO_INTEGER( l1TTTrack.Chi2rphi ) < MaxSplitChi2 ) 
+            AND ( TO_INTEGER( l1TTTrack.Chi2rz   ) < MaxSplitChi2 ) 
             AND ( TO_INTEGER( l1TTTrack.pt ) >= MaxTrackPt ) THEN  
               Track_vld := TRUE;
           END IF;

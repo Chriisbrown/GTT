@@ -24,6 +24,10 @@ USE STD.TEXTIO.ALL;
 
 LIBRARY Utilities;
 USE Utilities.Utilities.ALL;
+
+LIBRARY GTT;
+USE GTT.GTTconfig.ALL;
+USE GTT.GTTDataFormats.ALL;
 -- -------------------------------------------------------------------------
 
 -- -------------------------------------------------------------------------
@@ -31,10 +35,10 @@ PACKAGE DataType IS
 
 -- -------------------------------------------------------------------------       
   TYPE tData IS RECORD
-    Z0           : UNSIGNED( 7 DOWNTO 0 );
-    Weight       : UNSIGNED( 15 DOWNTO 0 );
+    Z0           : UNSIGNED( VertexZ0Width - 1 DOWNTO 0 );
+    Weight       : UNSIGNED(       PtWidth - 1 DOWNTO 0 );
 -- Utility field, used for the key in the distribution server and the row index in the histogram
-    SortKey      : INTEGER RANGE 0 TO 255;
+    SortKey      : INTEGER RANGE 0 TO MaxZ0;
 -- -------------------------------------------------------------------------       
     --MaximaOffset : INTEGER RANGE -7 TO 7;
 -- -------------------------------------------------------------------------       
@@ -60,7 +64,7 @@ PACKAGE DataType IS
 --FV : integer;
   END RECORD;
 
-  CONSTANT bitloc                      : tFieldLocations := ( 0 , 7 , 8 , 23 ); --, 24, 31);
+  CONSTANT bitloc                      : tFieldLocations := ( 0 , VertexZ0Width - 1 , VertexZ0Width , VertexZ0Width + PtWidth - 1 ); --, 24, 31);
 --CONSTANT cNull : tData := ( ( OTHERS => '0' ) , ( OTHERS => '0' ) , ( OTHERS => '0' ) , 0 , -- S , X , Y , N
 --  0 , -7 , -- SortKey , MaximaOffset
 --  FALSE , FALSE ); -- DataValid , FrameValid 

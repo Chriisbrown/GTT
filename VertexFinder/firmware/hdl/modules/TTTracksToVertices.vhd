@@ -33,6 +33,9 @@ LIBRARY Vertex;
 USE Vertex.DataType;
 USE Vertex.ArrayTypes;
 
+LIBRARY GTT;
+USE GTT.GTTconfig.ALL;
+
 LIBRARY TTTrack;
 USE TTTrack.DataType;
 USE TTTrack.ArrayTypes;
@@ -54,12 +57,12 @@ END TTTracksToVertices;
 -- -------------------------------------------------------------------------
 -- -------------------------------------------------------------------------
 ARCHITECTURE rtl OF TTTracksToVertices IS
-  SIGNAL Output : Vertex.ArrayTypes.Vector( 0 TO 17 ) := Vertex.ArrayTypes.NullVector( 18 );
+  SIGNAL Output : Vertex.ArrayTypes.Vector( 0 TO NumInputLinks - 1 ) := Vertex.ArrayTypes.NullVector( NumInputLinks );
   
 BEGIN
 
 -- -------------------------------------------------------------------------
-  g1              : FOR i IN 0 TO 17 GENERATE
+  g1              : FOR i IN 0 TO NumInputLinks - 1 GENERATE
     SIGNAL l1TTTrack    : TTTrack.DataType.tData := TTTrack.DataType.cNull;
 
   BEGIN

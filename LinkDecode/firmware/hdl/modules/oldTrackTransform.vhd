@@ -5,7 +5,6 @@ USE IEEE.NUMERIC_STD.ALL;
 
 LIBRARY GTT;
 USE GTT.GTTconfig.ALL;
-USE GTT.GTTDataFormats.ALL;
 
 LIBRARY InTTTrack;
 USE InTTTrack.DataType;
@@ -43,21 +42,38 @@ ARCHITECTURE rtl OF TrackTransform IS
   SIGNAL Output : TTTrack.ArrayTypes.Vector( 0 TO NumInputLinks - 1 ) := TTTrack.ArrayTypes.NullVector( NumInputLinks );
 
   PROCEDURE RescaleZ0 (SIGNAL TTTrack : IN InTTTrack.DataType.tData;   --Procedure rescaling Z for vertex finder
-                       SIGNAL z0      : OUT UNSIGNED(VertexZ0Width - 1 DOWNTO 0)) IS
+                       SIGNAL z0      : OUT UNSIGNED(7 DOWNTO 0)) IS
     VARIABLE tmp_z : INTEGER := 0;
 
     BEGIN
-    --tmp_z := SHIFT_RIGHT(TTTrack.Z0,TrackZ0Scale);
-    z0 <= TO_UNSIGNED(TO_INTEGER(SHIFT_RIGHT(TTTrack.Z0,TrackZ0Scale)),VertexZ0Width);
+    IF TTTrack.Z0Frac(TTTrack.Z0Frac'left) = '1' THEN --negative
+      IF TTTrack.Z0Int >= ZMax THEN
+        tmp_z := Zsaturate( 0 );  -- Saturate at out of range Z
+      ELSE   --Approximation of z0 transformation that saves complex division and multiplications
+        tmp_z := (- TO_INTEGER(TTTrack.Z0Int)*8   - TO_INTEGER(TTTrack.Z0Int)/8
+                  + TO_INTEGER(TTTrack.Z0Frac)/8 + TO_INTEGER(TTTrack.Z0Frac)/64
+                  + ZConstant );
+      END IF;
+    ELSE  --positive
+      IF TTTrack.Z0Int >= ZMax THEN
+        tmp_z := Zsaturate( 1 );  -- Saturate at out of range Z 
+      ELSE
+        tmp_z := (  TO_INTEGER(TTTrack.Z0Int)*ZIntScale( 0 )   + TO_INTEGER(TTTrack.Z0Int)/ZIntScale( 1 )
+                  + TO_INTEGER(TTTrack.Z0Frac)/ZFracScale( 0 ) + TO_INTEGER(TTTrack.Z0Frac)/ZFracScale( 1 )
+                  + ZConstant );
+      END IF;
+    END IF;
+
+    z0 <= TO_UNSIGNED(tmp_z,8);
 
   END PROCEDURE RescaleZ0;
 -- -------------------------------------------------------------------------
   PROCEDURE GlobalPhi (SIGNAL TTTrack : IN InTTTrack.DataType.tData;  --Procedure for chaning sector phi to global phi using LUT
                        SIGNAL Sector  : IN INTEGER;
-                       SIGNAL Phi     : OUT UNSIGNED( GlobalPhiWidth - 1 DOWNTO 0 )) IS 
+                       SIGNAL Phi     : OUT UNSIGNED( GlobalPhiWidth + GlobalPhiExtra DOWNTO 0 )) IS 
   VARIABLE TempPhi : INTEGER := 0;
   BEGIN
-    TempPhi   := TO_INTEGER(SHIFT_RIGHT(TTTrack.Phi0,TrackPhiScale)) + Phi_shift(Sector) - PhiShift;  
+    TempPhi   := TO_INTEGER(TTTrack.phi) + Phi_shift(Sector) - PhiShift;  
     IF TempPhi < PhiMin THEN
       TempPhi := TempPhi + PhiMax;
     ELSIF TempPhi > PhiMax THEN
@@ -66,15 +82,17 @@ ARCHITECTURE rtl OF TrackTransform IS
       TempPhi := TempPhi;
     END IF;
 
-  Phi <= TO_UNSIGNED(TempPhi, GlobalPhiWidth); 
+  Phi <= TO_UNSIGNED(TempPhi, GlobalPhiWidth + GlobalPhiExtra); 
   END PROCEDURE GlobalPhi;
 -- -------------------------------------------------------------------------
   PROCEDURE TanLookup (SIGNAL TTTrack : IN InTTTrack.DataType.tData;  --Procedure for chaning TanL to eta based on a LUT
-                       SIGNAL eta : OUT UNSIGNED( EtaWidth - 1 DOWNTO 0 )) IS  
+                       SIGNAL eta : OUT UNSIGNED( 9 DOWNTO 0 )) IS  --(2**16 full eta using 2**10 eta LUT)
     VARIABLE tanL_lut_0 : INTEGER := 0;
+    VARIABLE tanL_lut_1 : INTEGER := 0;
     BEGIN
-        tanL_lut_0 := abs(TO_INTEGER( SHIFT_RIGHT(TTTrack.TanL,TrackEtaScale))); 
-        eta  <= TO_UNSIGNED(TanLLUT( tanL_lut_0 ),EtaWidth);
+        tanL_lut_0   := TO_INTEGER( TTTrack.tanlfrac )/32; --(2**16 full eta using 2**11 2**15/2**10 eta LUT)
+        tanL_lut_1  := abs( TO_INTEGER( TTTrack.tanlint ) );
+        eta  <= TO_UNSIGNED(TanLLUT( tanL_lut_0 )( tanL_lut_1 ),10);
 
   END PROCEDURE TanLookup;
 -- -------------------------------------------------------------------------
@@ -82,13 +100,13 @@ ARCHITECTURE rtl OF TrackTransform IS
   CONSTANT track_delay         : INTEGER := 6;
   CONSTANT vld_delay           : INTEGER := 5;  --CONSTANTS TODO place in constants file?
   
-  TYPE   Chi2rphiArray   IS ARRAY (0 to track_delay - 1) OF UNSIGNED( widthChi2RPhi - 1 DOWNTO 0 );
-  TYPE   Chi2rzArray     IS ARRAY (0 to track_delay - 1) OF UNSIGNED( widthChi2RZ - 1 DOWNTO 0 );
-  TYPE   BendChi2Array   IS ARRAY (0 to track_delay - 1) OF UNSIGNED( widthBendChi2 - 1 DOWNTO 0 );
-  TYPE   HitpatternArray IS ARRAY (0 to track_delay - 1) OF UNSIGNED( widthHitPattern - 1 DOWNTO 0 );
-  TYPE   Z0Array         IS ARRAY (0 to track_delay - 1) OF UNSIGNED( VertexZ0Width - 1 DOWNTO 0 );
-  TYPE   phiArray        IS ARRAY (0 to track_delay - 1) OF UNSIGNED( GlobalPhiWidth - 1 DOWNTO 0 );  
-  TYPE   etaArray        IS ARRAY (0 to track_delay - 1) OF UNSIGNED( EtaWidth - 1 DOWNTO 0 ); 
+  TYPE   Chi2rphiArray   IS ARRAY (0 to track_delay - 1) OF UNSIGNED( 3 DOWNTO 0 );
+  TYPE   Chi2rzArray     IS ARRAY (0 to track_delay - 1) OF UNSIGNED( 3 DOWNTO 0 );
+  TYPE   BendChi2Array   IS ARRAY (0 to track_delay - 1) OF UNSIGNED( 2 DOWNTO 0 );
+  TYPE   HitpatternArray IS ARRAY (0 to track_delay - 1) OF UNSIGNED( 6 DOWNTO 0 );
+  TYPE   Z0Array         IS ARRAY (0 to track_delay - 1) OF UNSIGNED( 7 DOWNTO 0 );
+  TYPE   phiArray        IS ARRAY (0 to track_delay - 1) OF UNSIGNED( GlobalPhiWidth + GlobalPhiExtra DOWNTO 0 );  --(2**13 for 2**11 assuming 2**8 -> 2**10 phi LUT)
+  TYPE   etaArray        IS ARRAY (0 to track_delay - 1) OF UNSIGNED( 9 DOWNTO 0 ); --(2**16 full eta using 2**11 eta LUT) 
 
 BEGIN
   g1              : FOR i IN 0 TO NumInputLinks - 1 GENERATE
@@ -107,13 +125,13 @@ BEGIN
     SIGNAL validsignal      : STD_LOGIC                            := '0';
     SIGNAL valid_array      : STD_LOGIC_VECTOR(0 to vld_delay - 1) := ( OTHERS => '0' );
     
-    SIGNAL rescaledZ0       : UNSIGNED( VertexZ0Width - 1 DOWNTO 0 ) := (OTHERS => '0' );               
+    SIGNAL rescaledZ0       : UNSIGNED( 7 DOWNTO 0 ) := (OTHERS => '0' );               
     SIGNAL z0_array         : Z0Array                := ( OTHERS => (OTHERS => '0' ) );
 
-    SIGNAL rescaledPhi      : UNSIGNED( GlobalPhiWidth - 1 DOWNTO 0 ) := (OTHERS => '0' );  
+    SIGNAL rescaledPhi      : UNSIGNED( 9 DOWNTO 0 ) := (OTHERS => '0' );  --(2**13 for 2**11 assuming 2**8 -> 2**10 phi LUT)
     SIGNAL phi_array        : phiArray                := ( OTHERS => (OTHERS => '0' ) );
 
-    SIGNAL eta              : UNSIGNED( EtaWidth - 1 DOWNTO 0 ) := (OTHERS => '0' );                         
+    SIGNAL eta              : UNSIGNED( 9 DOWNTO 0 ) := (OTHERS => '0' );   --(2**16 full eta using 2**11 eta LUT)                         
     SIGNAL eta_array        : etaArray                := ( OTHERS => (OTHERS => '0' ) );
 
     SIGNAL Chi2rphi_array   : Chi2rphiArray   := ( OTHERS => (OTHERS => '0' ) );
@@ -133,7 +151,7 @@ BEGIN
       FractionOut   => FracOut
     );
 
-    Sector <= TO_INTEGER( TO_UNSIGNED(i / 2,4));
+    Sector <= i;
     RescaleZ0(TTTrackPipeIn( 0 )( i ),rescaledZ0);
     GlobalPhi(TTTrackPipeIn( 0 )( i ),Sector,rescaledPhi);
     TanLookup(TTTrackPipeIn( 0 )( i ),eta);

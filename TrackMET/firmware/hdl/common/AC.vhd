@@ -6,23 +6,27 @@ LIBRARY ET;
 USE ET.DataType.ALL;
 USE ET.ArrayTypes.ALL;
 
+LIBRARY GTT;
+USE GTT.GTTconfig.ALL;
+USE GTT.GTTDataFormats.ALL;
+
 LIBRARY TrackMET;
 USE TrackMET.constants.all;
 
 ENTITY AC IS
     PORT (clk, reset : IN std_logic := '0';
           Et    : IN EtArray := ( OTHERS => ( OTHERS => '0' ) );
-          SumEx : OUT SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
-          SumEy : OUT SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0')
+          SumEx : OUT SIGNED( PtWidth DOWNTO 0 ) := (OTHERS => '0');
+          SumEy : OUT SIGNED( PtWidth DOWNTO 0 ) := (OTHERS => '0')
     );
 END ENTITY AC;
 
 ARCHITECTURE behavioral OF AC IS
 
     FUNCTION SumPx (EtVector : EtArray) RETURN SIGNED IS
-    VARIABLE temp_px : SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
+    VARIABLE temp_px : SIGNED( PtWidth DOWNTO 0 ) := (OTHERS => '0');
     BEGIN
-      FOR i IN 0 TO 17 LOOP
+      FOR i IN 0 TO NumInputLinks - 1 LOOP
         temp_px := temp_px + EtVector( i );
       END LOOP;
   
@@ -30,25 +34,26 @@ ARCHITECTURE behavioral OF AC IS
     END FUNCTION SumPx;
   
     FUNCTION SumPy (EtVector : EtArray) RETURN SIGNED IS
-    VARIABLE temp_py : SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
+    VARIABLE temp_py : SIGNED( PtWidth DOWNTO 0 ) := (OTHERS => '0');
     BEGIN
-      FOR i IN 18 TO 35 LOOP
+      FOR i IN NumInputLinks TO NumInputLinks*2 - 1 LOOP
         temp_py := temp_py + EtVector( i );
       END LOOP;
   
     RETURN temp_py;
     END FUNCTION SumPy;
-    
-    SIGNAL signal_px   : SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
-    SIGNAL signal_py   : SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
-    SIGNAL signal_sumx : SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
-    SIGNAL signal_sumy : SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
+
+
+    SIGNAL signal_px   : SIGNED( PtWidth DOWNTO 0 ) := (OTHERS => '0');
+    SIGNAL signal_py   : SIGNED( PtWidth DOWNTO 0 ) := (OTHERS => '0');
+    SIGNAL signal_sumx : SIGNED( PtWidth DOWNTO 0 ) := (OTHERS => '0');
+    SIGNAL signal_sumy : SIGNED( PtWidth DOWNTO 0 ) := (OTHERS => '0');
     SIGNAL Et_Buffer   : EtArray := ( OTHERS => ( OTHERS => '0' ) );
 
-    SIGNAL temp_sumx : SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
-    SIGNAL temp_sumy : SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
-    SIGNAL input_px  : SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
-    SIGNAL input_py  : SIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
+    SIGNAL temp_sumx : SIGNED( PtWidth DOWNTO 0 ) := (OTHERS => '0');
+    SIGNAL temp_sumy : SIGNED( PtWidth DOWNTO 0 ) := (OTHERS => '0');
+    SIGNAL input_px  : SIGNED( PtWidth DOWNTO 0 ) := (OTHERS => '0');
+    SIGNAL input_py  : SIGNED( PtWidth DOWNTO 0 ) := (OTHERS => '0');
     
     BEGIN
 

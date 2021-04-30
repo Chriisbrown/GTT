@@ -1,3 +1,4 @@
+src --vhdl2008 -l LinkDecode modules/ByPassTrackTransform.vhd
 src --vhdl2008 -l LinkDecode modules/TrackTransform.vhd
 src --vhdl2008 -l LinkDecode modules/TanLROM.vhd
 src --vhdl2008 -l LinkDecode modules/InvRdivider.vhd

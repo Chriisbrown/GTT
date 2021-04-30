@@ -5,6 +5,7 @@ USE IEEE.NUMERIC_STD.ALL;
 
 library xil_defaultlib;
 use xil_defaultlib.emp_data_types.all;
+use xil_defaultlib.gtt_interface_pkg; 
 
 --library work;
 --use work.emp_data_types.all;
@@ -29,7 +30,7 @@ USE Utilities.Utilities.ALL;
 ENTITY LinksToTTTracks IS
   PORT(
     clk          : IN STD_LOGIC; -- The algorithm clock
-    linksIn      : IN ldata;
+    linksIn      : IN gtt_interface_pkg.link_array;
     WordTrackPipeOut : OUT VectorPipe
   );
 END LinksToTTTracks;

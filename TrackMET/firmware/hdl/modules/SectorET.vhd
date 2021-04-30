@@ -7,6 +7,10 @@ LIBRARY ET;
 USE ET.DataType;
 USE ET.ArrayTypes;
 
+LIBRARY GTT;
+USE GTT.GTTconfig.ALL;
+USE GTT.GTTDataFormats.ALL;
+
 LIBRARY TTTrack;
 USE TTTrack.DataType;
 USE TTTrack.ArrayTypes;
@@ -32,30 +36,30 @@ END SectorET;
 
 ARCHITECTURE rtl OF SectorET IS
 
-  SIGNAL Output : ET.ArrayTypes.Vector( 0 TO 17 ) := ET.ArrayTypes.NullVector( 18 );
+  SIGNAL Output : ET.ArrayTypes.Vector( 0 TO NumInputLinks - 1 ) := ET.ArrayTypes.NullVector( NumInputLinks );
 
   PROCEDURE GlobalPhiLUT (SIGNAL TTTrack : IN TTTrack.DataType.tData ;  --Procedure for finding cos and sin of phi
-                          SIGNAL Phix    : OUT SIGNED(9 DOWNTO 0) ; --(2**13 for 2**11 assuming 2**8 -> 2**10 phi LUT))
-                          SIGNAL Phiy    : OUT SIGNED(9 DOWNTO 0) ; --(2**13 for 2**11 assuming 2**8 -> 2**10 phi LUT))
-                          SIGNAL Pt      : OUT UNSIGNED( 15 DOWNTO 0 ) ) IS  --Pt pass through to maintain synch with Phi
+                          SIGNAL Phix    : OUT SIGNED(GlobalPhiWidth DOWNTO 0) ; 
+                          SIGNAL Phiy    : OUT SIGNED(GlobalPhiWidth DOWNTO 0) ; 
+                          SIGNAL Pt      : OUT UNSIGNED( PtWidth - 1 DOWNTO 0 ) ) IS  --Pt pass through to maintain synch with Phi
     VARIABLE GlobalPhi : INTEGER := 0;
-    VARIABLE TempPt    : UNSIGNED( 15 DOWNTO 0 ) := (OTHERS => '0');
+    VARIABLE TempPt    : UNSIGNED( PtWidth - 1 DOWNTO 0 ) := (OTHERS => '0');
     BEGIN
         GlobalPhi := TO_INTEGER( TTTrack.phi );
         TempPt    := TTTrack.pt;
 
         IF GlobalPhi >= PhiBins( 0 ) AND GlobalPhi < PhiBins( 1 ) THEN
-          Phix <= TO_SIGNED(TrigArray( GlobalPhi ),10);   --(2**13 for 2**11 assuming 2**8 -> 2**10 phi LUT))
-          Phiy <= TO_SIGNED(TrigArray( PhiBins( 1 ) - 1 - GlobalPhi ),10); 
+          Phix <= TO_SIGNED(TrigArray( GlobalPhi ),GlobalPhiWidth+1);   
+          Phiy <= TO_SIGNED(TrigArray( PhiBins( 1 ) - 1 - GlobalPhi ),GlobalPhiWidth+1); 
         ELSIF GlobalPhi >= PhiBins( 1 ) AND GlobalPhi < PhiBins( 2 ) THEN
-          Phix <= TO_SIGNED(-TrigArray( PhiBins( 2 ) - 1 - GlobalPhi  ),10); 
-          Phiy <= TO_SIGNED(TrigArray(  GlobalPhi - PhiBins( 1 ) ),10); 
+          Phix <= TO_SIGNED(-TrigArray( PhiBins( 2 ) - 1 - GlobalPhi  ),GlobalPhiWidth+1); 
+          Phiy <= TO_SIGNED(TrigArray(  GlobalPhi - PhiBins( 1 ) ),GlobalPhiWidth+1); 
         ELSIF GlobalPhi >= PhiBins( 2 ) AND GlobalPhi < PhiBins( 3 ) THEN
-          Phix <= TO_SIGNED(-TrigArray( GlobalPhi - PhiBins( 2 ) ),10);  
-          Phiy <= TO_SIGNED(-TrigArray( PhiBins( 3 ) - 1 -GlobalPhi  ),10); 
+          Phix <= TO_SIGNED(-TrigArray( GlobalPhi - PhiBins( 2 ) ),GlobalPhiWidth+1);  
+          Phiy <= TO_SIGNED(-TrigArray( PhiBins( 3 ) - 1 -GlobalPhi  ),GlobalPhiWidth+1); 
         ELSIF GlobalPhi >= PhiBins( 3 ) AND GlobalPhi < PhiBins( 4 ) THEN
-          Phix <= TO_SIGNED(TrigArray( PhiBins( 4 ) - 1 - GlobalPhi ),10); 
-          Phiy <= TO_SIGNED(-TrigArray( GlobalPhi - PhiBins( 3 )  ),10); 
+          Phix <= TO_SIGNED(TrigArray( PhiBins( 4 ) - 1 - GlobalPhi ),GlobalPhiWidth+1); 
+          Phiy <= TO_SIGNED(-TrigArray( GlobalPhi - PhiBins( 3 )  ),GlobalPhiWidth+1); 
         END IF;
         Pt <= TempPt;
   END PROCEDURE GlobalPhiLUT;
@@ -63,20 +67,23 @@ ARCHITECTURE rtl OF SectorET IS
   CONSTANT frame_delay : INTEGER := 5; --Constant latency of algorithm steps
   
 BEGIN
-  g1              : FOR i IN 0 TO 17 GENERATE
+  g1              : FOR i IN 0 TO NumInputLinks - 1 GENERATE
 
   SIGNAL vldTrack : TTTrack.DataType.tData := TTTrack.DataType.cNull;
+
+  SIGNAL TrackCounter : INTEGER := 0;
   
-  SIGNAl Pt_Buffer   : UNSIGNED( 15 DOWNTO 0 ) := ( OTHERS => '0' );  --Temporaries for procedure outputs
-  SIGNAL Phix_Buffer : SIGNED  ( 9 DOWNTO 0 ) := ( OTHERS => '0' );  --(2**13 for 2**11 assuming 2**8 -> 2**10 phi LUT))
-  SIGNAL Phiy_Buffer : SIGNED  ( 9 DOWNTO 0 ) := ( OTHERS => '0' );
+  SIGNAl Pt_Buffer   : UNSIGNED( PtWidth - 1 DOWNTO 0 ) := ( OTHERS => '0' );  --Temporaries for procedure outputs
+  SIGNAL Phix_Buffer :   SIGNED  ( GlobalPhiWidth DOWNTO 0 ) := ( OTHERS => '0' ); 
+  SIGNAL Phiy_Buffer :   SIGNED  ( GlobalPhiWidth DOWNTO 0 ) := ( OTHERS => '0' );
 
   SIGNAL reset : STD_LOGIC := '0';  --MAC reset signal
-  SIGNAL SumPx : SIGNED  ( 15 DOWNTO 0 ) := ( OTHERS => '0' );  --MAC outputs
-  SIGNAL SumPy : SIGNED  ( 15 DOWNTO 0 ) := ( OTHERS => '0' );
+  SIGNAL SumPx : SIGNED  ( PtWidth DOWNTO 0 ) := ( OTHERS => '0' );  --MAC outputs (Extra Bit for sign)
+  SIGNAL SumPy : SIGNED  ( PtWidth DOWNTO 0 ) := ( OTHERS => '0' );
 
   SIGNAL frame_signal : STD_LOGIC := '0';
   SIGNAL frame_array  : STD_LOGIC_VECTOR(0 TO frame_delay - 1) :=  ( OTHERS => '0' );  --Delaying frame valid signals
+  SIGNAL track_array  : INTEGER_VECTOR(0 TO frame_delay - 1) :=  ( OTHERS => 0 );  --Delaying track num signals
 
   BEGIN
 
@@ -108,29 +115,34 @@ BEGIN
           frame_signal <= '1';
           IF TTTrackPipeIn( 0 )( i ).DataValid THEN
             vldTrack <= TTTrackPipeIn( 0 )( i );
+            TrackCounter <= TrackCounter + 1;
           ELSE
             vldTrack <= TTTrack.DataType.cNull;
+            TrackCounter <= TrackCounter;
           END IF;
         ELSE 
           frame_signal <= '0';
           vldTrack <= TTTrack.DataType.cNull;
+          TrackCounter <= 0;
         END IF;
 
 
         GlobalPhiLUT( vldTrack, Phix_Buffer, Phiy_Buffer, Pt_Buffer);
         frame_array <= frame_signal & frame_array( 0 TO frame_delay - 2 );
+        track_array <= TrackCounter & track_array( 0 TO frame_delay - 2 );
 
       END IF;
     END PROCESS;
 
     reset <= '0' WHEN ( frame_array( frame_delay - 3 ) = '1' )  ELSE '1'; -- Only accumulate if frame is valid + one clock for Phi LUT, else set accumulator to 0
+    
 
     Output( i ) .DataValid  <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1') AND ( frame_array( frame_delay - 2 )  = '0') ELSE FALSE; -- DataValid when all tracks read
     Output( i ) .FrameValid <= TRUE WHEN ( frame_array( frame_delay - 1 ) = '1') ELSE FALSE; -- FrameValid when track frame valid
     Output( i ) .Px <= SumPx;
     Output( i ) .Py <= SumPy;
-    Output( i ) .Sector <= TO_UNSIGNED( i / 2, 4 );
-
+    Output( i ) .Sector <= TO_UNSIGNED( i , SectorWidth) WHEN i < 9 ELSE TO_UNSIGNED( i - 9 , SectorWidth);
+    Output( i ) .NumTracks <= TO_UNSIGNED(track_array( frame_delay - 1 ),METNtrackWidth);
   END GENERATE;
 
 -- -------------------------------------------------------------------------

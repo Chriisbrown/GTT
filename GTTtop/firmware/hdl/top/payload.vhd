@@ -4,8 +4,11 @@ USE IEEE.NUMERIC_STD.ALL;
 
 use work.ipbus.all;
 --use work.ipbus_reg_types.all;
-use work.emp_data_types.all;
+--use work.emp_data_types.all;
 use work.emp_project_decl.all;
+
+library xil_defaultlib;
+use xil_defaultlib.emp_data_types.all;
 
 use work.emp_device_decl.all;
 use work.emp_ttc_decl.all;

@@ -3,16 +3,18 @@ LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.NUMERIC_STD.ALL;
 -- -------------------------------------------------------------------------
-
+LIBRARY GTT;
+USE GTT.GTTconfig.ALL;
+USE GTT.GTTDataFormats.ALL;
 -- -------------------------------------------------------------------------
 PACKAGE constants IS
 
-TYPE   EtArray   IS ARRAY (0 to 35) OF SIGNED( 15 DOWNTO 0 );
+TYPE   EtArray   IS ARRAY (0 to (2*NumInputLinks) - 1) OF SIGNED( PtWidth DOWNTO 0 );
 
-CONSTANT PhiBins : INTEGER_VECTOR := (0,195,390,585,780);
-CONSTANT CordicSteps : INTEGER := 4;
-CONSTANT CordicNormalisation : INTEGER := 39;
 
---CONSTANT MACNormalisation : INTEGER := 4096;
---CONSTANT EtScale : INTEGER := 65536;
+CONSTANT CordicSteps : INTEGER := 8;
+
+CONSTANT CordicPhiScale : INTEGER := 2**METPhiWidth;
+
+
 END constants;

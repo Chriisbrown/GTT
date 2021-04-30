@@ -4,7 +4,6 @@ USE IEEE.NUMERIC_STD.ALL;
 
 library xil_defaultlib;
 use xil_defaultlib.emp_data_types.all;
-use xil_defaultlib.gtt_interface_pkg;
 
 --library work;
 --use work.emp_data_types.all;
@@ -40,8 +39,8 @@ LIBRARY GTT;
 ENTITY GTTTop IS
   PORT(
     clk       : IN STD_LOGIC; -- The algorithm clock
-    LinksIn         : IN gtt_interface_pkg.link_array;
-    LinksOut        : OUT gtt_interface_pkg.link_array;
+    LinksIn         : IN ldata;
+    LinksOut        : OUT ldata;
 -- Prevent all the logic being synthesized away when running standalone
     DebuggingOutput : OUT Vertex.ArrayTypes.Vector( 0 TO 0 ) := Vertex.ArrayTypes.NullVector( 1 )
   );

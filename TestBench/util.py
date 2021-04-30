@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import pickle
 
 import joblib
-import statsmodels.api as sm
+
 import os
 
 import random
@@ -149,7 +149,7 @@ def loadDataSingleFile(filename, num):
 def loadVertexInformation(filename,num_events=-1,write_to_file=False):
 
   #TkPrimaryVertex = uproot.open(filename)["Events"].array("l1tTkPrimaryVertexs_L1TkPrimaryVertex_TrkVertex_L1TrackMET.obj.zvertex_")
-  TkPrimaryVertex = uproot.open(filename)["L1TrackNtuple"]["eventTree"].arrays("pv_L1reco_z0")
+  TkPrimaryVertex = uproot.open(filename)["L1TrackNtuple"]["eventTree"].arrays("pv_L1reco")
   TkPrimaryVertex_array = np.zeros(len(TkPrimaryVertex))
   #TkPrimaryweight = uproot.open(filename)["Events"].array("l1tTkPrimaryVertexs_L1TkPrimaryVertex_TrkVertex_L1TrackMET.obj.sum_")
   TkPrimaryWeight = uproot.open(filename)["L1TrackNtuple"]["eventTree"].arrays("pv_L1reco_sum")
@@ -163,7 +163,7 @@ def loadVertexInformation(filename,num_events=-1,write_to_file=False):
   MCVertex_array = np.zeros(len(MCVertex))
 
   for i in range(num_events):
-    TkPrimaryVertex_array[i] =  TkPrimaryVertex[i]["pv_L1reco_z0"][0]
+    TkPrimaryVertex_array[i] =  TkPrimaryVertex[i]["pv_L1reco"][0]
     TkPrimaryWeight_array[i] =  TkPrimaryWeight[i]["pv_L1reco_sum"][0]
     MCVertex_array[i] = MCVertex[i]["pv_MC"][0]
 

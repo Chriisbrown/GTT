@@ -8,8 +8,10 @@ LIBRARY TTTrack;
 USE TTTrack.DataType;
 USE TTTrack.ArrayTypes;
 
-LIBRARY TrackSelection;
-USE TrackSelection.Constants.all;
+LIBRARY GTT;
+USE GTT.GTTconfig.ALL;
+USE GTT.GTTDataFormats.ALL;
+
 
 LIBRARY Utilities;
 USE Utilities.debugging.ALL;
@@ -27,7 +29,7 @@ END TrackToVertexAssoc;
 
 ARCHITECTURE rtl OF TrackToVertexAssoc IS
 
-  SIGNAL Output :  TTTrack.ArrayTypes.Vector( 0 TO 17 ) :=  TTTrack.ArrayTypes.NullVector( 18 );
+  SIGNAL Output :  TTTrack.ArrayTypes.Vector( 0 TO NumInputLinks - 1 ) :=  TTTrack.ArrayTypes.NullVector( NumInputLinks );
 
   PROCEDURE DeltaZ ( SIGNAL TTTrack : IN TTTrack.DataType.tData;   --Procedure for selecting z window based on eta
                      SIGNAL delta_z : OUT INTEGER) IS
@@ -44,7 +46,7 @@ ARCHITECTURE rtl OF TrackToVertexAssoc IS
           temp_z := DeltaZBins( 3 );
         ELSIF TTTrack.eta >= EtaBins( 4 )  AND TTTrack.eta < EtaBins( 5 )  THEN
           temp_z := DeltaZBins( 4 );
-        ELSIF TTTrack.eta >= EtaBins( 5 )  AND TTTrack.eta <= EtaBins( 6 )  THEN
+        ELSIF TTTrack.eta >= EtaBins( 5 )  AND TTTrack.eta < EtaBins( 6 )  THEN
           temp_z := DeltaZBins( 5 );
         ELSE
           temp_z := 0;
@@ -54,7 +56,7 @@ ARCHITECTURE rtl OF TrackToVertexAssoc IS
   END PROCEDURE DeltaZ;
   
 BEGIN
-  g1              : FOR i IN 0 TO 17 GENERATE
+  g1              : FOR i IN 0 TO NumInputLinks - 1 GENERATE
     SIGNAL l1TTTrack      : TTTrack.DataType.tData := TTTrack.DataType.cNull;
     SIGNAL delayed_Track  : TTTrack.DataType.tData := TTTrack.DataType.cNull;  -- Delay the track to allow window choosing
     SIGNAL delta_z_vld    : BOOLEAN := FALSE; --track within dz window flag
@@ -69,7 +71,7 @@ BEGIN
     BEGIN
       IF RISING_EDGE( clk ) THEN
         delayed_Track         <= l1TTTrack;
-        delta_z_vld           <= ( abs( TO_INTEGER( l1TTTrack.z0 ) - TO_INTEGER( l1TTTrack.PV ) ) <= dz );
+        delta_z_vld           <= ( abs( TO_INTEGER( l1TTTrack.z0 ) - TO_INTEGER( l1TTTrack.PV ) ) <= dz) OR ((TO_INTEGER( l1TTTrack.PV ) <= dz) AND (abs(MaxZ0 - TO_INTEGER( l1TTTrack.z0 ) + TO_INTEGER( l1TTTrack.PV ) ) <= dz ));
         Output( i )           <= delayed_Track;
         Output( i ).DataValid <= TRUE WHEN delta_z_vld AND delayed_Track.DataValid ELSE FALSE;  --If track is valid and within z window keep
       END IF;

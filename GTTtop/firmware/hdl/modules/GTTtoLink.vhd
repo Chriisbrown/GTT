@@ -5,6 +5,7 @@ USE IEEE.NUMERIC_STD.ALL;
 
 library xil_defaultlib;
 use xil_defaultlib.emp_data_types.all;
+use xil_defaultlib.gtt_interface_pkg;
 
 LIBRARY GTT;
 USE GTT.GTTconfig.ALL;
@@ -36,7 +37,7 @@ port(
   clk : in std_logic;
   VertexPipeIn : in Vertex.ArrayTypes.VectorPipe;
   METPipeIn : in Et.ArrayTypes.VectorPipe;
-  linksOut : out ldata
+  linksOut : out gtt_interface_pkg.link_array  
 );
 end ObjectsToLinks;
 

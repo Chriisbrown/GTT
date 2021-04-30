@@ -24,6 +24,9 @@ USE STD.TEXTIO.ALL;
 
 LIBRARY Utilities;
 USE Utilities.Utilities.ALL;
+
+LIBRARY GTT;
+USE GTT.GTTDataFormats.ALL;
 -- -------------------------------------------------------------------------
 
 -- -------------------------------------------------------------------------
@@ -32,24 +35,27 @@ PACKAGE DataType IS
 
 --  Track Word 
   TYPE tData IS RECORD
-  Pt           : UNSIGNED( 15 DOWNTO 0 ); 
-  Z0           : UNSIGNED( 7  DOWNTO 0 );
+  Pt           : UNSIGNED( PtWidth - 1         DOWNTO 0 ); 
+  Z0           : UNSIGNED( VertexZ0Width - 1   DOWNTO 0 );
 -- -------------------------------------------------------------------------
-  Chi2rphi     : UNSIGNED( 3 DOWNTO 0 );
-  Chi2rz       : UNSIGNED( 3 DOWNTO 0 );
-  BendChi2     : UNSIGNED( 2 DOWNTO 0 );
-  Hitpattern   : UNSIGNED( 6 DOWNTO 0 );
-  PV           : UNSIGNED( 7 DOWNTO 0 );
+  Chi2rphi     : UNSIGNED( widthChi2RPhi - 1   DOWNTO 0 );
+  Chi2rz       : UNSIGNED( widthChi2RZ - 1     DOWNTO 0 );
+  BendChi2     : UNSIGNED( widthBendChi2 - 1   DOWNTO 0 );
+  Hitpattern   : UNSIGNED( widthHitPattern - 1 DOWNTO 0 );
+  -- --------------------------------------------------------------------------------------------
+  PV           : UNSIGNED( VertexZ0Width - 1   DOWNTO 0 );
 
-  Phi          : UNSIGNED( 9 DOWNTO 0 );  --(2**13 for 2**11 assuming 2**8 -> 2**10 phi LUT)
-  Eta          : UNSIGNED( 9 DOWNTO 0 ); --(2**16 full eta using 2**11 eta LUT)
+  Phi          : UNSIGNED( GlobalPhiWidth - 1  DOWNTO 0 );  
+  Eta          : UNSIGNED( EtaWidth - 1        DOWNTO 0 ); 
 -- --------------------------------------------
   DataValid    : BOOLEAN;
   FrameValid   : BOOLEAN;
 END RECORD;
 
 ATTRIBUTE SIZE : NATURAL;
-ATTRIBUTE SIZE of tData : TYPE IS 72; -- Exactly BRAM boundary 
+ATTRIBUTE SIZE of tData : TYPE IS PtWidth +VertexZ0Width + widthChi2RPhi
+                                + widthChi2RZ + widthBendChi2 + widthHitPattern 
+                                + VertexZ0Width + GlobalPhiWidth + EtaWidth + 1 + 1; -- 
 -- -------------------------------------------------------------------------       
 
 -- A record to encode the bit location of each field of the tData record
@@ -83,17 +89,26 @@ ATTRIBUTE SIZE of tData : TYPE IS 72; -- Exactly BRAM boundary
     
   END RECORD;
 
-  CONSTANT bitloc                      : tFieldLocations := ( 0  , 15 ,   --pT
-                                                              16 , 23 ,   --Z0
-                                                              24 , 27 ,   --Chirphi
-                                                              28 , 31 ,   --Chirz
-                                                              32 , 34 ,   --BendChi
-                                                              35 , 41 ,   --HitPattern
-                                                              42 , 49 ,   --PV
-                                                              50 , 59 ,   --Phi (2**13 for 2**11 assuming 2**8 -> 2**10 phi LUT))
-                                                              60 , 69 ,   --Eta (2**16 full eta using 2**10 eta LUT)
-                                                              70,         --Data Valid
-                                                              71          --Frame Valid
+  CONSTANT bitloc                      : tFieldLocations := ( 0  ,                                                               PtWidth - 1 ,   --pT
+                                                         PtWidth ,                                               VertexZ0Width + PtWidth - 1 ,   --Z0
+                                       VertexZ0Width +   PtWidth ,                               widthChi2RPhi + VertexZ0Width + PtWidth - 1 ,   --Chi2Rphi
+                       widthChi2RPhi + VertexZ0Width +   PtWidth ,                 widthChi2RZ + widthChi2RPhi + VertexZ0Width + PtWidth - 1 ,   --Chi2RZ
+         widthChi2RZ + widthChi2RPhi + VertexZ0Width +   PtWidth , widthBendChi2 + widthChi2RZ + widthChi2RPhi + VertexZ0Width + PtWidth - 1 ,   --BendChi2
+
+                  widthBendChi2 + widthChi2RZ + widthChi2RPhi + VertexZ0Width + PtWidth , 
+widthHitPattern + widthBendChi2 + widthChi2RZ + widthChi2RPhi + VertexZ0Width + PtWidth - 1 ,   --HitPattern
+
+                widthHitPattern + widthBendChi2 + widthChi2RZ + widthChi2RPhi + VertexZ0Width + PtWidth , 
+VertexZ0Width + widthHitPattern + widthBendChi2 + widthChi2RZ + widthChi2RPhi + VertexZ0Width + PtWidth - 1 ,   --PV
+
+                 VertexZ0Width + widthHitPattern + widthBendChi2 + widthChi2RZ + widthChi2RPhi + VertexZ0Width + PtWidth ,  
+GlobalPhiWidth + VertexZ0Width + widthHitPattern + widthBendChi2 + widthChi2RZ + widthChi2RPhi + VertexZ0Width + PtWidth - 1 ,   --Phi
+
+           GlobalPhiWidth + VertexZ0Width + widthHitPattern + widthBendChi2 + widthChi2RZ + widthChi2RPhi + VertexZ0Width + PtWidth ,  
+EtaWidth + GlobalPhiWidth + VertexZ0Width + widthHitPattern + widthBendChi2 + widthChi2RZ + widthChi2RPhi + VertexZ0Width + PtWidth - 1 ,   --Eta
+
+EtaWidth + GlobalPhiWidth + VertexZ0Width + widthHitPattern + widthBendChi2 + widthChi2RZ + widthChi2RPhi + VertexZ0Width + PtWidth  ,  --Data Valid
+EtaWidth + GlobalPhiWidth + VertexZ0Width + widthHitPattern + widthBendChi2 + widthChi2RZ + widthChi2RPhi + VertexZ0Width + PtWidth + 1 --Frame Valid
  
                                                               );
 
@@ -124,7 +139,7 @@ END DataType;
 PACKAGE BODY DataType IS
 
   FUNCTION ToStdLogicVector( aData : tData ) RETURN STD_LOGIC_VECTOR IS
-    VARIABLE lRet                  : STD_LOGIC_VECTOR( 71 DOWNTO 0 ) := ( OTHERS => '0' );
+    VARIABLE lRet                  : STD_LOGIC_VECTOR( tData'SIZE - 1 DOWNTO 0 ) := ( OTHERS => '0' );
   BEGIN
 
     lRet( bitloc.Pth         DOWNTO bitloc.Ptl         )         := STD_LOGIC_VECTOR( aData.Pt         );
@@ -147,8 +162,8 @@ PACKAGE BODY DataType IS
     VARIABLE lRet                      : tData := cNull;
   BEGIN
 
-    lRet.Pt         := UNSIGNED ( aStdLogicVector( bitloc.Pth   DOWNTO bitloc.Ptl  ) );           
-    lRet.Z0         := UNSIGNED ( aStdLogicVector( bitloc.Z0h   DOWNTO bitloc.Z0l  ) );
+    lRet.Pt         := UNSIGNED ( aStdLogicVector( bitloc.Pth         DOWNTO bitloc.Ptl  ) );           
+    lRet.Z0         := UNSIGNED ( aStdLogicVector( bitloc.Z0h         DOWNTO bitloc.Z0l  ) );
     lRet.Chi2rphi   := UNSIGNED ( aStdLogicVector( bitloc.Chi2rphih   DOWNTO bitloc.Chi2rphil   ) );        
     lRet.Chi2rz     := UNSIGNED ( aStdLogicVector( bitloc.Chi2rzh     DOWNTO bitloc.Chi2rzl     ) );        
     lRet.BendChi2   := UNSIGNED ( aStdLogicVector( bitloc.BendChi2h   DOWNTO bitloc.BendChi2l   ) );        

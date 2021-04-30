@@ -2,30 +2,34 @@ LIBRARY IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
+LIBRARY GTT;
+USE GTT.GTTconfig.ALL;
+USE GTT.GTTDataFormats.ALL;
+
 
 ENTITY MAC is
     PORT (clk, reset : IN std_logic := '0';
-          Pt         : IN UNSIGNED( 15 DOWNTO 0 ) := ( OTHERS => '0' );
-          Phi        : IN  SIGNED ( 9  DOWNTO 0 ) := ( OTHERS => '0' );  --(2**13 for 2**11 assuming 2**8 -> 2**10 phi LUT))
-          SumPt      : OUT SIGNED ( 15 DOWNTO 0 ) := ( OTHERS => '0' )
+          Pt         : IN UNSIGNED( PtWidth - 1 DOWNTO 0 ) := ( OTHERS => '0' );
+          Phi        : IN   SIGNED( GlobalPhiWidth DOWNTO 0 ) := ( OTHERS => '0' );  --(2**13 for 2**11 assuming 2**8 -> 2**10 phi LUT))
+          SumPt      : OUT  SIGNED( PtWidth DOWNTO 0 ) := ( OTHERS => '0' )
     );
 END ENTITY MAC;
 
 ARCHITECTURE BEHAVIORAL OF MAC IS
     
-    SIGNAL s_pt         : SIGNED  ( 15 DOWNTO 0 ) := ( OTHERS => '0' );
-    SIGNAL s_phi        : SIGNED  ( 9 DOWNTO 0 ) := ( OTHERS => '0' );
-    SIGNAL s_sum        : SIGNED  ( 25 DOWNTO 0 ) := ( OTHERS => '0' ); --(2**28 when phi is 2**13 assuming 2**8 -> 2**24 phi LUT))
-    SIGNAL SumPt_Buffer : SIGNED  ( 25 DOWNTO 0 ) := ( OTHERS => '0' );
+    SIGNAL s_pt         : SIGNED  ( PtWidth DOWNTO 0 ) := ( OTHERS => '0' );
+    SIGNAL s_phi        : SIGNED  ( GlobalPhiWidth DOWNTO 0 ) := ( OTHERS => '0' );
+    SIGNAL s_sum        : SIGNED  ( PtWidth + GlobalPhiWidth + 1 DOWNTO 0 ) := ( OTHERS => '0' ); --(2**28 when phi is 2**13 assuming 2**8 -> 2**24 phi LUT))
+    SIGNAL SumPt_Buffer : SIGNED  ( PtWidth + GlobalPhiWidth + 1 DOWNTO 0 ) := ( OTHERS => '0' );
 
-    SIGNAL input_pt  : SIGNED  ( 15 DOWNTO 0 ) := ( OTHERS => '0' );
-    SIGNAL input_phi : SIGNED  ( 9 DOWNTO 0 ) := ( OTHERS => '0' );
-    SIGNAL product   : SIGNED  ( 25 DOWNTO 0 ) := ( OTHERS => '0' );
-    SIGNAL sum       : SIGNED  ( 25 DOWNTO 0 ) := ( OTHERS => '0' );
+    SIGNAL input_pt  : SIGNED  ( PtWidth DOWNTO 0 ) := ( OTHERS => '0' );
+    SIGNAL input_phi : SIGNED  ( GlobalPhiWidth DOWNTO 0 ) := ( OTHERS => '0' );
+    SIGNAL product   : SIGNED  ( PtWidth + GlobalPhiWidth + 1 DOWNTO 0 ) := ( OTHERS => '0' );
+    SIGNAL sum       : SIGNED  ( PtWidth + GlobalPhiWidth + 1 DOWNTO 0 ) := ( OTHERS => '0' );
 
 BEGIN
 
-    s_pt  <= SIGNED( Pt );
+    s_pt  <= TO_SIGNED( TO_INTEGER(Pt),PtWidth+1 );
     s_phi <= Phi;
 
     PROCESS( clk)  IS
@@ -51,6 +55,7 @@ BEGIN
         END IF;
     END PROCESS;
     SumPt_Buffer <= s_sum;
-    SumPt <= SHIFT_LEFT(SumPt_Buffer( 25 DOWNTO 10 ),1) ; --(2**13 for 2**11 assuming 2**8 -> 2**10 phi LUT))
+    SumPt <= TO_SIGNED(TO_INTEGER(SHIFT_RIGHT(SumPt_Buffer,(GlobalPhiWidth-GlobalPhiWidthExtra))),PtWidth+1);
+    --SumPt <= SumPt_Buffer( PtWidth + GlobalPhiWidth + 1 DOWNTO GlobalPhiWidth + 1  ;
     
 END ARCHITECTURE BEHAVIORAL;

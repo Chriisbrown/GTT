@@ -6,6 +6,9 @@ USE IEEE.NUMERIC_STD.ALL;
 LIBRARY Utilities;
 USE Utilities.Utilities.ALL;
 
+LIBRARY GTT;
+USE GTT.GTTconfig.ALL;
+
 LIBRARY TTTrack;
 USE TTTrack.DataType;
 USE TTTrack.ArrayTypes;
@@ -20,23 +23,21 @@ USE LinkDecode.Constants.all;
 ENTITY TTTrackSaver IS
 
   PORT(
-    clk                : IN STD_LOGIC; -- The algorithm clock
+    clk                 : IN STD_LOGIC; -- The algorithm clock
     TTTrackPipeIn       : IN TTTrack.ArrayTypes.VectorPipe;
     PrimaryVertexPipeIn : IN  Vertex.ArrayTypes.VectorPipe;
     TTTrackPipeOut      : OUT TTTrack.ArrayTypes.VectorPipe
-    --ReadAddrOut         : OUT INTEGER_VECTOR(0 TO 17) := (OTHERS => 0);
-    --WriteAddrOut        : OUT INTEGER_VECTOR(0 TO 17) := (OTHERS => 0)
   );
 END TTTrackSaver;
 
 ARCHITECTURE rtl OF TTTrackSaver IS
   
-  SIGNAL   Output      : TTTrack.ArrayTypes.Vector( 0 TO 17 ) := TTTrack.ArrayTypes.NullVector( 18 );
+  SIGNAL   Output      : TTTrack.ArrayTypes.Vector( 0 TO NumInputLinks - 1 ) := TTTrack.ArrayTypes.NullVector( NumInputLinks );
   CONSTANT ram_depth   : INTEGER                              := RAMDepth; --Max number of tracks per FIFO, (18 FIFOs Total)
 
 BEGIN 
 
-g1 : FOR i IN 0 TO 17 GENERATE
+g1 : FOR i IN 0 TO NumInputLinks - 1 GENERATE
 
   SIGNAL OutTrack      : TTTrack.DataType.tData := TTTrack.DataType.cNull;
 

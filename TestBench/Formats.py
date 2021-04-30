@@ -4,11 +4,11 @@ import pandas
 import numpy as np
 from TanLUT import frac_precision
 
-TrackWord_config = {'InvR':      {'nbins':2**15,'min':-0.00855,'max':0.00855,"Signed":True ,'split':(15,0)},
-                    'Phi':       {'nbins':2**12,'min':-1.026,  'max':1.026,  "Signed":False,'split':(11,0)},
-                    'TanL':      {'nbins':2**16,'min':-7,      'max':7,      "Signed":True, 'split':(16,3)},
-                    'Z0':        {'nbins':2**12,'min':-31,     'max':31,     "Signed":True, 'split':(12,5)},
-                    'D0':        {'nbins':2**13,'min':-15.4,   'max':15.4,   "Signed":True, 'split':(13,5)},
+TrackWord_config = {'InvR':      {'nbins':2**15,'min':-0.008526626816,'max':0.008526626816,"Signed":True ,'split':(15,0)},
+                    'Phi':       {'nbins':2**12,'min':-0.69813248,  'max':0.69813248,  "Signed":True,'split':(12,0)},
+                    'TanL':      {'nbins':2**16,'min':-8,      'max':8,      "Signed":True, 'split':(16,0)},
+                    'Z0':        {'nbins':2**12,'min':-20.46912512,     'max':20.46912512,     "Signed":True, 'split':(12,0)},
+                    'D0':        {'nbins':2**13,'min':-15.4,   'max':15.4,   "Signed":True, 'split':(13,0)},
                     'Chi2rphi':  {'bins':[0, 0.25, 0.5, 1, 2, 3, 5, 7, 10, 20, 40, 100, 200, 500, 1000, 3000,np.inf]},
                     'Chi2rz':    {'bins':[0, 0.25, 0.5, 1, 2, 3, 5, 7, 10, 20, 40, 100, 200, 500, 1000, 3000,np.inf]},
                     'Bendchi2':  {'bins':[0,0.5,1.25,2,3,5,10,50,np.inf]},
@@ -65,8 +65,14 @@ class PatternFileDataObj:
     return self._data
 
 class LinkWord1(PatternFileDataObj):
-  fields = ["InvR1","Phi1","TanLInt1","TanLFrac1","Z0Int1","Z0Frac1","QMVA1","OtherMVA1",'framevalid']
-  lengths = [15, 12, 4,12, 5,7,3,6,1]
+  fields = ["InvR1","Phi1","TanL1",,"Z01","QMVA1","OtherMVA1",'framevalid']
+  lengths = [15, 12, 16,12,,3,6,1]
+  types = ['int:15','int:12','int:4','uint:12','uint:5','int:7',
+           'uint:3','uint:6','uint:1' ]
+
+class LinkWord1(PatternFileDataObj):
+  fields = ["DataValid1","OtherMVA1","TQMVA1","Hitpattern1","Bendchi21","D01","Chi2RZ1",'framevalid']
+  lengths = [15, 12, 16,12,,3,6,1]
   types = ['int:15','int:12','int:4','uint:12','uint:5','int:7',
            'uint:3','uint:6','uint:1' ]
 

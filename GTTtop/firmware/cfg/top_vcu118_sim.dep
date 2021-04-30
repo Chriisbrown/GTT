@@ -1,3 +1,4 @@
+#setup -f settings.tcl
 include -c emp-fwk:boards/testbench
 include GTT_sim.dep
 
@@ -9,4 +10,3 @@ src -c emp-fwk:projects/examples/testbench tb_decl.vhd
 src --cd ../ucf slrs.tcl
 include -c emp-fwk:projects/examples/testbench tb_top.dep
 include -c emp-fwk:boards/testbench packages.dep
-

@@ -1,3 +1,6 @@
+src --vhdl2008 -l GTT top/GTTDataFormats.vhd
+src --vhdl2008 -l GTT top/GTTconfig.vhd
+
 src --vhdl2008 -c GTT:RuflCore -l Utilities ReuseableElements/PkgDebug.vhd
 src --vhdl2008 -c GTT:RuflCore -l Utilities ReuseableElements/PkgUtilities.vhd
 

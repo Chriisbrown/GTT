@@ -19,7 +19,8 @@ LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.NUMERIC_STD.ALL;
 -- -------------------------------------------------------------------------
-
+LIBRARY GTT;
+USE GTT.GTTDataFormats.ALL;
 -- -------------------------------------------------------------------------
 PACKAGE constants IS
 
@@ -27,15 +28,6 @@ PACKAGE constants IS
 
   CONSTANT RAMDepth : INTEGER := 128;
 
-  CONSTANT ZMax : INTEGER := 15;
-  CONSTANT ZSaturate : INTEGER_VECTOR := (0,255);
-  CONSTANT ZIntScale : INTEGER_VECTOR := (8,2);
-  CONSTANT ZFracScale : INTEGER_VECTOR := (8,64);
-  CONSTANT ZConstant : INTEGER := 128;
-
-  CONSTANT PhiShift : INTEGER := 128;
-  CONSTANT PhiMin : INTEGER := 0;
-  CONSTANT PhiMax : INTEGER := 780;
 
   CONSTANT InvRtoPtNormalisation : INTEGER := 700573;
   CONSTANT FracScale : INTEGER := 262144;
